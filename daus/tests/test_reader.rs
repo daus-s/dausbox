@@ -4,6 +4,7 @@ mod test {
 
     use daus::vfs::{NodeType, VirtualFileSystem, VirtualNode};
     use daus::visio::*;
+    use std::path::PathBuf;
 
     #[test]
     fn test_vns() {
@@ -70,5 +71,15 @@ mod test {
         } else {
             panic!("Expected root node to be a Directory.");
         }
+    }
+
+    #[test]
+    fn test_read_from_dir() {
+        let path: PathBuf = PathBuf::from("./tfs");
+        let fdir: VirtualFileSystem = load_from_dir(&path).unwrap();
+
+        let lfir: VirtualFileSystem = load_from_file("test.json").unwrap();
+
+        assert_eq!(&fdir, &lfir);
     }
 }
