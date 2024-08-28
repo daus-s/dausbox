@@ -1,0 +1,11 @@
+html {
+    background-color: black;
+    color: lime;
+    font-weight: 600;
+    font-family: 'DOSBOX', 'Courier New', Courier, monospace;
+}
+
+@font-face {
+    font-family: DOSBOX;
+    src: url('/static/fonts/dosbox.ttf') format('truetype');
+}

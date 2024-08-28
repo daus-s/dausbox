@@ -1,0 +1,9 @@
+{
+    "dir1": {
+        "file1.txt": "Hello, World!",
+        "subdir": {
+            "file2.txt": "Another file content",
+            "file3.txt": "More content here"
+        }
+    }
+}
