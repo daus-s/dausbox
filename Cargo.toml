@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 clib = { path = "./clib" }
 daus = { path = "./daus" }
+pilot = { path = "./pilot" }
 axum = "0.7"
 tokio = { version = "1", features = ["full"] }
 tower-http = {version = "0.5", features = ["fs"]}
