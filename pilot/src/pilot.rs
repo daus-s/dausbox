@@ -1,4 +1,5 @@
-use daus::vfs::{VirtualFileSystem, VirtualNode};
+use daus::vfsys::{VirtualFileSystem, VirtualNode};
+use daus::vpath::VirtualPath;
 
 pub struct Navi<'a> {
     pub fsys: &'a VirtualFileSystem,
@@ -14,6 +15,21 @@ impl<'a> Navi<'a> {
             path: Vec::new(),
             curr: &fsys.root,
             prev: None,
+        }
+    }
+
+    pub fn change_dir(&mut self, new_path: VirtualPath) -> Result<VirtualNode, String> {
+        if new_path.len == 0 {
+            Ok(self.curr.clone())
+        }
+        let next: String = new_path.pop().unwrap_or("".to_string());
+        if next.eq("..") {
+            match self.prev {
+                Some(_) => {
+                    self.curr = self.prev;
+                }
+                None => Err("Already in top level directory".to_string()),
+            }
         }
     }
 }
