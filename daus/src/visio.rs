@@ -1,10 +1,11 @@
-use crate::vfs::{NodeType, VirtualFileSystem, VirtualNode};
+use crate::vfsys::{NodeType, VirtualFileSystem, VirtualNode};
 use serde_json::{from_str, Map, Value};
 
 use std::collections::HashMap;
 use std::fs::{DirEntry, File};
 use std::io::{Result, Write};
 use std::path::{Path, PathBuf};
+use std::rc::{Rc, Weak};
 use std::{fs, io};
 
 pub fn load_from_file(path: &str) -> Result<VirtualFileSystem> {
@@ -14,27 +15,44 @@ pub fn load_from_file(path: &str) -> Result<VirtualFileSystem> {
         println!("{} : {}\n", k, v);
     }
 
-    fn parse_node(name: String, json_value: Value) -> VirtualNode {
+    fn parse_node(
+        name: String,
+        json_value: Value,
+        parent: &Option<Weak<VirtualNode>>,
+    ) -> Rc<VirtualNode> {
         match json_value {
-            Value::String(content) => VirtualNode {
+            Value::String(content) => Rc::new(VirtualNode {
                 name,
-                node: NodeType::File { content },
-            },
+                data: NodeType::File { content },
+                head: *parent,
+            }),
             Value::Object(map) => {
-                let mut files = HashMap::new();
-                for (k, v) in map {
-                    files.insert(k.clone(), parse_node(k, v));
-                }
-                VirtualNode {
+                let mut node = VirtualNode {
                     name,
-                    node: NodeType::Directory { files },
+                    data: NodeType::Directory {
+                        files: HashMap::new(),
+                    },
+                    head: *parent,
+                };
+
+                let mut files = HashMap::new();
+                let dickens = Some(Rc::downgrade(&Rc::new(node)));
+                for (k, v) in map {
+                    let child_node = parse_node(k.clone(), v, &dickens);
+                    files.insert(k, child_node);
                 }
+
+                println!("{:#?}", node.clone());
+
+                node.set_files(files);
+
+                Rc::new(node)
             }
             _ => panic!("Unexpected value in JSON"),
         }
     }
 
-    let root_node = parse_node("".to_string(), Value::Object(json));
+    let root_node = parse_node("".to_string(), Value::Object(json), &None);
 
     // let root_as_dir = fd2vn(root).unwrap();
     return Ok(VirtualFileSystem { root: root_node });
@@ -49,7 +67,7 @@ pub fn write_to_file(node: &VirtualNode) {
 
     let mut path: PathBuf = PathBuf::from("tfs/");
 
-    match &node.node {
+    match &node.data {
         NodeType::Directory { files } => {
             for (fname, node) in files.iter() {
                 fn maybe_make_directory(path: &PathBuf) -> std::io::Result<()> {
@@ -59,7 +77,7 @@ pub fn write_to_file(node: &VirtualNode) {
                 maybe_make_directory(&path).unwrap();
                 path.push(&fname);
 
-                match &node.node {
+                match &node.data {
                     NodeType::Directory { files: _ } => write_to_file(node),
 
                     NodeType::File { content } => match write(&path, &content) {
@@ -93,7 +111,7 @@ pub fn load_from_dir(home_dir: &PathBuf) -> Result<VirtualFileSystem> {
             ));
         }
 
-        let mut files: HashMap<String, VirtualNode> = HashMap::new();
+        let mut files: HashMap<String, Rc<VirtualNode>> = HashMap::new();
 
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
@@ -101,10 +119,13 @@ pub fn load_from_dir(home_dir: &PathBuf) -> Result<VirtualFileSystem> {
             if path.is_dir() {
                 let dir_name = entry.file_name().to_string_lossy().to_string();
                 let dir_node = visit_dirs(&path, cb).unwrap();
-                files.insert(dir_name, dir_node);
+                files.insert(dir_name, dir_node.into());
             } else {
                 let file_node = cb(&entry).unwrap();
-                files.insert(entry.file_name().to_string_lossy().to_string(), file_node);
+                files.insert(
+                    entry.file_name().to_string_lossy().to_string(),
+                    file_node.into(),
+                );
             }
         }
 
@@ -114,7 +135,8 @@ pub fn load_from_dir(home_dir: &PathBuf) -> Result<VirtualFileSystem> {
                 .unwrap_or_default()
                 .to_string_lossy()
                 .to_string(),
-            node: NodeType::Directory { files },
+            data: NodeType::Directory { files },
+            head: todo!(),
         })
     }
 
@@ -125,9 +147,10 @@ pub fn load_from_dir(home_dir: &PathBuf) -> Result<VirtualFileSystem> {
 
         Ok(VirtualNode {
             name: file.file_name().to_string_lossy().to_string(),
-            node: NodeType::File {
+            data: NodeType::File {
                 content: content_fn(&file.path()).unwrap(),
             },
+            head: todo!(),
         })
     }
 
@@ -136,7 +159,9 @@ pub fn load_from_dir(home_dir: &PathBuf) -> Result<VirtualFileSystem> {
     Ok(VirtualFileSystem {
         root: VirtualNode {
             name: "".to_string(),
-            node: root_node.node,
-        },
+            data: root_node.data,
+            head: todo!(),
+        }
+        .into(),
     })
 }

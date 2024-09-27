@@ -18,18 +18,19 @@ impl<'a> Navi<'a> {
         }
     }
 
-    pub fn change_dir(&mut self, new_path: VirtualPath) -> Result<VirtualNode, String> {
+    pub fn change_dir(&mut self, mut new_path: VirtualPath) -> Result<VirtualNode, String> {
         if new_path.len == 0 {
-            Ok(self.curr.clone())
+            return Ok(self.curr.clone());
         }
         let next: String = new_path.pop().unwrap_or("".to_string());
         if next.eq("..") {
-            match self.prev {
+            match &self.prev {
                 Some(_) => {
-                    self.curr = self.prev;
+                    self.curr = self.prev.expect("No parent directory");
                 }
-                None => Err("Already in top level directory".to_string()),
+                None => println!("Already in top-level directory"),
             }
         }
+        todo!()
     }
 }

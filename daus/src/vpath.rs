@@ -2,12 +2,16 @@ use crate::VirtualNode;
 
 pub struct VirtualPath {
     path: Vec<String>,
+    pub len: usize,
 }
 
 impl VirtualPath {
     pub fn new() -> Self {
         let path = Vec::new();
-        VirtualPath { path }
+        VirtualPath {
+            path: path.clone(),
+            len: path.len(),
+        }
     }
 
     pub fn up(&mut self) -> Result<(), String> {
@@ -21,7 +25,7 @@ impl VirtualPath {
     }
 
     pub fn down(&mut self, curr: &VirtualNode, new_dir: &String) -> Result<(), String> {
-        match &curr.node {
+        match &curr.data {
             crate::vfsys::NodeType::File { content: _ } => {
                 Err("Cannot navigate down from a file.".to_string())
             }
@@ -33,5 +37,13 @@ impl VirtualPath {
                 None => Err("Directory not found.".to_string()), //fails as could not find directory
             },
         }
+    }
+
+    pub fn pop(&mut self) -> Option<String> {
+        if self.len == 0 {
+            return None;
+        }
+        self.len = self.len - 1;
+        return self.path.pop();
     }
 }

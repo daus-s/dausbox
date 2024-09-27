@@ -1,4 +1,5 @@
-pub mod vfs;
+pub mod vfsys;
 pub mod visio;
+pub mod vpath;
 
-pub use vfs::{VirtualFileSystem, VirtualNode};
+pub use vfsys::{NodeType, VirtualFileSystem, VirtualNode};

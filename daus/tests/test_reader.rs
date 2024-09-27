@@ -2,7 +2,7 @@ mod test {
 
     use std::fs;
 
-    use daus::vfs::{NodeType, VirtualFileSystem, VirtualNode};
+    use daus::vfsys::{NodeType, VirtualFileSystem, VirtualNode};
     use daus::visio::*;
     use std::path::PathBuf;
 
@@ -11,27 +11,29 @@ mod test {
         // Define the expected node
         let foo_bar = VirtualNode {
             name: String::from("foo.bar"),
-            node: NodeType::File {
+            data: NodeType::File {
                 content: String::from("☺☻♥♦♣♠\n♫☼\n\n►◄↕‼¶§▬↨↑↓→∟↔▲▼\n123456789:;<=>?\n@ABCDEFGHIJKLMNO\nPQRSTUVWXYZ[\\]^_\n`abcdefghijklmno\npqrstuvwxyz{|}~⌂"),
-            },
+            },            
+            head: None,
         };
 
         let thisisafile_dick = VirtualNode {
             name: String::from("thisisafile.dick"),
-            node: NodeType::File {
+            data: NodeType::File {
                 content: String::from("content1content1"),
             },
+            head: None,
         };
 
         // Load node from file
         let test_vfs = load_from_file("test.json").expect("Failed to load node from file");
         println!("{:#?}", test_vfs);
 
-        if let NodeType::Directory { files } = &test_vfs.root.node {
+        if let NodeType::Directory { files } = &test_vfs.root.data {
             let test = files.get("thisisafile.dick").unwrap();
             let meme = files.get("foo.bar").unwrap();
-            assert_eq!(&foo_bar, meme);
-            assert_eq!(&thisisafile_dick, test);
+            assert_eq!(foo_bar, **meme);
+            assert_eq!(thisisafile_dick, **test);
         } else {
             panic!("Expected root node to be a Directory.");
         }
@@ -52,9 +54,9 @@ mod test {
         let foooooooooo: String = fs::read_to_string("tfs/foo.bar").unwrap();
         println!("{}", thisisafile);
         println!("{}", foooooooooo);
-        if let NodeType::Directory { files } = &tf.root.node {
+        if let NodeType::Directory { files } = &tf.root.data {
             let test = files.get("thisisafile.dick").unwrap();
-            if let NodeType::File { content } = &test.node {
+            if let NodeType::File { content } = &test.data {
                 println!("{:#?}", test);
                 assert_eq!(&thisisafile, content);
             } else {
@@ -62,7 +64,7 @@ mod test {
             }
 
             let meme = files.get("foo.bar").unwrap();
-            if let NodeType::File { content } = &meme.node {
+            if let NodeType::File { content } = &meme.data {
                 println!("{:#?}", meme);
                 assert_eq!(&foooooooooo, content);
             } else {

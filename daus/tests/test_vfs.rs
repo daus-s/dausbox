@@ -1,11 +1,11 @@
 mod test {
-    use daus::vfs::*;
+    use daus::vfsys::{NodeType, VirtualFileSystem, VirtualNode};
 
     #[test]
     fn test_vn() {
         let node = VirtualNode {
             name: String::from("file.tit"),
-            node: NodeType::File {
+            data: NodeType::File {
                 content: String::from(
                     "☺☻♥♦♣♠\n\
                                    ♫☼\n\
@@ -17,13 +17,14 @@ mod test {
                                    pqrstuvwxyz{|}~⌂",
                 ),
             },
+            head: None,
         };
 
         // Assert that the name matches
         assert_eq!(node.name, "file.tit");
 
         // Assert that the content matches
-        if let NodeType::File { content } = &node.node {
+        if let NodeType::File { content } = &node.data {
             assert_eq!(
                 content,
                 "☺☻♥♦♣♠\n\

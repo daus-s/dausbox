@@ -10,7 +10,7 @@ use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 use tower_http::services::ServeDir;
 
-use daus::vfs;
+use daus::vfsys;
 
 #[tokio::main]
 async fn main() {
