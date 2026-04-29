@@ -4,20 +4,19 @@ import { useEffect, useRef, useState } from "react";
 
 import Cursor from "./Cursor";
 
-import { evaluate } from "./interpreter/interpreter";
+import DausBox from "./dosh/dausbox";
 
 function Terminal() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const [history, setHistory] = useState<{ expr: string; res: string }[]>([]);
+  const [box, setBox] = useState(new DausBox());
   const [buffer, setBuffer] = useState("");
 
   //on enter pass to interpreter and add to history
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      const output = evaluate(buffer);
-      setHistory([...history, { expr: buffer, res: output }]);
+      box.execute(buffer);
       setBuffer("");
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     } else if (event.key === "Backspace") {
@@ -33,18 +32,36 @@ function Terminal() {
 
   return (
     <div className="terminal">
-      {history.map(({ expr, res }, index) => (
+      {box.get_history().map(({ input, output }, index) => (
         <>
           <p key={2 * index}>
-            {"> "}
-            {expr}
+            {"dausbox> "}
+            {input}
           </p>
-          {res && <p key={2 * index + 1}> {res}</p>}
+          {"        "}
+          {output.result.length > 0 && (
+            <p
+              style={{
+                color:
+                  output.code === 0
+                    ? "blue"
+                    : output.code === -1
+                      ? "yellow"
+                      : "red",
+
+                fontWeight: output.code === -1 ? "bold" : "normal",
+              }}
+              key={2 * index + 1}
+            >
+              {"        "}
+              {output.result}
+            </p>
+          )}
         </>
       ))}
 
       <p className="buffer">
-        {"> "}
+        {"dausbox> "}
         {buffer}
         <Cursor />
       </p>
