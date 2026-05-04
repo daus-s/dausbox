@@ -9,14 +9,21 @@ import DausBox from "./dosh/dausbox";
 function Terminal() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const [box, setBox] = useState(new DausBox());
+  const dausbox = useRef(new DausBox());
   const [buffer, setBuffer] = useState("");
+  const [history, setHistory] = useState<
+    { input: string; output: { code: number; result: string } }[]
+  >([]);
 
   //on enter pass to interpreter and add to history
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      box.execute(buffer);
+      dausbox.current.execute(buffer);
+      setHistory([
+        ...history,
+        dausbox.current.get_history()[dausbox.current.get_history().length - 1],
+      ]);
       setBuffer("");
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     } else if (event.key === "Backspace") {
@@ -32,7 +39,7 @@ function Terminal() {
 
   return (
     <div className="terminal">
-      {box.get_history().map(({ input, output }, index) => (
+      {history.map(({ input, output }, index) => (
         <>
           <p key={2 * index}>
             {"dausbox> "}

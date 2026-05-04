@@ -1,8 +1,268 @@
+import type { Token, TokenType } from "./types";
+
 class Lexer {
+  private source: string = "";
+
+  private tokens: Token[] = [];
+
+  private idx: number = 0;
+  private line: number = 1;
+  private col: number = 0;
+
+  private indentStack: number[] = [0]; // track indentation levels
+  private atLineStart = true;
+
   constructor() {}
 
-  tokenize(input: string): string[] {
-    return input.split(" ");
+  tokenize(source: string): Token[] {
+    this.source = source;
+    this.tokens = [];
+    this.idx = 0;
+    this.line = 1;
+    this.col = 0;
+    this.indentStack = [0];
+    this.atLineStart = true;
+
+    while (!this.atEnd()) {
+      if (this.atLineStart) {
+        this.atLineStart = false;
+        this.getIndentation();
+      }
+
+      const char = this.curr();
+
+      if (char === "#") {
+        while (this.curr() !== "\n" && !this.atEnd()) {
+          this.step();
+        }
+        continue;
+      }
+
+      if (char === "\n") {
+        this.pushToken("", "NEWLINE");
+        this.step();
+        ++this.line;
+        this.col = 0;
+        this.atLineStart = true;
+        continue;
+      }
+
+      //ignore whitespace
+      if (/\s/.test(char)) {
+        this.step();
+        continue;
+      }
+
+      if (char === "'" || char === '"') {
+        this.tokenizeLiteral();
+        continue;
+      }
+
+      if (/\d/.test(char)) {
+        this.tokenizeNumber();
+        continue;
+      }
+
+      this.step();
+    }
+    return this.tokens;
+  }
+
+  private step(): void {
+    this.idx++;
+    this.col++;
+  }
+
+  private curr(): string {
+    return this.source[this.idx];
+  }
+
+  private next(): string | null {
+    return this.idx + 1 < this.source.length ? this.source[this.idx + 1] : null;
+  }
+
+  private pushToken(value: string = "", type: TokenType): void {
+    this.tokens.push({ type, value, line: this.line, col: this.col });
+  }
+
+  private atEnd(): boolean {
+    return this.idx >= this.source.length;
+  }
+
+  private getIndentation(): void {
+    if (this.atEnd() || this.curr() === "\n") {
+      return;
+    }
+
+    let spaces = 0;
+    while (!this.atEnd() && this.curr() === " ") {
+      ++spaces;
+      this.step();
+    }
+
+    if (this.curr() === "\n" || this.curr() === "#") {
+      return;
+    }
+
+    const blockIndent = this.indentStack[0];
+
+    if (spaces > blockIndent) {
+      this.indentStack.unshift(spaces);
+      this.pushToken("", "INDENT");
+    } else if (spaces < blockIndent) {
+      while (this.indentStack.length > 1 && spaces < this.indentStack[0]) {
+        this.indentStack.shift();
+        this.pushToken("", "DEDENT");
+      }
+
+      if (spaces !== this.indentStack[0]) {
+        throw new Error(
+          `Indentation error: expected ${this.indentStack[0]} spaces, got ${spaces} at line ${this.line}`,
+        );
+      }
+    }
+  }
+
+  private tokenizeLiteral(): void {
+    const quote = this.curr();
+    this.step();
+
+    let value = "";
+    while (!this.atEnd() && this.curr() !== quote) {
+      if (this.curr() === "\\") {
+        this.step();
+        switch (this.curr()) {
+          case "n":
+            value += "\n";
+            break;
+          case "t":
+            value += "\t";
+            break;
+          case "r":
+            value += "\r";
+            break;
+          case "b":
+            value += "\b";
+            break;
+          case "f":
+            value += "\f";
+            break;
+          case "\\":
+            value += "\\";
+            break;
+          case '"':
+            value += '"';
+            break;
+          case "'":
+            value += "'";
+            break;
+          default:
+            throw new Error(
+              `Invalid escape sequence \\${this.curr()} at line ${this.line}`,
+            );
+        }
+        this.step();
+      } else {
+        value += this.curr();
+        this.step();
+      }
+    }
+
+    if (this.atEnd()) {
+      throw new Error(`Unterminated string at line ${this.line}`);
+    }
+
+    this.step();
+    this.pushToken(value, "STRING");
+  }
+
+  private tokenizeNumber(): void {
+    let value = "";
+
+    while (!this.atEnd() && /\d/.test(this.curr())) {
+      value += this.curr();
+      this.step();
+    }
+
+    if (!this.atEnd() && this.curr() == ".") {
+      value += ".";
+      this.step();
+      while (!this.atEnd() && /\d/.test(this.curr())) {
+        value += this.curr();
+        this.step();
+      }
+    }
+    this.pushToken(value, "NUMBER");
+  }
+
+  private tokenizeOperator(): void {
+    const char1 = this.curr();
+    const char2 = this.next();
+
+    if (char1 === "=" && char2 === "=") {
+      this.step();
+      this.step();
+      this.pushToken("==", "EQUAL_EQUAL");
+      return;
+    } else if (char1 === "!" && char2 === "=") {
+      this.step();
+      this.step();
+      this.pushToken("!=", "BANG_EQUAL");
+      return;
+    } else if (char1 == "<" && char2 == "=") {
+      this.step();
+      this.step();
+      this.pushToken("<=", "LESS_EQUAL");
+      return;
+    } else if (char1 == ">" && char2 == "=") {
+      this.step();
+      this.step();
+      this.pushToken("<=", "GREATER_EQUAL");
+      return;
+    } else if (char1 == "*" && char2 == "*") {
+      this.step();
+      this.step();
+      this.pushToken("**", "POWER");
+      return;
+    } else if (char1 == "/" && char2 == "/") {
+      this.step();
+      this.step();
+      this.pushToken("//", "SLASH_SLASH");
+      return;
+    } else if (char1 == "-" && char2 == ">") {
+      this.step();
+      this.step();
+      this.pushToken("->", "ARROW");
+      return;
+    }
+
+    const operatorMap: Record<string, TokenType> = {
+      "+": "PLUS",
+      "-": "MINUS",
+      "*": "STAR",
+      "/": "SLASH",
+      "%": "PERCENT",
+      "=": "EQUAL",
+      "<": "LESS",
+      ">": "GREATER",
+      "(": "LEFT_PAREN",
+      ")": "RIGHT_PAREN",
+      "[": "LEFT_BRACKET",
+      "]": "RIGHT_BRACKET",
+      "{": "LEFT_BRACE",
+      "}": "RIGHT_BRACE",
+      ":": "COLON",
+      ",": "COMMA",
+      ".": "DOT",
+    };
+
+    if (char1 in operatorMap) {
+      this.pushToken(char1, operatorMap[char1]);
+      this.step();
+      return;
+    }
+
+    this.step();
   }
 }
 
