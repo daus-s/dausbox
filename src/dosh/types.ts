@@ -1,0 +1,53 @@
+export type TokenType =
+  | "NUMBER"
+  | "STRING"
+  | "NAME"
+  | "PLUS"
+  | "MINUS"
+  | "STAR"
+  | "SLASH"
+  | "PERCENT"
+  | "POWER"
+  | "EQUAL"
+  | "EQUAL_EQUAL"
+  | "BANG_EQUAL"
+  | "LESS"
+  | "LESS_EQUAL"
+  | "GREATER"
+  | "GREATER_EQUAL"
+  | "LEFT_PAREN"
+  | "RIGHT_PAREN"
+  | "LEFT_BRACKET"
+  | "RIGHT_BRACKET"
+  | "LEFT_BRACE"
+  | "RIGHT_BRACE"
+  | "COLON"
+  | "COMMA"
+  | "DOT"
+  | "INDENT"
+  | "DEDENT"
+  | "NEWLINE"
+  | "IF"
+  | "ELIF"
+  | "ELSE"
+  | "WHILE"
+  | "FOR"
+  | "IN"
+  | "DEF"
+  | "RETURN"
+  | "BREAK"
+  | "CONTINUE"
+  | "AND"
+  | "OR"
+  | "NOT"
+  | "TRUE"
+  | "FALSE"
+  | "NONE"
+  | "EOF";
+
+export interface Token {
+  type: TokenType;
+  value: string;
+  line: number;
+  col: number;
+}
