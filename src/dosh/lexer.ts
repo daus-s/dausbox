@@ -53,9 +53,12 @@ class Lexer {
       } else {
         this.tokenizeOperator();
       }
-
-      this.step();
     }
+    while (this.indentStack.length > 1) {
+      this.pushToken("", "DEDENT");
+      this.indentStack.pop();
+    }
+
     return this.tokens;
   }
 
