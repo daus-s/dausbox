@@ -175,6 +175,29 @@ class Lexer {
       this.step();
     }
 
+    const keywords: Record<string, TokenType> = {
+      if: "IF",
+      elif: "ELIF",
+      else: "ELSE",
+      while: "WHILE",
+      for: "FOR",
+      in: "IN",
+      def: "DEF",
+      return: "RETURN",
+      break: "BREAK",
+      continue: "CONTINUE",
+      and: "AND",
+      or: "OR",
+      not: "NOT",
+      True: "TRUE",
+      False: "FALSE",
+      None: "NONE",
+    };
+
+    if (value in keywords) {
+      this.pushToken(value, keywords[value]);
+      return;
+    }
     this.pushToken(value, "NAME");
   }
 
