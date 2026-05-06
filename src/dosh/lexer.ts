@@ -173,7 +173,7 @@ class Lexer {
   private tokenizeIdentifier(): void {
     let value = "";
 
-    while (!this.atEnd() && /[a-zA-Z_]/.test(this.curr())) {
+    while (!this.atEnd() && /[a-zA-Z0-9_]/.test(this.curr())) {
       value += this.curr();
       this.step();
     }
@@ -245,7 +245,7 @@ class Lexer {
     } else if (char1 == ">" && char2 == "=") {
       this.step();
       this.step();
-      this.pushToken("<=", "GREATER_EQUAL");
+      this.pushToken(">=", "GREATER_EQUAL");
       return;
     } else if (char1 == "*" && char2 == "*") {
       this.step();

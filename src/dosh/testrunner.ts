@@ -5,10 +5,10 @@ class TestRunner {
   test(name: string, fn: () => void): void {
     try {
       fn();
-      console.log(`✓ ${name}`);
+      console.log(`\x1b[32m✓\x1b[0m ${name}`);
       this.passed++;
     } catch (error) {
-      console.error(`✗ ${name}`);
+      console.error(`\x1b[31m✗\x1b[0m ${name}`);
       console.error(`  ${error}`);
       this.failed++;
     }
