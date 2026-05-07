@@ -1,7 +1,7 @@
 export type TokenType =
   | "NUMBER"
   | "STRING"
-  | "NAME"
+  | "IDENTIFIER"
   | "PLUS"
   | "MINUS"
   | "STAR"

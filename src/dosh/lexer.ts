@@ -27,6 +27,7 @@ class Lexer {
       if (this.atLineStart) {
         this.atLineStart = false;
         this.getIndentation();
+        continue;
       }
 
       const char = this.curr();
@@ -94,7 +95,7 @@ class Lexer {
       this.step();
     }
 
-    if (this.curr() === "\n" || this.curr() === "#") {
+    if (this.atEnd() || this.curr() === "\n" || this.curr() === "#") {
       return;
     }
 
@@ -201,7 +202,7 @@ class Lexer {
       this.pushToken(value, keywords[value]);
       return;
     }
-    this.pushToken(value, "NAME");
+    this.pushToken(value, "IDENTIFIER");
   }
 
   private tokenizeNumber(): void {
