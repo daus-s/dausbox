@@ -1,4 +1,4 @@
-import type { Token, TokenType } from "./types";
+import type { Token, TokenType } from "./token";
 
 class Lexer {
   private source: string = "";
