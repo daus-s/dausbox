@@ -6,7 +6,7 @@ const runner = new TestRunner();
 runner.test("tokenize assignment", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("x = 67");
-  runner.assertEqual(tokens.length, 3);
+  runner.assertEqual(tokens.length - 1, 3);
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[0].value, "x");
   runner.assertEqual(tokens[1].type, "EQUAL");
@@ -18,7 +18,7 @@ runner.test("tokenize assignment", () => {
 runner.test("tokenize number", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("42");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "NUMBER");
   runner.assertEqual(tokens[0].value, "42");
 });
@@ -26,7 +26,7 @@ runner.test("tokenize number", () => {
 runner.test("tokenize string", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("'hello'");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "STRING");
   runner.assertEqual(tokens[0].value, "hello");
 });
@@ -35,7 +35,7 @@ runner.test("tokenize function", () => {
   const lexer = new Lexer();
   const code = "def func():\n    print('hello world')";
   const tokens = lexer.tokenize(code);
-  runner.assertEqual(tokens.length, 12);
+  runner.assertEqual(tokens.length - 1, 12);
   runner.assertEqual(tokens[0].type, "DEF");
   runner.assertEqual(tokens[0].value, "def");
   runner.assertEqual(tokens[1].type, "IDENTIFIER");
@@ -66,7 +66,7 @@ runner.test("tokenize elif", () => {
   const code =
     "if i // 2 == 0:\n   i = i / 2\nelif i // 2 == 1:\n    i = 3*i + 1";
   const tokens = lexer.tokenize(code);
-  runner.assertEqual(tokens.length, 33);
+  runner.assertEqual(tokens.length - 1, 33);
   runner.assertEqual(tokens[0].type, "IF");
   runner.assertEqual(tokens[0].value, "if");
   runner.assertEqual(tokens[1].type, "IDENTIFIER");
@@ -134,7 +134,7 @@ runner.test("bug: number tokenization leaves last digit unconsumed", () => {
   const tokens = lexer.tokenize("123");
   // tokenizeNumber() calls step() inside the while loop but then step() is called again in main loop
   // This should be 1 token but might be 2 or have wrong value
-  runner.assertEqual(tokens.length, 1, "Should have exactly 1 token");
+  runner.assertEqual(tokens.length - 1, 1, "Should have exactly 1 token");
   runner.assertEqual(tokens[0].type, "NUMBER");
   runner.assertEqual(tokens[0].value, "123");
 });
@@ -143,7 +143,7 @@ runner.test("bug: number tokenization leaves last digit unconsumed", () => {
 runner.test("tokenize float", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("3.14");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "NUMBER");
   runner.assertEqual(tokens[0].value, "3.14");
 });
@@ -151,7 +151,7 @@ runner.test("tokenize float", () => {
 runner.test("tokenize float with trailing dot", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("3.");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "NUMBER");
   runner.assertEqual(tokens[0].value, "3.");
 });
@@ -161,7 +161,7 @@ runner.test("tokenize identifier with numbers", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("var42");
   // tokenizeIdentifier only matches [a-zA-Z_], not digits!
-  runner.assertEqual(tokens.length, 1, "Should be 1 token, not var + 42");
+  runner.assertEqual(tokens.length - 1, 1, "Should be 1 token, not var + 42");
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[0].value, "var42");
 });
@@ -169,7 +169,7 @@ runner.test("tokenize identifier with numbers", () => {
 runner.test("tokenize identifier with underscore", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("_private_var");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[0].value, "_private_var");
 });
@@ -178,7 +178,7 @@ runner.test("tokenize identifier with underscore", () => {
 runner.test("bug: greater_equal has wrong token value", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize(">=");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "GREATER_EQUAL");
   // BUG: pushToken called with "<=" instead of ">="
   runner.assertEqual(tokens[0].value, ">=", "Should be >= not <=");
@@ -191,7 +191,7 @@ runner.test("tokenizeOperator doesn't consume operator", () => {
   // Single character operator consumes char but the logic at end calls step() again
   // Wait, looking at code: char1 in operatorMap -> pushToken -> step() -> return
   // Then main loop calls step() again. So we skip the next char!
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "PLUS");
   runner.assertEqual(tokens[0].value, "+");
 });
@@ -203,7 +203,7 @@ runner.test("tokenize unrecognized operator", () => {
   // Unknown operator: just calls step() and returns
   // The '@' gets skipped
   runner.assertEqual(
-    tokens.length,
+    tokens.length - 1,
     0,
     "Unrecognized operator @ is silently consumed",
   );
@@ -213,7 +213,7 @@ runner.test("tokenize unrecognized operator", () => {
 runner.test("tokenize multiple operators in sequence", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("a+b");
-  runner.assertEqual(tokens.length, 3);
+  runner.assertEqual(tokens.length - 1, 3);
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[0].value, "a");
   runner.assertEqual(tokens[1].type, "PLUS");
@@ -226,7 +226,7 @@ runner.test("tokenize multiple operators in sequence", () => {
 runner.test("tokenize equality operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("==");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "EQUAL_EQUAL");
   runner.assertEqual(tokens[0].value, "==");
 });
@@ -234,7 +234,7 @@ runner.test("tokenize equality operator", () => {
 runner.test("tokenize not-equal operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("!=");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "BANG_EQUAL");
   runner.assertEqual(tokens[0].value, "!=");
 });
@@ -242,7 +242,7 @@ runner.test("tokenize not-equal operator", () => {
 runner.test("tokenize power operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("**");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "POWER");
   runner.assertEqual(tokens[0].value, "**");
 });
@@ -250,7 +250,7 @@ runner.test("tokenize power operator", () => {
 runner.test("tokenize floor divide operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("//");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "SLASH_SLASH");
   runner.assertEqual(tokens[0].value, "//");
 });
@@ -260,7 +260,7 @@ runner.test("multiple single operators in sequence", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("+-*/");
   // If step() is being called twice for single-char operators, chars will be skipped
-  runner.assertEqual(tokens.length, 4);
+  runner.assertEqual(tokens.length - 1, 4);
   runner.assertEqual(tokens[0].type, "PLUS");
   runner.assertEqual(tokens[1].type, "MINUS");
   runner.assertEqual(tokens[2].type, "STAR");
@@ -271,7 +271,7 @@ runner.test("multiple single operators in sequence", () => {
 runner.test("tokenize with spaces between tokens", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("a + b");
-  runner.assertEqual(tokens.length, 3);
+  runner.assertEqual(tokens.length - 1, 3);
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[1].type, "PLUS");
   runner.assertEqual(tokens[2].type, "IDENTIFIER");
@@ -280,7 +280,7 @@ runner.test("tokenize with spaces between tokens", () => {
 runner.test("tokenize with tabs", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("a\t+\tb");
-  runner.assertEqual(tokens.length, 3);
+  runner.assertEqual(tokens.length - 1, 3);
 });
 
 // === BUG 11: NEWLINE AND INDENTATION TRACKING ===
@@ -307,7 +307,7 @@ runner.test("skip comments", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("x = 5  # this is a comment");
   // Comment should be skipped, no tokens after the 5
-  runner.assertEqual(tokens.length, 3); // NAME, EQUAL, NUMBER, NEWLINE (if any)
+  runner.assertEqual(tokens.length - 1, 3); // NAME, EQUAL, NUMBER, NEWLINE (if any)
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[1].type, "EQUAL");
   runner.assertEqual(tokens[2].type, "NUMBER");
@@ -325,7 +325,7 @@ runner.test("comment at start of line", () => {
 runner.test("string with escaped quotes", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize('"\\"hello\\""');
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "STRING");
   runner.assertEqual(tokens[0].value, '"hello"');
 });
@@ -333,7 +333,7 @@ runner.test("string with escaped quotes", () => {
 runner.test("string with escaped newline", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize('"hello\\nworld"');
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "STRING");
   runner.assertEqual(tokens[0].value, "hello\nworld");
 });
@@ -341,7 +341,7 @@ runner.test("string with escaped newline", () => {
 runner.test("string with mixed escape sequences", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize('"\\t\\n\\r"');
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].value, "\t\n\r");
 });
 
@@ -379,7 +379,7 @@ runner.test("all keywords tokenize correctly", () => {
   for (const kw of keywords) {
     const lexer = new Lexer();
     const tokens = lexer.tokenize(kw);
-    runner.assertEqual(tokens.length, 1, `Keyword ${kw} should be 1 token`);
+    runner.assertEqual(tokens.length - 1, 1, `Keyword ${kw} should be 1 token`);
     runner.assertEqual(tokens[0].value, kw);
   }
 });
@@ -388,14 +388,14 @@ runner.test("all keywords tokenize correctly", () => {
 runner.test("less than operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("<");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "LESS");
 });
 
 runner.test("less or equal operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("<=");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "LESS_EQUAL");
   runner.assertEqual(tokens[0].value, "<=");
 });
@@ -403,14 +403,14 @@ runner.test("less or equal operator", () => {
 runner.test("greater than operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize(">");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "GREATER");
 });
 
 runner.test("comparison chain", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("a<b");
-  runner.assertEqual(tokens.length, 3);
+  runner.assertEqual(tokens.length - 1, 3);
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[1].type, "LESS");
   runner.assertEqual(tokens[2].type, "IDENTIFIER");
@@ -442,13 +442,13 @@ runner.test("complex math expression", () => {
 runner.test("empty input", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("");
-  runner.assertEqual(tokens.length, 0);
+  runner.assertEqual(tokens.length - 1, 0);
 });
 
 runner.test("only whitespace", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("   ");
-  runner.assertEqual(tokens.length, 0);
+  runner.assertEqual(tokens.length - 1, 0);
 });
 
 runner.test("only newline", () => {
@@ -465,7 +465,7 @@ runner.test("only newline", () => {
 runner.test("arrow operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("->");
-  runner.assertEqual(tokens.length, 1);
+  runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "ARROW");
   runner.assertEqual(tokens[0].value, "->");
 });
@@ -473,7 +473,7 @@ runner.test("arrow operator", () => {
 runner.test("dot operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("a.b");
-  runner.assertEqual(tokens.length, 3);
+  runner.assertEqual(tokens.length - 1, 3);
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[1].type, "DOT");
   runner.assertEqual(tokens[2].type, "IDENTIFIER");
@@ -486,7 +486,7 @@ runner.test("step called after tokenizeOperator for single char", () => {
   // Then main loop calls step() AGAIN - this skips the next character!
   const tokens = lexer.tokenize("a+b");
   // If double-stepping happens, we might lose 'b'
-  runner.assertEqual(tokens.length, 3);
+  runner.assertEqual(tokens.length - 1, 3);
   runner.assertEqual(tokens[2].value, "b");
 });
 
@@ -494,7 +494,7 @@ runner.test("step called after tokenizeOperator for single char", () => {
 runner.test("tokenizeNumber double stepping", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("12 34");
-  runner.assertEqual(tokens.length, 2);
+  runner.assertEqual(tokens.length - 1, 2);
   runner.assertEqual(tokens[0].value, "12");
   runner.assertEqual(tokens[1].value, "34");
 });
@@ -502,7 +502,7 @@ runner.test("tokenizeNumber double stepping", () => {
 runner.test("identifier followed by operator", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("abc+");
-  runner.assertEqual(tokens.length, 2);
+  runner.assertEqual(tokens.length - 1, 2);
   runner.assertEqual(tokens[0].type, "IDENTIFIER");
   runner.assertEqual(tokens[0].value, "abc");
   runner.assertEqual(tokens[1].type, "PLUS");
@@ -523,7 +523,7 @@ runner.test("unmatched operator just steps and returns", () => {
 runner.test("series of known operators", () => {
   const lexer = new Lexer();
   const tokens = lexer.tokenize("()[]{}");
-  runner.assertEqual(tokens.length, 6);
+  runner.assertEqual(tokens.length - 1, 6);
   runner.assertEqual(tokens[0].type, "LEFT_PAREN");
   runner.assertEqual(tokens[1].type, "RIGHT_PAREN");
   runner.assertEqual(tokens[2].type, "LEFT_BRACKET");

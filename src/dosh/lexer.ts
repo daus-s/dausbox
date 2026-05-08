@@ -60,6 +60,8 @@ class Lexer {
       this.indentStack.pop();
     }
 
+    this.pushToken("", "EOF");
+
     return this.tokens;
   }
 
