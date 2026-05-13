@@ -22,7 +22,9 @@ class TestRunner {
 
   assertEqual(actual: any, expected: any, message?: string): void {
     if (actual !== expected) {
-      throw new Error(`${message || ""} Expected ${expected}, got ${actual}`);
+      throw new Error(
+        `${message || ""} Expected ${fmt(expected)}, got ${fmt(actual)}`,
+      );
     }
   }
 
@@ -30,6 +32,10 @@ class TestRunner {
     console.log(`\n${this.passed} passed, ${this.failed} failed`);
     process.exit(this.failed > 0 ? 1 : 0);
   }
+}
+
+function fmt(value: any): string {
+  return `${typeof value === "object" ? JSON.stringify(value) : value}`;
 }
 
 export { TestRunner };
