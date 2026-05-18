@@ -1,4 +1,4 @@
-import type { Expr } from "./expr";
+import type { Assign, Expr } from "./expr";
 import type { Module, Stmt } from "./stmt";
 import type { Token } from "./token";
 
@@ -35,7 +35,6 @@ class Parser {
   }
 
   private check(type: string): boolean {
-    console.log(this.peek(), type);
     return this.peek().type === type;
   }
 
@@ -101,8 +100,6 @@ class Parser {
   private expressionStatement(): Stmt | null {
     const expr = this.expr();
 
-    console.log(expr);
-
     if (expr.type === "BinOp" && expr.op === "=") {
       if (expr.left.type !== "Name")
         throw new Error("Invalid assignment target.");
@@ -124,7 +121,7 @@ class Parser {
     if (this.match("EQUAL")) {
       const right = this.assignExpr();
 
-      return { type: "BinOp", op: "=", left, right };
+      return { type: "Assign", target: left, value: right } as Assign;
     }
 
     return left;
@@ -164,7 +161,10 @@ class Parser {
   private compExpr(): Expr {
     const left = this.addExpr();
 
-    if (
+    const ops = new Array<string>();
+    const comparators = new Array<Expr>();
+
+    while (
       this.match(
         "EQUAL_EQUAL",
         "BANG_EQUAL",
@@ -174,17 +174,32 @@ class Parser {
         "GREATER_EQUAL",
       )
     ) {
-      const op = this.prev().value as string;
-      const right = this.addExpr();
-      return {
-        type: "Compare",
-        left,
-        ops: [op],
-        comparators: [right],
-      };
+      switch (this.prev().type) {
+        case "EQUAL_EQUAL":
+          ops.push("==");
+          break;
+        case "BANG_EQUAL":
+          ops.push("!=");
+          break;
+        case "LESS":
+          ops.push("<");
+          break;
+        case "LESS_EQUAL":
+          ops.push("<=");
+          break;
+        case "GREATER":
+          ops.push(">");
+          break;
+        case "GREATER_EQUAL":
+          ops.push(">=");
+          break;
+      }
+      comparators.push(this.addExpr());
     }
 
-    return left;
+    if (ops.length === 0) return left;
+
+    return { type: "Compare", left, ops, comparators };
   }
 
   private addExpr(): Expr {
@@ -214,7 +229,7 @@ class Parser {
   private powExpr(): Expr {
     const left = this.unaryExpr();
 
-    if (this.match("POW")) {
+    if (this.match("POWER")) {
       const right = this.powExpr();
       return { type: "BinOp", op: "**", left, right };
     }
@@ -260,8 +275,19 @@ class Parser {
 
   private primaryExpr(): Expr {
     if (this.match("NUMBER", "STRING", "TRUE", "FALSE", "NONE")) {
-      return { type: "Constant", value: this.prev().value };
-    } else if (this.match("NAME")) {
+      switch (this.prev().type) {
+        case "TRUE":
+          return { type: "Constant", value: true };
+        case "FALSE":
+          return { type: "Constant", value: false };
+        case "NONE":
+          return { type: "Constant", value: null };
+        case "NUMBER":
+          return { type: "Constant", value: Number(this.prev().value) };
+        case "STRING":
+          return { type: "Constant", value: this.prev().value };
+      }
+    } else if (this.match("IDENTIFIER")) {
       return { type: "Name", id: this.prev().value as string };
     } else if (this.match("LEFT_PAREN")) {
       const expr = this.expr();
@@ -280,8 +306,12 @@ class Parser {
       return { type: "Dict", keys, values };
     } else if (this.match("LEFT_BRACKET")) {
       const elts: Expr[] = [];
-      while (!this.match("RIGHT_BRACKET")) {
+      while (true) {
         elts.push(this.expr());
+
+        if (this.match("RIGHT_BRACKET")) break;
+
+        this.consume("COMMA", "Expected ',' or ']' after element in list");
       }
       return { type: "List", elts };
     }

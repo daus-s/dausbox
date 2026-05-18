@@ -1,6 +1,7 @@
 export type Expr =
   | Constant
   | Name
+  | Assign
   | BinOp
   | UnaryOp
   | Compare
@@ -18,6 +19,12 @@ export interface Constant {
 export interface Name {
   type: "Name";
   id: string;
+}
+
+export interface Assign {
+  type: "Assign";
+  target: Name;
+  value: Expr;
 }
 
 export interface BinOp {
