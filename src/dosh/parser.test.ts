@@ -363,20 +363,22 @@ runner.test("parse right-associative assignment", () => {
   const ast = parse("x = y = 5");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0];
-  console.log(JSON.stringify(stmt, null, 2));
   runner.assertEqual(stmt.value.type, "Assign");
-  console.log("value type good");
-  runner.assertEqual(stmt.target.id, "x");
-  console.log("outer target id good");
-  console.log(stmt.value.value.type);
+  runner.assertEqual(stmt.value.target.type, "Name");
   runner.assertEqual(stmt.value.value.type, "Assign");
-  console.log("inner value expr type good");
   runner.assertEqual(stmt.value.value.target.id, "y");
-  console.log("inner target id good");
   runner.assertEqual(stmt.value.value.value.type, "Constant");
-  console.log("inner value type good");
   runner.assertEqual(stmt.value.value.value.value, 5);
-  console.log("inner value value good");
+});
+
+runner.test("fail to parse non identifier assignment", () => {
+  let thrown = false;
+  try {
+    parse("1 = 2");
+  } catch {
+    thrown = true;
+  }
+  runner.assertEqual(thrown, true);
 });
 
 // ============================================================

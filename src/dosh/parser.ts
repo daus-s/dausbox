@@ -100,12 +100,6 @@ class Parser {
   private expressionStatement(): Stmt | null {
     const expr = this.expr();
 
-    if (expr.type === "BinOp" && expr.op === "=") {
-      if (expr.left.type !== "Name")
-        throw new Error("Invalid assignment target.");
-      return { type: "Assign", target: expr.left, value: expr.right };
-    }
-
     if (this.match("NEWLINE")) this.step();
 
     return { type: "Expr", value: expr };
@@ -119,6 +113,8 @@ class Parser {
     const left = this.orExpr();
 
     if (this.match("EQUAL")) {
+      if (left.type !== "Name") throw new Error("Invalid assignment target.");
+
       const right = this.assignExpr();
 
       return { type: "Assign", target: left, value: right } as Assign;
