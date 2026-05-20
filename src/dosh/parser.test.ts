@@ -389,26 +389,82 @@ runner.test("parse function call with no args", () => {
   const ast = parse("foo()");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0];
-  runner.assertEqual(stmt.type, "Call");
-  runner.assertEqual(stmt.func.id, "foo");
-  runner.assertEqual(stmt.args.length, 0);
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Call");
+  runner.assertEqual(stmt.value.func.id, "foo");
+  runner.assertEqual(stmt.value.args.length, 0);
 });
 
 runner.test("parse function call with one arg", () => {
-  throw new Error("not yet implemented");
+  const ast = parse("print(1)");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Call");
+  runner.assertEqual(stmt.value.func.id, "print");
+  runner.assertEqual(stmt.value.args.length, 1);
 });
 
 runner.test("parse function call with multiple args", () => {
-  throw new Error("not yet implemented");
+  const ast = parse("foo(1, 2, 3)");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Call");
+  runner.assertEqual(stmt.value.func.id, "foo");
+  runner.assertEqual(stmt.value.args.length, 3);
 });
 
 runner.test("parse subscript", () => {
-  throw new Error("not yet implemented");
+  const ast = parse("foo[0]");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Subscript");
+  runner.assertEqual(stmt.value.value.id, "foo");
+  runner.assertEqual(stmt.value.slice.type, "Constant");
+  runner.assertEqual(stmt.value.slice.value, 0);
+});
+
+runner.test("parse chained subscripts", () => {
+  const ast = parse("foo[0][1]");
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Subscript");
+  runner.assertEqual(stmt.value.value.type, "Subscript");
+  runner.assertEqual(stmt.value.value.value.id, "foo");
+  runner.assertEqual(stmt.value.value.slice.type, "Constant");
+  runner.assertEqual(stmt.value.value.slice.value, 0);
+  runner.assertEqual(stmt.value.slice.type, "Constant");
+  runner.assertEqual(stmt.value.slice.value, 1);
 });
 
 runner.test("parse chained calls", () => {
   // foo()[0].bar() - complex, but tests postfixExpr loop
-  throw new Error("not yet implemented");
+  const ast = parse("foo()[0]");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Subscript");
+  runner.assertEqual(stmt.value.value.type, "Call");
+  runner.assertEqual(stmt.value.value.func.id, "foo");
+  runner.assertEqual(stmt.value.value.args.length, 0);
+  runner.assertEqual(stmt.value.slice.type, "Constant");
+  runner.assertEqual(stmt.value.slice.value, 0);
+});
+
+runner.test("parse chained calls", () => {
+  // foo()[0].bar() - complex, but tests postfixExpr loop
+  const ast = parse("foo[0](0)");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Call");
+  runner.assertEqual(stmt.value.func.type, "Subscript");
+  runner.assertEqual(stmt.value.func.value.id, "foo");
+  runner.assertEqual(stmt.value.args.length, 1);
+  runner.assertEqual(stmt.value.args[0].type, "Constant");
+  runner.assertEqual(stmt.value.args[0].value, 0);
 });
 
 runner.report();

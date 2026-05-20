@@ -248,21 +248,29 @@ class Parser {
   }
 
   private postfixExpr(): Expr {
-    const expr = this.primaryExpr();
+    let expr = this.primaryExpr();
 
-    while (this.match("LEFT_PAREN", "LEFT_BRACKET")) {
+    while (this.check("LEFT_PAREN") || this.check("LEFT_BRACKET")) {
       if (this.match("LEFT_PAREN")) {
         const args: Expr[] = [];
 
         while (!this.match("RIGHT_PAREN")) {
           args.push(this.expr());
+
+          if (this.match("RIGHT_PAREN")) {
+            break;
+          } else if (this.match("COMMA")) {
+            continue;
+          } else {
+            throw new Error("Expected ',' or ')'");
+          }
         }
 
-        return { type: "Call", func: expr, args };
+        expr = { type: "Call", func: expr, args };
       } else if (this.match("LEFT_BRACKET")) {
         const index = this.expr();
         this.consume("RIGHT_BRACKET", "Unclosed delimiter '[', expected ']'");
-        return { type: "Subscript", value: expr, slice: index };
+        expr = { type: "Subscript", value: expr, slice: index };
       }
     }
 
