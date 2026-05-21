@@ -64,8 +64,8 @@ class Parser {
     if (this.match("FOR")) return this.forStatement();
     if (this.match("RETURN")) return this.returnStatement();
     if (this.match("PASS")) return null;
-    if (this.match("BREAK")) return this.breakStatement();
-    if (this.match("CONTINUE")) return this.continueStatement();
+    if (this.match("BREAK")) return { type: "Break" };
+    if (this.match("CONTINUE")) return { type: "Continue" };
 
     return this.expressionStatement();
   }
@@ -120,14 +120,6 @@ class Parser {
       type: "Return",
       value: this.expr(),
     };
-  }
-
-  private breakStatement(): Stmt | null {
-    throw new Error("Method not implemented.");
-  }
-
-  private continueStatement(): Stmt | null {
-    throw new Error("Method not implemented.");
   }
 
   private expressionStatement(): Stmt | null {
