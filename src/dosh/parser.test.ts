@@ -1,12 +1,13 @@
 import type { BinOp, Constant, DictLiteral, Name } from "./expr.ts";
 import Lexer from "./lexer.ts";
 import Parser from "./parser.ts";
-import type { ExprStmt, FuncDef } from "./stmt.ts";
+import type { ExprStmt, FuncDef, IfStmt } from "./stmt.ts";
 import { TestRunner } from "./testrunner.ts";
 
 function parse(code: string) {
   const lexer = new Lexer();
   const tokens = lexer.tokenize(code);
+  console.log(tokens);
   const parser = new Parser(tokens);
   return parser.parse();
 }
@@ -510,6 +511,43 @@ runner.test("parse function with multiple args", () => {
   runner.assertEqual(stmt.args[0], "a");
   runner.assertEqual(stmt.args[1], "b");
   runner.assertEqual(stmt.body.length, 0);
+});
+
+runner.test("parse if statement", () => {
+  const ast = parse("if cond:\n    cond = False");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as IfStmt;
+  runner.assertEqual(stmt.type, "If");
+  runner.assertEqual(stmt.cond.type, "Name");
+  runner.assertEqual(stmt.cond.id, "cond");
+  runner.assertEqual(stmt.body.length, 1);
+  const bodyStmt = stmt.body[0];
+  runner.assertEqual(bodyStmt.type, "Expr");
+  runner.assertEqual(bodyStmt.value.type, "Assign");
+  runner.assertEqual(bodyStmt.value.target.type, "Name");
+  runner.assertEqual(bodyStmt.value.target.id, "cond");
+  runner.assertEqual(bodyStmt.value.value.type, "Constant");
+  runner.assertEqual(bodyStmt.value.value.value, false);
+});
+
+runner.test("parse if-else statement", () => {
+  const ast = parse("if x:\n  y\nelse:\n  z");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as IfStmt;
+  console.log(stmt);
+  runner.assertEqual(stmt.type, "If");
+  runner.assertEqual(stmt.cond.type, "Name");
+  runner.assertEqual(stmt.cond.id, "x");
+  runner.assertEqual(stmt.body.length, 1);
+  const bodyStmt = stmt.body[0];
+  runner.assertEqual(bodyStmt.type, "Expr");
+  runner.assertEqual(bodyStmt.value.type, "Name");
+  runner.assertEqual(bodyStmt.value.id, "y");
+  runner.assertEqual(stmt.orelse.length, 1);
+  const elseBodyStmt = stmt.orelse[0];
+  runner.assertEqual(elseBodyStmt.type, "Expr");
+  runner.assertEqual(elseBodyStmt.value.type, "Name");
+  runner.assertEqual(elseBodyStmt.value.id, "z");
 });
 
 runner.report();

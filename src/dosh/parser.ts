@@ -49,7 +49,10 @@ class Parser {
   }
 
   private consume(type: string, message: string): Token {
-    if (this.check(type)) return this.step();
+    if (this.check(type)) {
+      console.log("consuming ", type);
+      return this.step();
+    }
     throw new Error(message);
   }
 
@@ -104,7 +107,45 @@ class Parser {
   }
 
   private ifStatement(): Stmt | null {
-    throw new Error("Method not implemented.");
+    const cond = this.expr();
+    this.consume("COLON", "Expected ':'");
+    this.consume("NEWLINE", "Expected 'NEWLINE'");
+    this.consume("INDENT", "Expected 'INDENT'");
+
+    const body: Stmt[] = [];
+
+    while (!this.match("DEDENT")) {
+      console.log(this.peek());
+
+      const stmt = this.parseStmt();
+      if (stmt) body.push(stmt);
+    }
+    console.log(this.peek());
+    console.log(body);
+
+    console.log(this.peek());
+
+    if (this.match("ELSE")) {
+      this.consume("COLON", "Expected ':'");
+      this.consume("NEWLINE", "Expected 'NEWLINE'");
+      this.consume("INDENT", "Expected 'INDENT'");
+
+      const orelse: Stmt[] = [];
+      console.log(this.peek());
+      while (!this.match("DEDENT")) {
+        const stmt = this.parseStmt();
+        if (stmt) orelse.push(stmt);
+      }
+      return { type: "If", cond, body, orelse };
+    } else if (this.match("ELIF")) {
+      const if_expr = this.ifStatement();
+
+      if (!if_expr) return null;
+
+      return { type: "If", cond, body, orelse: [if_expr] };
+    }
+
+    return { type: "If", cond, body, orelse: [] };
   }
 
   private whileStatement(): Stmt | null {
@@ -125,7 +166,7 @@ class Parser {
   private expressionStatement(): Stmt | null {
     const expr = this.expr();
 
-    if (this.match("NEWLINE")) this.step();
+    this.match("NEWLINE");
 
     return { type: "Expr", value: expr };
   }
