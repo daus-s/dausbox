@@ -190,6 +190,7 @@ class Lexer {
       in: "IN",
       def: "DEF",
       return: "RETURN",
+      pass: "PASS",
       break: "BREAK",
       continue: "CONTINUE",
       and: "AND",
