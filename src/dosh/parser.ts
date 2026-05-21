@@ -63,6 +63,7 @@ class Parser {
     if (this.match("WHILE")) return this.whileStatement();
     if (this.match("FOR")) return this.forStatement();
     if (this.match("RETURN")) return this.returnStatement();
+    if (this.match("PASS")) return null;
     if (this.match("BREAK")) return this.breakStatement();
     if (this.match("CONTINUE")) return this.continueStatement();
 
@@ -70,7 +71,36 @@ class Parser {
   }
 
   private funcDef(): Stmt | null {
-    throw new Error("Method not implemented.");
+    const name = this.consume(
+      "IDENTIFIER",
+      "Expected identifier after `def` keyword",
+    );
+    this.consume("LEFT_PAREN", "Expected '('");
+    const args = this.parseArgs();
+    this.consume("COLON", "Expected ':'");
+    this.consume("NEWLINE", "Expected newline after function definition");
+    this.consume("INDENT", "Expected indent after function definition");
+
+    const stmts: Stmt[] = [];
+
+    while (!this.match("DEDENT")) {
+      const stmt = this.parseStmt();
+      if (stmt) stmts.push(stmt);
+    }
+
+    return { type: "FuncDef", name: name.value, args, body: stmts };
+  }
+
+  private parseArgs(): string[] {
+    const args: string[] = [];
+    while (!this.match("RIGHT_PAREN")) {
+      const arg = this.consume("IDENTIFIER", "Expected argument");
+      args.push(arg.value);
+      if (!this.check("RIGHT_PAREN")) {
+        this.consume("COMMA", "Expected ','");
+      }
+    }
+    return args;
   }
 
   private ifStatement(): Stmt | null {
@@ -86,7 +116,10 @@ class Parser {
   }
 
   private returnStatement(): Stmt | null {
-    throw new Error("Method not implemented.");
+    return {
+      type: "Return",
+      value: this.expr(),
+    };
   }
 
   private breakStatement(): Stmt | null {

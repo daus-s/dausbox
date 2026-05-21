@@ -1,7 +1,7 @@
 import type { BinOp, Constant, DictLiteral, Name } from "./expr.ts";
 import Lexer from "./lexer.ts";
 import Parser from "./parser.ts";
-import type { ExprStmt } from "./stmt.ts";
+import type { ExprStmt, FuncDef } from "./stmt.ts";
 import { TestRunner } from "./testrunner.ts";
 
 function parse(code: string) {
@@ -465,6 +465,51 @@ runner.test("parse chained calls", () => {
   runner.assertEqual(stmt.value.args.length, 1);
   runner.assertEqual(stmt.value.args[0].type, "Constant");
   runner.assertEqual(stmt.value.args[0].value, 0);
+});
+
+// ============================================================
+// STATEMENTS
+// ============================================================
+
+runner.test("parse function definition", () => {
+  const ast = parse("def foo():\n  pass");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "FuncDef");
+  runner.assertEqual(stmt.name, "foo");
+  runner.assertEqual(stmt.args.length, 0);
+  runner.assertEqual(stmt.body.length, 0);
+});
+
+runner.test("parse function def with arg", () => {
+  const ast = parse("def square(a):\n    return a ** 2");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as FuncDef;
+  runner.assertEqual(stmt.type, "FuncDef");
+  runner.assertEqual(stmt.name, "square");
+  runner.assertEqual(stmt.args.length, 1);
+  runner.assertEqual(stmt.args[0], "a");
+  runner.assertEqual(stmt.body.length, 1);
+  const bodyStmt = stmt.body[0];
+  runner.assertEqual(bodyStmt.type, "Return");
+  runner.assertEqual(bodyStmt.value.type, "BinOp");
+  runner.assertEqual(bodyStmt.value.op, "**");
+  runner.assertEqual(bodyStmt.value.left.type, "Name");
+  runner.assertEqual(bodyStmt.value.left.id, "a");
+  runner.assertEqual(bodyStmt.value.right.type, "Constant");
+  runner.assertEqual(bodyStmt.value.right.value, 2);
+});
+
+runner.test("parse function with multiple args", () => {
+  const ast = parse("def foo(a, b):\n    pass");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as FuncDef;
+  runner.assertEqual(stmt.type, "FuncDef");
+  runner.assertEqual(stmt.name, "foo");
+  runner.assertEqual(stmt.args.length, 2);
+  runner.assertEqual(stmt.args[0], "a");
+  runner.assertEqual(stmt.args[1], "b");
+  runner.assertEqual(stmt.body.length, 0);
 });
 
 runner.report();
