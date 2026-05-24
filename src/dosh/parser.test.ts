@@ -550,4 +550,58 @@ runner.test("parse if-else statement", () => {
   runner.assertEqual(elseBodyStmt.value.id, "z");
 });
 
+runner.test("parse elif", () => {
+  //elif orelse is a nested if statement
+  const ast = parse("if x:\n  y\nelif z:\n  w");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as IfStmt;
+  runner.assertEqual(stmt.type, "If");
+  runner.assertEqual(stmt.cond.type, "Name");
+  runner.assertEqual(stmt.cond.id, "x");
+  runner.assertEqual(stmt.body.length, 1);
+  const bodyStmt = stmt.body[0];
+  runner.assertEqual(bodyStmt.type, "Expr");
+  runner.assertEqual(bodyStmt.value.type, "Name");
+  runner.assertEqual(bodyStmt.value.id, "y");
+  runner.assertEqual(stmt.orelse.length, 1);
+  const elseBodyStmt = stmt.orelse[0] as IfStmt;
+  runner.assertEqual(elseBodyStmt.type, "If");
+  runner.assertEqual(elseBodyStmt.cond.type, "Name");
+  runner.assertEqual(elseBodyStmt.cond.id, "z");
+  runner.assertEqual(elseBodyStmt.body.length, 1);
+  const elseBodyStmt2 = elseBodyStmt.body[0];
+  runner.assertEqual(elseBodyStmt2.type, "Expr");
+  runner.assertEqual(elseBodyStmt2.value.type, "Name");
+  runner.assertEqual(elseBodyStmt2.value.id, "w");
+});
+
+runner.test("parse conditional chain", () => {
+  const ast = parse("if x:\n  z\nelif y:\n  w\nelse:\n  t");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as IfStmt;
+  runner.assertEqual(stmt.type, "If");
+  runner.assertEqual(stmt.cond.type, "Name");
+  runner.assertEqual(stmt.cond.id, "x");
+  runner.assertEqual(stmt.body.length, 1);
+  const bodyStmt = stmt.body[0];
+  runner.assertEqual(bodyStmt.type, "Expr");
+  runner.assertEqual(bodyStmt.value.type, "Name");
+  runner.assertEqual(bodyStmt.value.id, "z");
+  runner.assertEqual(stmt.orelse.length, 1);
+  const elseBodyStmt = stmt.orelse[0] as IfStmt;
+  runner.assertEqual(elseBodyStmt.type, "If");
+  runner.assertEqual(elseBodyStmt.cond.type, "Name");
+  runner.assertEqual(elseBodyStmt.cond.id, "y");
+  runner.assertEqual(elseBodyStmt.body.length, 1);
+  const elseBodyStmt2 = elseBodyStmt.body[0];
+  runner.assertEqual(elseBodyStmt2.type, "Expr");
+  runner.assertEqual(elseBodyStmt2.value.type, "Name");
+  runner.assertEqual(elseBodyStmt2.value.id, "w");
+  runner.assertEqual(elseBodyStmt.orelse.length, 1);
+  const elseBodyStmt3 = elseBodyStmt.orelse[0];
+  runner.assertEqual(elseBodyStmt3.type, "Expr");
+  runner.assertEqual(elseBodyStmt3.value.type, "Name");
+  runner.assertEqual(elseBodyStmt3.value.id, "t");
+});
+
 runner.report();
