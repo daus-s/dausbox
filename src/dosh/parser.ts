@@ -50,7 +50,6 @@ class Parser {
 
   private consume(type: string, message: string): Token {
     if (this.check(type)) {
-      console.log("consuming ", type);
       return this.step();
     }
     throw new Error(message);
@@ -115,15 +114,9 @@ class Parser {
     const body: Stmt[] = [];
 
     while (!this.match("DEDENT")) {
-      console.log(this.peek());
-
       const stmt = this.parseStmt();
       if (stmt) body.push(stmt);
     }
-    console.log(this.peek());
-    console.log(body);
-
-    console.log(this.peek());
 
     if (this.match("ELSE")) {
       this.consume("COLON", "Expected ':'");
@@ -131,7 +124,6 @@ class Parser {
       this.consume("INDENT", "Expected 'INDENT'");
 
       const orelse: Stmt[] = [];
-      console.log(this.peek());
       while (!this.match("DEDENT")) {
         const stmt = this.parseStmt();
         if (stmt) orelse.push(stmt);
@@ -149,11 +141,37 @@ class Parser {
   }
 
   private whileStatement(): Stmt | null {
-    throw new Error("Method not implemented.");
+    const cond = this.expr();
+    this.consume("COLON", "Expected ':'");
+    this.consume("NEWLINE", "Expected 'NEWLINE'");
+    this.consume("INDENT", "Expected 'INDENT'");
+
+    const body: Stmt[] = [];
+    while (!this.match("DEDENT")) {
+      const stmt = this.parseStmt();
+      if (stmt) body.push(stmt);
+    }
+    return { type: "While", cond, body };
   }
 
   private forStatement(): Stmt | null {
-    throw new Error("Method not implemented.");
+    const target = this.expr();
+    if (target.type !== "Name")
+      throw new Error("Error: for loop target must be an identifier");
+    this.consume("IN", "Expected 'IN'");
+
+    const iter = this.expr();
+
+    this.consume("COLON", "Expected ':'");
+    this.consume("NEWLINE", "Expected 'NEWLINE'");
+    this.consume("INDENT", "Expected 'INDENT'");
+
+    const body: Stmt[] = [];
+    while (!this.match("DEDENT")) {
+      const stmt = this.parseStmt();
+      if (stmt) body.push(stmt);
+    }
+    return { type: "For", target, iter, body };
   }
 
   private returnStatement(): Stmt | null {
@@ -377,10 +395,9 @@ class Parser {
     } else if (this.match("LEFT_BRACKET")) {
       const elts: Expr[] = [];
       while (true) {
-        elts.push(this.expr());
-
         if (this.match("RIGHT_BRACKET")) break;
-
+        elts.push(this.expr());
+        if (this.match("RIGHT_BRACKET")) break;
         this.consume("COMMA", "Expected ',' or ']' after element in list");
       }
       return { type: "List", elts };

@@ -1,13 +1,12 @@
 import type { BinOp, Constant, DictLiteral, Name } from "./expr.ts";
 import Lexer from "./lexer.ts";
 import Parser from "./parser.ts";
-import type { ExprStmt, FuncDef, IfStmt } from "./stmt.ts";
+import type { ExprStmt, ForStmt, FuncDef, IfStmt, WhileStmt } from "./stmt.ts";
 import { TestRunner } from "./testrunner.ts";
 
 function parse(code: string) {
   const lexer = new Lexer();
   const tokens = lexer.tokenize(code);
-  console.log(tokens);
   const parser = new Parser(tokens);
   return parser.parse();
 }
@@ -114,6 +113,15 @@ runner.test("parse list literal", () => {
   runner.assertEqual(ast.body[0].value.elts[1].value, 2);
   runner.assertEqual(ast.body[0].value.elts[2].type, "Constant");
   runner.assertEqual(ast.body[0].value.elts[2].value, 3);
+});
+
+runner.test("parse empty list", () => {
+  const ast = parse("[]");
+  runner.assertEqual(ast.type, "Module");
+  runner.assertEqual(ast.body.length, 1);
+  runner.assertEqual(ast.body[0].type, "Expr");
+  runner.assertEqual(ast.body[0].value.type, "List");
+  runner.assertEqual(ast.body[0].value.elts.length, 0);
 });
 
 runner.test("parse dict literal", () => {
@@ -534,7 +542,6 @@ runner.test("parse if-else statement", () => {
   const ast = parse("if x:\n  y\nelse:\n  z");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0] as IfStmt;
-  console.log(stmt);
   runner.assertEqual(stmt.type, "If");
   runner.assertEqual(stmt.cond.type, "Name");
   runner.assertEqual(stmt.cond.id, "x");
@@ -602,6 +609,30 @@ runner.test("parse conditional chain", () => {
   runner.assertEqual(elseBodyStmt3.type, "Expr");
   runner.assertEqual(elseBodyStmt3.value.type, "Name");
   runner.assertEqual(elseBodyStmt3.value.id, "t");
+});
+
+runner.test("parse while statement", () => {
+  const ast = parse("while True:\n  y");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as WhileStmt;
+  runner.assertEqual(stmt.type, "While");
+  runner.assertEqual(stmt.cond.type, "Constant");
+  runner.assertEqual(stmt.cond.value, true);
+  runner.assertEqual(stmt.body.length, 1);
+  const bodyStmt1 = stmt.body[0];
+
+  runner.assertEqual(bodyStmt1.type, "Expr");
+  runner.assertEqual(bodyStmt1.value.type, "Name");
+  runner.assertEqual(bodyStmt1.value.id, "y");
+});
+
+runner.test("parse for loop statment", () => {
+  const ast = parse("for i in []:\n  pass");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as ForStmt;
+  runner.assertEqual(stmt.type, "For");
+  runner.assertEqual(stmt.target.type, "Name");
+  runner.assertEqual(stmt.target.id, "i");
 });
 
 runner.report();
