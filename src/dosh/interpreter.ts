@@ -1,4 +1,4 @@
-import Environment from "./environment";
+import Environment from "./environment.ts";
 import type {
   BinOp,
   BoolOp,
@@ -23,17 +23,22 @@ class Interpreter {
   }
 
   eval(ast: Module) {
+    console.log(ast.body);
     for (const stmt of ast.body) {
       this.evalStmt(stmt);
     }
   }
 
   private evalStmt(stmt: Stmt) {
+    console.log(stmt);
     switch (stmt.type) {
       case "Expr":
         this.evalExpr(stmt.value);
         break;
       case "Assign":
+        console.log(stmt.target);
+        console.log(stmt.value);
+
         break;
       case "If":
         break;
@@ -252,6 +257,16 @@ class Interpreter {
       throw new Error("Subscript: index must be a number");
     }
     return val[index];
+  }
+
+  private stringify(val: Value): string {
+    if (typeof val === "string") return val;
+    if (typeof val === "number") return val.toString();
+    if (typeof val === "boolean") return val ? "True" : "False";
+    if (val === null) return "None";
+    if (Array.isArray(val))
+      return `[${val.map((v) => this.stringify(v)).join(", ")}]`;
+    return val.toString();
   }
 }
 

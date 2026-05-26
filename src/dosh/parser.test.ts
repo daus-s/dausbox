@@ -6,9 +6,9 @@ import { TestRunner } from "./testrunner.ts";
 
 function parse(code: string) {
   const lexer = new Lexer();
+  const parser = new Parser();
   const tokens = lexer.tokenize(code);
-  const parser = new Parser(tokens);
-  return parser.parse();
+  return parser.parse(tokens);
 }
 
 const runner = new TestRunner();
@@ -360,11 +360,11 @@ runner.test("parse simple assignment", () => {
   const ast = parse("x = 5");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0];
-  runner.assertEqual(stmt.type, "Expr");
-  runner.assertEqual(stmt.value.type, "Assign");
-  runner.assertEqual(stmt.value.target.id, "x");
-  runner.assertEqual(stmt.value.value.type, "Constant");
-  runner.assertEqual(stmt.value.value.value, 5);
+  runner.assertEqual(stmt.type, "Assign");
+  runner.assertEqual(stmt.target.type, "Name");
+  runner.assertEqual(stmt.target.id, "x");
+  runner.assertEqual(stmt.value.type, "Constant");
+  runner.assertEqual(stmt.value.value, 5);
 });
 
 runner.test("parse right-associative assignment", () => {

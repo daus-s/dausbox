@@ -3,14 +3,13 @@ import type { Module, Stmt } from "./stmt";
 import type { Token } from "./token";
 
 class Parser {
-  private tokens: Token[];
+  private tokens: Token[] = [];
   private idx: number = 0;
 
-  constructor(tokens: Token[]) {
-    this.tokens = tokens;
-  }
+  constructor() {}
 
-  parse(): Module {
+  parse(tokens: Token[]): Module {
+    this.tokens = tokens;
     const stmts = new Array<Stmt>();
 
     while (!this.isDone()) {
