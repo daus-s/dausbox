@@ -701,4 +701,56 @@ add(3, 4)
   runner.assertDeepEqual(ast, expectedAst);
 });
 
+runner.test("parse for loop", () => {
+  // COMPLETE THIS TEST
+  const ast = parse("x = 1\nfor i in [1,2,3,4,5]:\n  x = x * i\nx");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Assign",
+        expr: {
+          type: "Assign",
+          target: { type: "Name", id: "x" },
+          value: { type: "Constant", value: 1 },
+        },
+      },
+      {
+        type: "For",
+        target: { type: "Name", id: "i" },
+        iter: {
+          type: "List",
+          elts: [
+            { type: "Constant", value: 1 },
+            { type: "Constant", value: 2 },
+            { type: "Constant", value: 3 },
+            { type: "Constant", value: 4 },
+            { type: "Constant", value: 5 },
+          ],
+        },
+        body: [
+          {
+            type: "Assign",
+            expr: {
+              type: "Assign",
+              target: { type: "Name", id: "x" },
+              value: {
+                type: "BinOp",
+                op: "*",
+                left: { type: "Name", id: "x" },
+                right: { type: "Name", id: "i" },
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: "Expr",
+        value: { type: "Name", id: "x" },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
 runner.report();

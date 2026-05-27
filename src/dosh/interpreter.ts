@@ -12,7 +12,15 @@ import type {
   UnaryOp,
 } from "./expr";
 import Func from "./func.ts";
-import type { AssignStmt, FuncDef, Module, ReturnStmt, Stmt } from "./stmt";
+import type {
+  AssignStmt,
+  ForStmt,
+  FuncDef,
+  IfStmt,
+  Module,
+  ReturnStmt,
+  Stmt,
+} from "./stmt";
 import type { Value } from "./value";
 
 class Interpreter {
@@ -49,12 +57,37 @@ class Interpreter {
         this.local.assign(name, value);
         return value;
       }
-      case "If":
-        break;
+      case "If": {
+        const ifstmt = stmt as IfStmt;
+        const cond = this.evalExpr(ifstmt.cond);
+        let value: Value = null;
+        if (cond) {
+          for (const stmt of ifstmt.body) {
+            value = this.evalStmt(stmt);
+          }
+        } else {
+          for (const stmt of ifstmt.orelse) {
+            value = this.evalStmt(stmt);
+          }
+        }
+        return value;
+      }
       case "While":
         break;
-      case "For":
-        break;
+      case "For": {
+        const forstmt = stmt as ForStmt;
+        const iter = this.evalExpr(forstmt.iter);
+        if (!(iter instanceof Array)) {
+          throw new Error("For loop iter must be an array");
+        }
+        for (const val of iter) {
+          this.local.assign(forstmt.target.id, val);
+          for (const stmt of forstmt.body) {
+            this.evalStmt(stmt);
+          }
+        }
+        return null;
+      }
       case "FuncDef": {
         const func = stmt as FuncDef;
         this.local.assign(
