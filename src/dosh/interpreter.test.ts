@@ -12,9 +12,7 @@ function run(code: string) {
   const interpreter = new Interpreter();
 
   const tokens: Token[] = lexer.tokenize(code);
-  console.log(tokens);
   const ast = parser.parse(tokens);
-  console.log(JSON.stringify(ast));
   interpreter.eval(ast);
   return interpreter.results();
 }
@@ -31,7 +29,9 @@ runner.test("function def and call", () => {
   const code = "def add(a, b):\n  return a + b\nadd(3, 4)";
 
   const result = run(code);
-  runner.assertEqual(result[0], "7");
+  runner.assertEqual(result.length, 2);
+  runner.assertEqual(result[0], "None");
+  runner.assertEqual(result[1], "7");
 });
 
 runner.report();

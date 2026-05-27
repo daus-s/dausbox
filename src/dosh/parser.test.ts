@@ -16,7 +16,6 @@ function parse(code: string) {
   const lexer = new Lexer();
   const parser = new Parser();
   const tokens = lexer.tokenize(code);
-  console.log(tokens);
   return parser.parse(tokens);
 }
 

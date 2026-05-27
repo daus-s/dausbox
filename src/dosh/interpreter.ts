@@ -12,7 +12,7 @@ import type {
   UnaryOp,
 } from "./expr";
 import Func from "./func.ts";
-import type { AssignStmt, FuncDef, Module, Stmt } from "./stmt";
+import type { AssignStmt, FuncDef, Module, ReturnStmt, Stmt } from "./stmt";
 import type { Value } from "./value";
 
 class Interpreter {
@@ -39,7 +39,6 @@ class Interpreter {
   }
 
   private evalStmt(stmt: Stmt): Value | null {
-    console.log(stmt);
     switch (stmt.type) {
       case "Expr":
         return this.evalExpr(stmt.value);
@@ -70,6 +69,10 @@ class Interpreter {
         return null;
       }
       case "Return":
+        {
+          const ret = stmt as ReturnStmt;
+          return ret.value ? this.evalExpr(ret.value) : null;
+        }
         break;
       case "Break":
         break;

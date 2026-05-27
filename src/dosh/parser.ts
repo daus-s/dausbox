@@ -416,7 +416,6 @@ class Parser {
       return { type: "List", elts };
     }
 
-    console.log(this.peek());
     throw new Error("Expected primary expression");
   }
 }
