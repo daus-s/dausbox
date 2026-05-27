@@ -1,4 +1,4 @@
-import type { Expr, Name } from "./expr";
+import type { Expr, Name, Assign } from "./expr";
 
 export interface Module {
   type: "Module";
@@ -7,7 +7,7 @@ export interface Module {
 
 export type Stmt =
   | ExprStmt
-  | Assign
+  | AssignStmt
   | IfStmt
   | WhileStmt
   | ForStmt
@@ -21,10 +21,9 @@ export interface ExprStmt {
   value: Expr;
 }
 
-export interface Assign {
+export interface AssignStmt {
   type: "Assign";
-  target: Name;
-  value: Expr;
+  expr: Assign;
 }
 
 export interface IfStmt {

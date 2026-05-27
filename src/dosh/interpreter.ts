@@ -1,3 +1,4 @@
+import { builtins } from "./builtins.ts";
 import Environment from "./environment.ts";
 import type {
   BinOp,
@@ -10,44 +11,64 @@ import type {
   Subscript,
   UnaryOp,
 } from "./expr";
-import type { Module, Stmt } from "./stmt";
+import Func from "./func.ts";
+import type { AssignStmt, FuncDef, Module, Stmt } from "./stmt";
 import type { Value } from "./value";
 
 class Interpreter {
-  private global: Environment;
+  private _global: Environment;
   private local: Environment;
   private output: string[] = [];
 
   constructor() {
-    this.global = new Environment();
+    this._global = new Environment();
+    this.local = this._global;
+    this.registerBuiltins();
   }
 
-  eval(ast: Module) {
-    console.log(ast.body);
-    for (const stmt of ast.body) {
-      this.evalStmt(stmt);
+  private registerBuiltins() {
+    for (const func of builtins(this.output)) {
+      this._global.assign(func.id, func);
     }
   }
 
-  private evalStmt(stmt: Stmt) {
+  eval(ast: Module) {
+    for (const stmt of ast.body) {
+      this.output.push(this.stringify(this.evalStmt(stmt)));
+    }
+  }
+
+  private evalStmt(stmt: Stmt): Value | null {
     console.log(stmt);
     switch (stmt.type) {
       case "Expr":
-        this.evalExpr(stmt.value);
-        break;
-      case "Assign":
-        console.log(stmt.target);
-        console.log(stmt.value);
-
-        break;
+        return this.evalExpr(stmt.value);
+      case "Assign": {
+        const assign = stmt as AssignStmt;
+        const name = assign.expr.target.id;
+        const value = this.evalExpr(assign.expr.value);
+        this.local.assign(name, value);
+        return value;
+      }
       case "If":
         break;
       case "While":
         break;
       case "For":
         break;
-      case "FuncDef":
-        break;
+      case "FuncDef": {
+        const func = stmt as FuncDef;
+        this.local.assign(
+          func.name,
+          new Func(
+            func.name,
+            func.args,
+            { type: "Module", body: func.body },
+            new Environment(this.local),
+          ),
+        );
+        return null;
+      }
       case "Return":
         break;
       case "Break":
@@ -55,6 +76,7 @@ class Interpreter {
       case "Continue":
         break;
     }
+    return null;
   }
 
   private evalExpr(expr: Expr): Value {
@@ -62,7 +84,7 @@ class Interpreter {
       case "Constant":
         return expr.value;
       case "Name":
-        return this.global.get(expr.id);
+        return this.local.get(expr.id);
       case "Assign": {
         const value = this.evalExpr(expr.value);
         this.local.assign(expr.target.id, value);
@@ -239,12 +261,22 @@ class Interpreter {
 
   private evalCallExpr(expr: Call): Value {
     const func = this.evalExpr(expr.func);
-    if (typeof func !== "function") {
+
+    if (!(func instanceof Func)) {
       throw new Error("Call: func must be a function");
     }
 
     const args = expr.args.map((arg) => this.evalExpr(arg));
-    return func(...args);
+    this.local = new Environment(this.local);
+    func.activate(this.local);
+    func.assign(args);
+    let value: Value = null;
+    for (const stmt of func.stmts()) {
+      const result = this.evalStmt(stmt);
+      value = result;
+    }
+
+    return value;
   }
 
   private evalSubscriptExpr(expr: Subscript): Value {
@@ -267,6 +299,10 @@ class Interpreter {
     if (Array.isArray(val))
       return `[${val.map((v) => this.stringify(v)).join(", ")}]`;
     return val.toString();
+  }
+
+  results(): string[] {
+    return [...this.output];
   }
 }
 

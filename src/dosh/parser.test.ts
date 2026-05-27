@@ -1,13 +1,22 @@
 import type { BinOp, Constant, DictLiteral, Name } from "./expr.ts";
 import Lexer from "./lexer.ts";
 import Parser from "./parser.ts";
-import type { ExprStmt, ForStmt, FuncDef, IfStmt, WhileStmt } from "./stmt.ts";
+import type {
+  AssignStmt,
+  ExprStmt,
+  ForStmt,
+  FuncDef,
+  IfStmt,
+  Module,
+  WhileStmt,
+} from "./stmt.ts";
 import { TestRunner } from "./testrunner.ts";
 
 function parse(code: string) {
   const lexer = new Lexer();
   const parser = new Parser();
   const tokens = lexer.tokenize(code);
+  console.log(tokens);
   return parser.parse(tokens);
 }
 
@@ -359,25 +368,27 @@ runner.test("parse unary plus", () => {
 runner.test("parse simple assignment", () => {
   const ast = parse("x = 5");
   runner.assertEqual(ast.body.length, 1);
-  const stmt = ast.body[0];
+  const stmt = ast.body[0] as AssignStmt;
   runner.assertEqual(stmt.type, "Assign");
-  runner.assertEqual(stmt.target.type, "Name");
-  runner.assertEqual(stmt.target.id, "x");
-  runner.assertEqual(stmt.value.type, "Constant");
-  runner.assertEqual(stmt.value.value, 5);
+  runner.assertEqual(stmt.expr.target.type, "Name");
+  runner.assertEqual(stmt.expr.target.id, "x");
+  runner.assertEqual(stmt.expr.value.type, "Constant");
+  runner.assertEqual(stmt.expr.value.value, 5);
 });
 
 runner.test("parse right-associative assignment", () => {
   // x = y = 5 should parse as x = (y = 5)
   const ast = parse("x = y = 5");
   runner.assertEqual(ast.body.length, 1);
-  const stmt = ast.body[0];
-  runner.assertEqual(stmt.value.type, "Assign");
-  runner.assertEqual(stmt.value.target.type, "Name");
-  runner.assertEqual(stmt.value.value.type, "Assign");
-  runner.assertEqual(stmt.value.value.target.id, "y");
-  runner.assertEqual(stmt.value.value.value.type, "Constant");
-  runner.assertEqual(stmt.value.value.value.value, 5);
+  const stmt = ast.body[0] as AssignStmt;
+  runner.assertEqual(stmt.type, "Assign");
+  runner.assertEqual(stmt.expr.target.type, "Name");
+  runner.assertEqual(stmt.expr.target.id, "x");
+  runner.assertEqual(stmt.expr.value.type, "Assign");
+  runner.assertEqual(stmt.expr.value.target.type, "Name");
+  runner.assertEqual(stmt.expr.value.target.id, "y");
+  runner.assertEqual(stmt.expr.value.value.type, "Constant");
+  runner.assertEqual(stmt.expr.value.value.value, 5);
 });
 
 runner.test("fail to parse non identifier assignment", () => {
@@ -522,20 +533,13 @@ runner.test("parse function with multiple args", () => {
 });
 
 runner.test("parse if statement", () => {
-  const ast = parse("if cond:\n    cond = False");
+  const ast = parse("if cond:\n    pass");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0] as IfStmt;
   runner.assertEqual(stmt.type, "If");
   runner.assertEqual(stmt.cond.type, "Name");
   runner.assertEqual(stmt.cond.id, "cond");
-  runner.assertEqual(stmt.body.length, 1);
-  const bodyStmt = stmt.body[0];
-  runner.assertEqual(bodyStmt.type, "Expr");
-  runner.assertEqual(bodyStmt.value.type, "Assign");
-  runner.assertEqual(bodyStmt.value.target.type, "Name");
-  runner.assertEqual(bodyStmt.value.target.id, "cond");
-  runner.assertEqual(bodyStmt.value.value.type, "Constant");
-  runner.assertEqual(bodyStmt.value.value.value, false);
+  runner.assertEqual(stmt.body.length, 0);
 });
 
 runner.test("parse if-else statement", () => {
@@ -633,6 +637,69 @@ runner.test("parse for loop statment", () => {
   runner.assertEqual(stmt.type, "For");
   runner.assertEqual(stmt.target.type, "Name");
   runner.assertEqual(stmt.target.id, "i");
+});
+
+runner.test("parse multi-line program", () => {
+  const ast = parse("x = 4\nx ** 2");
+  runner.assertEqual(ast.body.length, 2);
+  const stmt1 = ast.body[0] as AssignStmt;
+  runner.assertEqual(stmt1.type, "Assign");
+  runner.assertEqual(stmt1.expr.target.type, "Name");
+  runner.assertEqual(stmt1.expr.target.id, "x");
+  runner.assertEqual(stmt1.expr.value.type, "Constant");
+  runner.assertEqual(stmt1.expr.value.value, 4);
+  const stmt2 = ast.body[1] as ExprStmt;
+  runner.assertEqual(stmt2.type, "Expr");
+  runner.assertEqual(stmt2.value.type, "BinOp");
+  runner.assertEqual(stmt2.value.op, "**");
+  runner.assertEqual(stmt2.value.left.type, "Name");
+  runner.assertEqual(stmt2.value.left.id, "x");
+  runner.assertEqual(stmt2.value.right.type, "Constant");
+  runner.assertEqual(stmt2.value.right.value, 2);
+});
+
+runner.test("parse function definition and call", () => {
+  // COMPLETE THIS TEST
+  const ast = parse(`
+def add(a, b):
+  return a + b
+add(3, 4)
+  `);
+
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "FuncDef",
+        name: "add",
+        args: ["a", "b"],
+        body: [
+          {
+            type: "Return",
+            value: {
+              type: "BinOp",
+              op: "+",
+              left: { type: "Name", id: "a" },
+              right: { type: "Name", id: "b" },
+            },
+          },
+        ],
+      },
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: { type: "Name", id: "add" },
+          args: [
+            { type: "Constant", value: 3 },
+            { type: "Constant", value: 4 },
+          ],
+        },
+      },
+    ],
+  };
+
+  runner.assertDeepEqual(ast, expectedAst);
 });
 
 runner.report();

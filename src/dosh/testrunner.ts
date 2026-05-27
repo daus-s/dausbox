@@ -28,6 +28,12 @@ class TestRunner {
     }
   }
 
+  assertDeepEqual(obj1: any, obj2: any) {
+    if (JSON.stringify(obj1) !== JSON.stringify(obj2)) {
+      throw new Error("Objects are not deeply equal.");
+    }
+  }
+
   report(): void {
     console.log(`\n${this.passed} passed, ${this.failed} failed`);
     process.exit(this.failed > 0 ? 1 : 0);

@@ -2,16 +2,16 @@ import type { Value } from "./value";
 
 class Environment {
   private _variables: Record<string, Value> = {};
-  private _parent: Environment | null = null;
+  private parent: Environment | null = null;
 
   constructor(parent: Environment | null = null) {
-    this._parent = parent;
+    this.parent = parent;
   }
 
   get(name: string): Value {
     if (!(name in this._variables)) {
-      if (this._parent) {
-        return this._parent.get(name);
+      if (this.parent) {
+        return this.parent.get(name);
       }
       throw new Error(`Variable not found: ${name}`);
     } else {
@@ -21,6 +21,16 @@ class Environment {
 
   assign(name: string, value: Value): void {
     this._variables[name] = value;
+  }
+
+  pop(): Environment | null {
+    this._variables = {};
+    if (!this.parent) {
+      throw new Error("Environment: cannot pop root environment");
+    }
+    const parent = this.parent;
+    this.parent = null;
+    return parent;
   }
 }
 

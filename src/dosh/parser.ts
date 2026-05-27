@@ -64,9 +64,17 @@ class Parser {
     if (this.match("WHILE")) return this.whileStatement();
     if (this.match("FOR")) return this.forStatement();
     if (this.match("RETURN")) return this.returnStatement();
-    if (this.match("PASS")) return null;
+    if (this.match("PASS") || this.match("NEWLINE")) return null;
     if (this.match("BREAK")) return { type: "Break" };
     if (this.match("CONTINUE")) return { type: "Continue" };
+
+    if (this.match("INDENT")) {
+      throw new Error("Unexpected indent: ident at unexpected position");
+    } else if (this.match("DEDENT")) {
+      throw new Error(
+        "Unexpected dedent: found dedeny without corresponding indent",
+      );
+    }
 
     return this.expressionStatement();
   }
@@ -88,6 +96,8 @@ class Parser {
       const stmt = this.parseStmt();
       if (stmt) stmts.push(stmt);
     }
+
+    this.match("NEWLINE");
 
     return { type: "FuncDef", name: name.value, args, body: stmts };
   }
@@ -184,6 +194,10 @@ class Parser {
     const expr = this.expr();
 
     this.match("NEWLINE");
+
+    if (expr.type === "Assign") {
+      return { type: "Assign", expr };
+    }
 
     return { type: "Expr", value: expr };
   }
@@ -402,6 +416,7 @@ class Parser {
       return { type: "List", elts };
     }
 
+    console.log(this.peek());
     throw new Error("Expected primary expression");
   }
 }
