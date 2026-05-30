@@ -1,4 +1,3 @@
-import { builtins } from "./builtins.ts";
 import Environment from "./environment.ts";
 import type {
   BinOp,
@@ -26,24 +25,38 @@ import type { Value } from "./value";
 class Interpreter {
   private _global: Environment;
   private local: Environment;
-  private output: string[] = [];
+
+  private _builtins: Record<string, (args: Value[]) => Value> = {};
 
   constructor() {
     this._global = new Environment();
-    this.local = this._global;
+    this._global.assign("_out", [] as Value[]);
     this.registerBuiltins();
+    this.local = this._global;
   }
 
   private registerBuiltins() {
-    for (const func of builtins(this.output)) {
-      this._global.assign(func.id, func);
-    }
+    this._builtins["print"] = (args: Value[]) => {
+      const s = args.map((arg) => this.stringify(arg)).join(", ");
+      const out = this.local.get("_out") as Value[];
+      this.local.assign("_out", [...out, s]);
+      return s;
+    };
+    this._global.assign(
+      "print",
+      new Func("print", [], { type: "Module", body: [] }, this._global),
+    );
   }
 
   eval(ast: Module) {
     for (const stmt of ast.body) {
-      this.output.push(this.stringify(this.evalStmt(stmt)));
+      this.evalStmt(stmt);
     }
+  }
+
+  debug() {
+    const out = this.local.get("_out") as Value[];
+    out.forEach((v) => console.log(v));
   }
 
   private evalStmt(stmt: Stmt): Value | null {
@@ -303,6 +316,11 @@ class Interpreter {
     }
 
     const args = expr.args.map((arg) => this.evalExpr(arg));
+
+    if (func.id in this._builtins) {
+      return this._builtins[func.id](args);
+    }
+
     this.local = new Environment(this.local);
     func.activate(this.local);
     func.assign(args);
@@ -338,7 +356,8 @@ class Interpreter {
   }
 
   results(): string[] {
-    return [...this.output];
+    const out = this.local.get("_out") as Value[];
+    return out.map((v) => this.stringify(v));
   }
 }
 
