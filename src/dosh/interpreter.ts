@@ -46,6 +46,55 @@ class Interpreter {
       "print",
       new Func("print", [], { type: "Module", body: [] }, this._global),
     );
+
+    this._builtins["range"] = (args: Value[]) => {
+      if (args.length < 1 || args.length > 3)
+        throw new Error(
+          "range requires at least 1 and at most 3 arguments, got " +
+            args.length,
+        );
+
+      if (args.length === 1 && typeof args[0] === "number") {
+        if (!Number.isInteger(args[0]))
+          throw new Error(
+            "range: argument must be an integer. expected: number, received: " +
+              args[0],
+          );
+        return Array.from({ length: args[0] as number }, (_, index) => index);
+      } else if (args.length === 2 || args.length === 3) {
+        const start = args[0];
+        const end = args[1];
+        const step = args[2] ?? 1;
+        if (
+          typeof start !== "number" ||
+          typeof end !== "number" ||
+          typeof step !== "number"
+        )
+          throw new Error(
+            "range: all arguments must be numbers, " +
+              args.map((arg) => typeof arg).join(", "),
+          );
+        if (step === 0) throw new Error("range: step must not be zero");
+        return Array.from(
+          { length: Math.ceil((end - start) / step) },
+          (_, index) => start + index * step,
+        );
+      } else {
+        throw new Error(
+          "range: Invalid arguments provided\nexpects:\n - length: number\n - start: number, end: number # default step: 1\n - start: number, end: number, step: number",
+        );
+      }
+    };
+
+    this._global.assign(
+      "range",
+      new Func(
+        "range",
+        ["length", "start", "step"],
+        { type: "Module", body: [] },
+        this._global,
+      ),
+    );
   }
 
   eval(ast: Module) {

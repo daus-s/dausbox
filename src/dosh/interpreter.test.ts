@@ -129,4 +129,48 @@ runner.test("for loop", () => {
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "120");
 });
+
+runner.test("range, 3 args", () => {
+  const code = "print(range(1, 10, 2))";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1, 3, 5, 7, 9]");
+});
+
+runner.test("range, 2 args", () => {
+  const code = "print(range(1, 10))";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1, 2, 3, 4, 5, 6, 7, 8, 9]");
+});
+
+runner.test("range, 1 arg", () => {
+  const code = "print(range(10))";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]");
+});
+
+runner.test("range, invalid args", () => {
+  const code = "print(range(1, 2, 3, 4))";
+  let throws = false;
+  try {
+    run(code);
+  } catch (_) {
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
+runner.test("range, empty args", () => {
+  const code = "print(range())";
+  let throws = false;
+  try {
+    run(code);
+  } catch (_) {
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
 runner.report();
