@@ -18,6 +18,30 @@ function run(code: string) {
   return interpreter.results();
 }
 
+runner.test("test print", () => {
+  const code = "print(42)";
+
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "42");
+});
+
+runner.test("test 2-item print", () => {
+  const code = "print(42, 67)";
+
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "42, 67");
+});
+
+runner.test("test empty print", () => {
+  const code = "print()";
+
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "");
+});
+
 runner.test("test assignment returns and binary operation", () => {
   const code = "x = 4\nprint(x ** 2)";
 
