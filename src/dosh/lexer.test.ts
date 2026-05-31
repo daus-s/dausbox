@@ -33,11 +33,11 @@ runner.test("tokenize string", () => {
 
 runner.test("tokenize function", () => {
   const lexer = new Lexer();
-  const code = "def func():\n    print('hello world')";
+  const code = "fn func():\n    print('hello world')";
   const tokens = lexer.tokenize(code);
   runner.assertEqual(tokens.length - 1, 12);
-  runner.assertEqual(tokens[0].type, "DEF");
-  runner.assertEqual(tokens[0].value, "def");
+  runner.assertEqual(tokens[0].type, "FUNC");
+  runner.assertEqual(tokens[0].value, "fn");
   runner.assertEqual(tokens[1].type, "IDENTIFIER");
   runner.assertEqual(tokens[1].value, "func");
   runner.assertEqual(tokens[2].type, "LEFT_PAREN");
