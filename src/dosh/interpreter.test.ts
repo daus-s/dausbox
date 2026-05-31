@@ -51,7 +51,7 @@ runner.test("test assignment returns and binary operation", () => {
 });
 
 runner.test("function def and call", () => {
-  const code = "def add(a, b):\n  return a + b\nprint(add(3, 4))";
+  const code = "fn add a, b:\n  return a + b\nprint add 3, 4";
 
   const result = run(code);
   runner.assertEqual(result.length, 1);

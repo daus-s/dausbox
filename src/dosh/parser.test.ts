@@ -404,7 +404,7 @@ runner.test("fail to parse non identifier assignment", () => {
 // FUNCTION CALLS & SUBSCRIPTS
 // ============================================================
 
-runner.test("parse function call with no args", () => {
+runner.test("parse explicit function call with no args", () => {
   const ast = parse("foo()");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0];
@@ -414,7 +414,7 @@ runner.test("parse function call with no args", () => {
   runner.assertEqual(stmt.value.args.length, 0);
 });
 
-runner.test("parse function call with one arg", () => {
+runner.test("parse function call with one arg (parens)", () => {
   const ast = parse("print(1)");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0];
@@ -491,7 +491,17 @@ runner.test("parse chained calls", () => {
 // ============================================================
 
 runner.test("parse function definition", () => {
-  const ast = parse("def foo():\n  pass");
+  const ast = parse("fn foo():\n  pass");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "FuncDef");
+  runner.assertEqual(stmt.name, "foo");
+  runner.assertEqual(stmt.args.length, 0);
+  runner.assertEqual(stmt.body.length, 0);
+});
+
+runner.test("parse no-arg function definition (no parens)", () => {
+  const ast = parse("fn foo:\n  pass");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0];
   runner.assertEqual(stmt.type, "FuncDef");
@@ -501,26 +511,34 @@ runner.test("parse function definition", () => {
 });
 
 runner.test("parse function def with arg", () => {
-  const ast = parse("def square(a):\n    return a ** 2");
+  const ast = parse("fn square(a):\n    return a ** 2");
+  const expectedAst = {
+    type: "Module",
+    body: [
+      {
+        type: "FuncDef",
+        name: "square",
+        args: ["a"],
+        body: [
+          {
+            type: "Return",
+            value: {
+              type: "BinOp",
+              op: "**",
+              left: { type: "Name", id: "a" },
+              right: { type: "Constant", value: 2 },
+            },
+          },
+        ],
+      },
+    ],
+  };
   runner.assertEqual(ast.body.length, 1);
-  const stmt = ast.body[0] as FuncDef;
-  runner.assertEqual(stmt.type, "FuncDef");
-  runner.assertEqual(stmt.name, "square");
-  runner.assertEqual(stmt.args.length, 1);
-  runner.assertEqual(stmt.args[0], "a");
-  runner.assertEqual(stmt.body.length, 1);
-  const bodyStmt = stmt.body[0];
-  runner.assertEqual(bodyStmt.type, "Return");
-  runner.assertEqual(bodyStmt.value.type, "BinOp");
-  runner.assertEqual(bodyStmt.value.op, "**");
-  runner.assertEqual(bodyStmt.value.left.type, "Name");
-  runner.assertEqual(bodyStmt.value.left.id, "a");
-  runner.assertEqual(bodyStmt.value.right.type, "Constant");
-  runner.assertEqual(bodyStmt.value.right.value, 2);
+  runner.assertDeepEqual(ast.body[0], expectedAst.body[0]);
 });
 
 runner.test("parse function with multiple args", () => {
-  const ast = parse("def foo(a, b):\n    pass");
+  const ast = parse("fn foo(a, b):\n    pass");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0] as FuncDef;
   runner.assertEqual(stmt.type, "FuncDef");
@@ -657,12 +675,117 @@ runner.test("parse multi-line program", () => {
   runner.assertEqual(stmt2.value.right.value, 2);
 });
 
-runner.test("parse function definition and call", () => {
-  // COMPLETE THIS TEST
+runner.test("parse function def", () => {
   const ast = parse(`
-def add(a, b):
+fn add a, b:
   return a + b
-add(3, 4)
+  `);
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as FuncDef;
+  runner.assertEqual(stmt.type, "FuncDef");
+  runner.assertEqual(stmt.name, "add");
+  runner.assertEqual(stmt.args.length, 2);
+  runner.assertEqual(stmt.args[0], "a");
+  runner.assertEqual(stmt.args[1], "b");
+});
+
+runner.test("parse function def (parens)", () => {
+  const ast = parse(`
+fn add(a, b):
+  return a + b
+  `);
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as FuncDef;
+  runner.assertEqual(stmt.type, "FuncDef");
+  runner.assertEqual(stmt.name, "add");
+  runner.assertEqual(stmt.args.length, 2);
+  runner.assertEqual(stmt.args[0], "a");
+  runner.assertEqual(stmt.args[1], "b");
+});
+
+runner.test("parse function call (parens)", () => {
+  const ast = parse("add(3,4)");
+
+  const stmt = ast.body[0] as ExprStmt;
+  const expectedStmt = {
+    type: "Expr",
+    value: {
+      type: "Call",
+      func: { type: "Name", id: "add" },
+      args: [
+        { type: "Constant", value: 3 },
+        { type: "Constant", value: 4 },
+      ],
+    },
+  };
+  runner.assertDeepEqual(stmt, expectedStmt);
+});
+
+runner.test("parse function call (no-parens)", () => {
+  const ast = parse("add 3, 4");
+
+  const stmt = ast.body[0] as ExprStmt;
+  const expectedStmt = {
+    type: "Expr",
+    value: {
+      type: "Call",
+      func: { type: "Name", id: "add" },
+      args: [
+        { type: "Constant", value: 3 },
+        { type: "Constant", value: 4 },
+      ],
+    },
+  };
+  runner.assertDeepEqual(stmt, expectedStmt);
+});
+
+runner.test("parse function definition and call", () => {
+  const ast = parse(`
+fn add a, b:
+  return a + b
+add 3, 4
+  `);
+  runner.assertEqual(ast.body.length, 2);
+  const defStmt = ast.body[0] as FuncDef;
+  const callStmt = ast.body[1] as ExprStmt;
+
+  const expectedDefStmt: FuncDef = {
+    type: "FuncDef",
+    name: "add",
+    args: ["a", "b"],
+    body: [
+      {
+        type: "Return",
+        value: {
+          type: "BinOp",
+          op: "+",
+          left: { type: "Name", id: "a" },
+          right: { type: "Name", id: "b" },
+        },
+      },
+    ],
+  };
+
+  const expectedCallStmt: ExprStmt = {
+    type: "Expr",
+    value: {
+      type: "Call",
+      func: { type: "Name", id: "add" },
+      args: [
+        { type: "Constant", value: 3 },
+        { type: "Constant", value: 4 },
+      ],
+    },
+  };
+  runner.assertDeepEqual(callStmt, expectedCallStmt);
+  runner.assertDeepEqual(defStmt, expectedDefStmt);
+});
+
+runner.test("parse function definition and call", () => {
+  const ast = parse(`
+fn add a, b:
+  return a + b
+add 3, 4
   `);
 
   const expectedAst: Module = {
