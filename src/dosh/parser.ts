@@ -58,8 +58,20 @@ class Parser {
     return this.idx >= this.tokens.length || this.peek().type === "EOF";
   }
 
+  private canStartArg(): boolean {
+    return (
+      this.check("IDENTIFIER") ||
+      this.check("NUMBER") ||
+      this.check("STRING") ||
+      this.check("LEFT_PAREN") ||
+      this.check("LEFT_BRACKET") ||
+      this.check("TRUE") ||
+      this.check("FALSE")
+    );
+  }
+
   private parseStmt(): Stmt | null {
-    if (this.match("DEF")) return this.funcDef();
+    if (this.match("FUNC")) return this.funcDef();
     if (this.match("IF")) return this.ifStatement();
     if (this.match("WHILE")) return this.whileStatement();
     if (this.match("FOR")) return this.forStatement();
@@ -82,10 +94,13 @@ class Parser {
   private funcDef(): Stmt | null {
     const name = this.consume(
       "IDENTIFIER",
-      "Expected identifier after `def` keyword",
+      "Expected identifier after `fn` keyword",
     );
-    this.consume("LEFT_PAREN", "Expected '('");
-    const args = this.parseArgs();
+    let parens: boolean = false;
+    if (this.match("LEFT_PAREN")) parens = true;
+
+    const args = this.parseArgs(parens);
+
     this.consume("COLON", "Expected ':'");
     this.consume("NEWLINE", "Expected newline after function definition");
     this.consume("INDENT", "Expected indent after function definition");
@@ -102,15 +117,26 @@ class Parser {
     return { type: "FuncDef", name: name.value, args, body: stmts };
   }
 
-  private parseArgs(): string[] {
+  private parseArgs(parens: boolean = false): string[] {
     const args: string[] = [];
-    while (!this.match("RIGHT_PAREN")) {
+
+    if (!parens && this.check("COLON")) {
+      return [];
+    } else if (parens && this.check("RIGHT_PAREN")) {
+      this.consume("RIGHT_PAREN", "Expected ')'");
+      return [];
+    }
+
+    while (true) {
       const arg = this.consume("IDENTIFIER", "Expected argument");
       args.push(arg.value);
-      if (!this.check("RIGHT_PAREN")) {
-        this.consume("COMMA", "Expected ','");
-      }
+
+      if (!this.check("COMMA")) break; // Break loop when no comma found
+      this.consume("COMMA", "Expected ','");
     }
+
+    if (parens) this.consume("RIGHT_PAREN", "Expected ')'");
+
     return args;
   }
 
@@ -347,7 +373,11 @@ class Parser {
   private postfixExpr(): Expr {
     let expr = this.primaryExpr();
 
-    while (this.check("LEFT_PAREN") || this.check("LEFT_BRACKET")) {
+    while (
+      this.check("LEFT_PAREN") ||
+      this.check("LEFT_BRACKET") ||
+      this.canStartArg()
+    ) {
       if (this.match("LEFT_PAREN")) {
         const args: Expr[] = [];
 
@@ -368,6 +398,12 @@ class Parser {
         const index = this.expr();
         this.consume("RIGHT_BRACKET", "Unclosed delimiter '[', expected ']'");
         expr = { type: "Subscript", value: expr, slice: index };
+      } else if (this.canStartArg()) {
+        const args: Expr[] = [];
+        do {
+          args.push(this.expr());
+        } while (this.match("COMMA"));
+        expr = { type: "Call", func: expr, args };
       }
     }
 
@@ -416,7 +452,7 @@ class Parser {
       return { type: "List", elts };
     }
 
-    throw new Error("Expected primary expression");
+    throw new Error("Expected primary expression, got " + this.peek().type);
   }
 }
 

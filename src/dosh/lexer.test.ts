@@ -33,11 +33,11 @@ runner.test("tokenize string", () => {
 
 runner.test("tokenize function", () => {
   const lexer = new Lexer();
-  const code = "def func():\n    print('hello world')";
+  const code = "fn func():\n  pass";
   const tokens = lexer.tokenize(code);
-  runner.assertEqual(tokens.length - 1, 12);
-  runner.assertEqual(tokens[0].type, "DEF");
-  runner.assertEqual(tokens[0].value, "def");
+  runner.assertEqual(tokens.length - 1, 9);
+  runner.assertEqual(tokens[0].type, "FUNC");
+  runner.assertEqual(tokens[0].value, "fn");
   runner.assertEqual(tokens[1].type, "IDENTIFIER");
   runner.assertEqual(tokens[1].value, "func");
   runner.assertEqual(tokens[2].type, "LEFT_PAREN");
@@ -50,15 +50,12 @@ runner.test("tokenize function", () => {
   runner.assertEqual(tokens[5].type, "NEWLINE");
   runner.assertEqual(tokens[6].type, "INDENT");
   runner.assertEqual(tokens[6].value, "");
-  runner.assertEqual(tokens[7].type, "IDENTIFIER");
-  runner.assertEqual(tokens[7].value, "print");
-  runner.assertEqual(tokens[8].type, "LEFT_PAREN");
-  runner.assertEqual(tokens[8].value, "(");
-  runner.assertEqual(tokens[9].type, "STRING");
-  runner.assertEqual(tokens[9].value, "hello world");
-  runner.assertEqual(tokens[10].type, "RIGHT_PAREN");
-  runner.assertEqual(tokens[10].value, ")");
-  runner.assertEqual(tokens[11].type, "DEDENT");
+  runner.assertEqual(tokens[7].type, "PASS");
+  runner.assertEqual(tokens[7].value, "pass");
+  runner.assertEqual(tokens[8].type, "DEDENT");
+  runner.assertEqual(tokens[8].value, "");
+  runner.assertEqual(tokens[9].type, "EOF");
+  runner.assertEqual(tokens[9].value, "");
 });
 
 runner.test("tokenize elif", () => {

@@ -23,7 +23,7 @@ class Environment {
     this._variables[name] = value;
   }
 
-  pop(): Environment | null {
+  pop(): Environment {
     this._variables = {};
     if (!this.parent) {
       throw new Error("Environment: cannot pop root environment");

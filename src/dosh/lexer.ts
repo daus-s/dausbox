@@ -188,7 +188,7 @@ class Lexer {
       while: "WHILE",
       for: "FOR",
       in: "IN",
-      def: "DEF",
+      fn: "FUNC",
       return: "RETURN",
       pass: "PASS",
       break: "BREAK",

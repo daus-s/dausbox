@@ -4,8 +4,8 @@ import type { Value } from "./value.ts";
 
 class Func {
   id: string;
+  args: string[];
   private env: Environment;
-  private args: string[];
   private body: Module;
 
   constructor(id: string, args: string[], body: Module, env: Environment) {

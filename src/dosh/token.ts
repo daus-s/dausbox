@@ -35,7 +35,7 @@ export type TokenType =
   | "WHILE"
   | "FOR"
   | "IN"
-  | "DEF"
+  | "FUNC"
   | "RETURN"
   | "PASS"
   | "BREAK"

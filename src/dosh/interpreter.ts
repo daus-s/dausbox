@@ -13,6 +13,7 @@ import type {
 import Func from "./func.ts";
 import type {
   AssignStmt,
+  ExprStmt,
   ForStmt,
   FuncDef,
   IfStmt,
@@ -38,13 +39,68 @@ class Interpreter {
   private registerBuiltins() {
     this._builtins["print"] = (args: Value[]) => {
       const s = args.map((arg) => this.stringify(arg)).join(", ");
-      const out = this.local.get("_out") as Value[];
-      this.local.assign("_out", [...out, s]);
+      const out = this._global.get("_out") as Value[];
+      this._global.assign("_out", [...out, s]);
       return s;
     };
     this._global.assign(
       "print",
-      new Func("print", [], { type: "Module", body: [] }, this._global),
+      new Func(
+        "print",
+        ["...args"],
+        { type: "Module", body: [] },
+        this._global,
+      ),
+    );
+
+    //range is only builtin to allow function overloading
+    this._builtins["range"] = (args: Value[]) => {
+      if (args.length < 1 || args.length > 3)
+        throw new Error(
+          "range requires at least 1 and at most 3 arguments, got " +
+            args.length,
+        );
+
+      if (args.length === 1 && typeof args[0] === "number") {
+        if (!Number.isInteger(args[0]))
+          throw new Error(
+            "range: argument must be an integer. expected: number, received: " +
+              args[0],
+          );
+        return Array.from({ length: args[0] as number }, (_, index) => index);
+      } else if (args.length === 2 || args.length === 3) {
+        const start = args[0];
+        const end = args[1];
+        const step = args[2] ?? 1;
+        if (
+          typeof start !== "number" ||
+          typeof end !== "number" ||
+          typeof step !== "number"
+        )
+          throw new Error(
+            "range: all arguments must be numbers, " +
+              args.map((arg) => typeof arg).join(", "),
+          );
+        if (step === 0) throw new Error("range: step must not be zero");
+        return Array.from(
+          { length: Math.ceil((end - start) / step) },
+          (_, index) => start + index * step,
+        );
+      } else {
+        throw new Error(
+          "range: Invalid arguments provided\nexpects:\n - length: number\n - start: number, end: number # default step: 1\n - start: number, end: number, step: number",
+        );
+      }
+    };
+
+    this._global.assign(
+      "range",
+      new Func(
+        "range",
+        ["length", "start", "step"],
+        { type: "Module", body: [] },
+        this._global,
+      ),
     );
   }
 
@@ -54,15 +110,31 @@ class Interpreter {
     }
   }
 
-  debug() {
-    const out = this.local.get("_out") as Value[];
-    out.forEach((v) => console.log(v));
-  }
-
   private evalStmt(stmt: Stmt): Value | null {
     switch (stmt.type) {
-      case "Expr":
-        return this.evalExpr(stmt.value);
+      case "Expr": {
+        const expr = stmt as ExprStmt;
+        const val = this.evalExpr(expr.value);
+
+        if (!(val instanceof Func)) {
+          return val;
+        }
+
+        if (val && val instanceof Func && val.args.length === 0) {
+          this.local = new Environment(this.local);
+          val.activate(this.local);
+          val.assign([]);
+          let value: Value = null;
+          for (const stmt of val.stmts()) {
+            const result = this.evalStmt(stmt);
+            value = result;
+          }
+          this.local = this.local.pop();
+          return value;
+        }
+
+        return val;
+      }
       case "Assign": {
         const assign = stmt as AssignStmt;
         const name = assign.expr.target.id;
@@ -312,7 +384,7 @@ class Interpreter {
     const func = this.evalExpr(expr.func);
 
     if (!(func instanceof Func)) {
-      throw new Error("Call: func must be a function");
+      throw new Error(`Call: func must be a function, got ${func}`);
     }
 
     const args = expr.args.map((arg) => this.evalExpr(arg));
@@ -329,6 +401,7 @@ class Interpreter {
       const result = this.evalStmt(stmt);
       value = result;
     }
+    this.local = this.local.pop();
 
     return value;
   }
@@ -345,6 +418,10 @@ class Interpreter {
     return val[index];
   }
 
+  // END LOGIC ==================================================================================
+
+  // BEGIN OUTPUT ===============================================================================
+
   private stringify(val: Value): string {
     if (typeof val === "string") return val;
     if (typeof val === "number") return val.toString();
@@ -353,6 +430,11 @@ class Interpreter {
     if (Array.isArray(val))
       return `[${val.map((v) => this.stringify(v)).join(", ")}]`;
     return val.toString();
+  }
+
+  debug() {
+    const out = this._global.get("_out") as Value[];
+    out.forEach((v) => console.log(v));
   }
 
   results(): string[] {
