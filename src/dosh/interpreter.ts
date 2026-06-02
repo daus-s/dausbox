@@ -13,6 +13,7 @@ import type {
 import Func from "./func.ts";
 import type {
   AssignStmt,
+  ExprStmt,
   ForStmt,
   FuncDef,
   IfStmt,
@@ -38,15 +39,21 @@ class Interpreter {
   private registerBuiltins() {
     this._builtins["print"] = (args: Value[]) => {
       const s = args.map((arg) => this.stringify(arg)).join(", ");
-      const out = this.local.get("_out") as Value[];
-      this.local.assign("_out", [...out, s]);
+      const out = this._global.get("_out") as Value[];
+      this._global.assign("_out", [...out, s]);
       return s;
     };
     this._global.assign(
       "print",
-      new Func("print", [], { type: "Module", body: [] }, this._global),
+      new Func(
+        "print",
+        ["...args"],
+        { type: "Module", body: [] },
+        this._global,
+      ),
     );
 
+    //range is only builtin to allow function overloading
     this._builtins["range"] = (args: Value[]) => {
       if (args.length < 1 || args.length > 3)
         throw new Error(
@@ -103,15 +110,31 @@ class Interpreter {
     }
   }
 
-  debug() {
-    const out = this.local.get("_out") as Value[];
-    out.forEach((v) => console.log(v));
-  }
-
   private evalStmt(stmt: Stmt): Value | null {
     switch (stmt.type) {
-      case "Expr":
-        return this.evalExpr(stmt.value);
+      case "Expr": {
+        const expr = stmt as ExprStmt;
+        const val = this.evalExpr(expr.value);
+
+        if (!(val instanceof Func)) {
+          return val;
+        }
+
+        if (val && val instanceof Func && val.args.length === 0) {
+          this.local = new Environment(this.local);
+          val.activate(this.local);
+          val.assign([]);
+          let value: Value = null;
+          for (const stmt of val.stmts()) {
+            const result = this.evalStmt(stmt);
+            value = result;
+          }
+          this.local = this.local.pop();
+          return value;
+        }
+
+        return val;
+      }
       case "Assign": {
         const assign = stmt as AssignStmt;
         const name = assign.expr.target.id;
@@ -361,7 +384,7 @@ class Interpreter {
     const func = this.evalExpr(expr.func);
 
     if (!(func instanceof Func)) {
-      throw new Error("Call: func must be a function");
+      throw new Error(`Call: func must be a function, got ${func}`);
     }
 
     const args = expr.args.map((arg) => this.evalExpr(arg));
@@ -378,6 +401,7 @@ class Interpreter {
       const result = this.evalStmt(stmt);
       value = result;
     }
+    this.local = this.local.pop();
 
     return value;
   }
@@ -394,6 +418,10 @@ class Interpreter {
     return val[index];
   }
 
+  // END LOGIC ==================================================================================
+
+  // BEGIN OUTPUT ===============================================================================
+
   private stringify(val: Value): string {
     if (typeof val === "string") return val;
     if (typeof val === "number") return val.toString();
@@ -402,6 +430,11 @@ class Interpreter {
     if (Array.isArray(val))
       return `[${val.map((v) => this.stringify(v)).join(", ")}]`;
     return val.toString();
+  }
+
+  debug() {
+    const out = this._global.get("_out") as Value[];
+    out.forEach((v) => console.log(v));
   }
 
   results(): string[] {

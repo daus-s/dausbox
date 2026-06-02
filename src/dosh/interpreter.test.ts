@@ -173,4 +173,18 @@ runner.test("range, empty args", () => {
   runner.assertEqual(throws, true);
 });
 
+runner.test("evaluate program, no parens, implicit function call", () => {
+  const code = "fn greet:\n  print 'Hello, world!'\ngreet";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "Hello, world!");
+});
+
+runner.test("evaluate hello world (no parens)", () => {
+  const code = "print 'Hello, world!'";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "Hello, world!");
+});
+
 runner.report();

@@ -404,36 +404,6 @@ runner.test("fail to parse non identifier assignment", () => {
 // FUNCTION CALLS & SUBSCRIPTS
 // ============================================================
 
-runner.test("parse explicit function call with no args", () => {
-  const ast = parse("foo()");
-  runner.assertEqual(ast.body.length, 1);
-  const stmt = ast.body[0];
-  runner.assertEqual(stmt.type, "Expr");
-  runner.assertEqual(stmt.value.type, "Call");
-  runner.assertEqual(stmt.value.func.id, "foo");
-  runner.assertEqual(stmt.value.args.length, 0);
-});
-
-runner.test("parse function call with one arg (parens)", () => {
-  const ast = parse("print(1)");
-  runner.assertEqual(ast.body.length, 1);
-  const stmt = ast.body[0];
-  runner.assertEqual(stmt.type, "Expr");
-  runner.assertEqual(stmt.value.type, "Call");
-  runner.assertEqual(stmt.value.func.id, "print");
-  runner.assertEqual(stmt.value.args.length, 1);
-});
-
-runner.test("parse function call with multiple args", () => {
-  const ast = parse("foo(1, 2, 3)");
-  runner.assertEqual(ast.body.length, 1);
-  const stmt = ast.body[0];
-  runner.assertEqual(stmt.type, "Expr");
-  runner.assertEqual(stmt.value.type, "Call");
-  runner.assertEqual(stmt.value.func.id, "foo");
-  runner.assertEqual(stmt.value.args.length, 3);
-});
-
 runner.test("parse subscript", () => {
   const ast = parse("foo[0]");
   runner.assertEqual(ast.body.length, 1);
@@ -510,8 +480,84 @@ runner.test("parse no-arg function definition (no parens)", () => {
   runner.assertEqual(stmt.body.length, 0);
 });
 
+runner.test("parse explicit function call with no args", () => {
+  const ast = parse("foo()");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  const expectedStmt = {
+    type: "Expr",
+    value: {
+      type: "Call",
+      func: { type: "Name", id: "foo" },
+      args: [],
+    },
+  };
+  runner.assertDeepEqual(stmt, expectedStmt);
+});
+
+runner.test("parse implicit function call as identifier", () => {
+  const ast = parse("foo");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  const expectedStmt = {
+    type: "Expr",
+    value: {
+      type: "Name",
+      id: "foo",
+    },
+  };
+  runner.assertDeepEqual(stmt, expectedStmt);
+});
+
+runner.test("parse function call with one arg (parens)", () => {
+  const ast = parse("print(1)");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Call");
+  runner.assertEqual(stmt.value.func.id, "print");
+  runner.assertEqual(stmt.value.args.length, 1);
+});
+
+runner.test("parse function call with multiple args", () => {
+  const ast = parse("foo(1, 2, 3)");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0];
+  runner.assertEqual(stmt.type, "Expr");
+  runner.assertEqual(stmt.value.type, "Call");
+  runner.assertEqual(stmt.value.func.id, "foo");
+  runner.assertEqual(stmt.value.args.length, 3);
+});
+
 runner.test("parse function def with arg", () => {
   const ast = parse("fn square(a):\n    return a ** 2");
+  const expectedAst = {
+    type: "Module",
+    body: [
+      {
+        type: "FuncDef",
+        name: "square",
+        args: ["a"],
+        body: [
+          {
+            type: "Return",
+            value: {
+              type: "BinOp",
+              op: "**",
+              left: { type: "Name", id: "a" },
+              right: { type: "Constant", value: 2 },
+            },
+          },
+        ],
+      },
+    ],
+  };
+  runner.assertEqual(ast.body.length, 1);
+  runner.assertDeepEqual(ast.body[0], expectedAst.body[0]);
+});
+
+runner.test("parse function def with arg (no parens)", () => {
+  const ast = parse("fn square a:\n    return a ** 2");
   const expectedAst = {
     type: "Module",
     body: [
