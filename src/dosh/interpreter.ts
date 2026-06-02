@@ -20,6 +20,7 @@ import type {
   Module,
   ReturnStmt,
   Stmt,
+  WhileStmt,
 } from "./stmt";
 import type { Value } from "./value";
 
@@ -157,8 +158,18 @@ class Interpreter {
         }
         return value;
       }
-      case "While":
-        break;
+      case "While": {
+        const whilestmt = stmt as WhileStmt;
+        let cond = this.evalExpr(whilestmt.cond);
+        let value: Value = null;
+        while (cond) {
+          for (const stmt of whilestmt.body) {
+            value = this.evalStmt(stmt);
+          }
+          cond = this.evalExpr(whilestmt.cond);
+        }
+        return value;
+      }
       case "For": {
         const forstmt = stmt as ForStmt;
         const iter = this.evalExpr(forstmt.iter);

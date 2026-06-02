@@ -137,8 +137,22 @@ runner.test("range, 3 args", () => {
   runner.assertEqual(result[0], "[1, 3, 5, 7, 9]");
 });
 
+runner.test("range, 3 args (no parens)", () => {
+  const code = "print range 1, 10, 2";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1, 3, 5, 7, 9]");
+});
+
 runner.test("range, 2 args", () => {
   const code = "print(range(1, 10))";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1, 2, 3, 4, 5, 6, 7, 8, 9]");
+});
+
+runner.test("range, 2 args (no parens)", () => {
+  const code = "print range 1, 10";
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "[1, 2, 3, 4, 5, 6, 7, 8, 9]");
@@ -151,8 +165,26 @@ runner.test("range, 1 arg", () => {
   runner.assertEqual(result[0], "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]");
 });
 
+runner.test("range, 1 arg (no parens)", () => {
+  const code = "print range 10 ";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]");
+});
+
 runner.test("range, invalid args", () => {
-  const code = "print(range(1, 2, 3, 4))";
+  const code = "range(1, 2, 3, 4)";
+  let throws = false;
+  try {
+    run(code);
+  } catch (_) {
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
+runner.test("range, invalid args (no parens)", () => {
+  const code = "range 1, 2, 3, 4";
   let throws = false;
   try {
     run(code);
@@ -185,6 +217,15 @@ runner.test("evaluate hello world (no parens)", () => {
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "Hello, world!");
+});
+
+runner.test("while loop", () => {
+  const code = "x = 0\nwhile x < 10:\n  x = x + 1\n  print x";
+  const result = run(code);
+  runner.assertEqual(result.length, 10);
+  for (let i = 0; i < 10; i++) {
+    runner.assertEqual(result[i], `${i + 1}`);
+  }
 });
 
 runner.report();
