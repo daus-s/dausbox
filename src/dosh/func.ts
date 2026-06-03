@@ -1,12 +1,12 @@
 import Environment from "./environment.ts";
-import type { Module, Stmt } from "./stmt.ts";
+import type { Module } from "./stmt.ts";
 import type { Value } from "./value.ts";
 
 class Func {
   id: string;
   args: string[];
+  body: Module;
   private env: Environment;
-  private body: Module;
 
   constructor(id: string, args: string[], body: Module, env: Environment) {
     this.id = id;
@@ -29,10 +29,6 @@ class Func {
     for (let i = 0; i < this.args.length; i++) {
       this.env.assign(this.args[i], args[i]);
     }
-  }
-
-  stmts(): Stmt[] {
-    return this.body.body;
   }
 }
 

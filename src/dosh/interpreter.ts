@@ -106,10 +106,12 @@ class Interpreter {
     );
   }
 
-  eval(ast: Module) {
+  eval(ast: Module): Value {
+    let value: Value = null;
     for (const stmt of ast.body) {
-      this.evalStmt(stmt);
+      value = this.evalStmt(stmt);
     }
+    return value;
   }
 
   private evalStmt(stmt: Stmt): Value | null {
@@ -126,13 +128,17 @@ class Interpreter {
           this.local = new Environment(this.local);
           val.activate(this.local);
           val.assign([]);
-          let value: Value = null;
-          for (const stmt of val.stmts()) {
-            const result = this.evalStmt(stmt);
-            value = result;
+          try {
+            return this.eval(val.body);
+          } catch (e) {
+            if (e instanceof ReturnSignal) {
+              return e.value;
+            } else {
+              throw e;
+            }
+          } finally {
+            this.local = this.local.pop();
           }
-          this.local = this.local.pop();
-          return value;
         }
 
         return val;
@@ -422,22 +428,17 @@ class Interpreter {
     this.local = new Environment(this.local);
     func.activate(this.local);
     func.assign(args);
-    let value: Value = null;
-    for (const stmt of func.stmts()) {
-      try {
-        const result = this.evalStmt(stmt);
-        value = result;
-      } catch (e) {
-        if (e instanceof ReturnSignal) {
-          value = e.value;
-          break;
-        }
+    try {
+      return this.eval(func.body);
+    } catch (e) {
+      if (e instanceof ReturnSignal) {
+        return e.value;
+      } else {
         throw e;
       }
+    } finally {
+      this.local = this.local.pop();
     }
-    this.local = this.local.pop();
-
-    return value;
   }
 
   private evalSubscriptExpr(expr: Subscript): Value {
