@@ -11,6 +11,7 @@ import type {
   UnaryOp,
 } from "./expr";
 import Func from "./func.ts";
+import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 import type {
   AssignStmt,
   ExprStmt,
@@ -161,14 +162,20 @@ class Interpreter {
       case "While": {
         const whilestmt = stmt as WhileStmt;
         let cond = this.evalExpr(whilestmt.cond);
-        let value: Value = null;
-        while (cond) {
+        w: while (cond) {
           for (const stmt of whilestmt.body) {
-            value = this.evalStmt(stmt);
+            try {
+              this.evalStmt(stmt);
+            } catch (e) {
+              if (e instanceof BreakSignal) break w;
+              if (e instanceof ContinueSignal) continue w;
+
+              throw e;
+            }
           }
           cond = this.evalExpr(whilestmt.cond);
         }
-        return value;
+        return null;
       }
       case "For": {
         const forstmt = stmt as ForStmt;
@@ -176,10 +183,17 @@ class Interpreter {
         if (!(iter instanceof Array)) {
           throw new Error("For loop iter must be an array");
         }
-        for (const val of iter) {
-          this.local.assign(forstmt.target.id, val);
+        f: for (const i of iter) {
+          this.local.assign(forstmt.target.id, i);
           for (const stmt of forstmt.body) {
-            this.evalStmt(stmt);
+            try {
+              this.evalStmt(stmt);
+            } catch (e) {
+              if (e instanceof BreakSignal) break f;
+              else if (e instanceof ContinueSignal) continue f;
+
+              throw e;
+            }
           }
         }
         return null;
@@ -200,15 +214,16 @@ class Interpreter {
       case "Return":
         {
           const ret = stmt as ReturnStmt;
-          return ret.value ? this.evalExpr(ret.value) : null;
+          const value = ret.value ? this.evalExpr(ret.value) : null;
+
+          throw new ReturnSignal(value);
         }
         break;
       case "Break":
-        break;
+        throw new BreakSignal();
       case "Continue":
-        break;
+        throw new ContinueSignal();
     }
-    return null;
   }
 
   private evalExpr(expr: Expr): Value {
@@ -409,8 +424,16 @@ class Interpreter {
     func.assign(args);
     let value: Value = null;
     for (const stmt of func.stmts()) {
-      const result = this.evalStmt(stmt);
-      value = result;
+      try {
+        const result = this.evalStmt(stmt);
+        value = result;
+      } catch (e) {
+        if (e instanceof ReturnSignal) {
+          value = e.value;
+          break;
+        }
+        throw e;
+      }
     }
     this.local = this.local.pop();
 

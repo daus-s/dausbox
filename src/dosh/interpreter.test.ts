@@ -228,4 +228,56 @@ runner.test("while loop", () => {
   }
 });
 
+runner.test("break exits while loop", () => {
+  const code =
+    "x = 0\nwhile True:\n  x = x + 1\n  if x == 5:\n    break\nprint(x)";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "5");
+});
+
+runner.test("continue skips rest of while body", () => {
+  const code =
+    "x = 0\nwhile x < 5:\n  x = x + 1\n  if x == 3:\n    continue\n  print(x)";
+  const result = run(code);
+  runner.assertEqual(result.length, 4);
+  runner.assertEqual(result[0], "1");
+  runner.assertEqual(result[1], "2");
+  runner.assertEqual(result[2], "4");
+  runner.assertEqual(result[3], "5");
+});
+
+runner.test("break exits for loop", () => {
+  const code = "for i in [1,2,3,4,5]:\n  if i == 3:\n    break\n  print(i)";
+  const result = run(code);
+  runner.assertEqual(result.length, 2);
+  runner.assertEqual(result[0], "1");
+  runner.assertEqual(result[1], "2");
+});
+
+runner.test("continue skips rest of for body", () => {
+  const code = "for i in [1,2,3,4,5]:\n  if i == 3:\n    continue\n  print(i)";
+  const result = run(code);
+  runner.assertEqual(result.length, 4);
+  runner.assertEqual(result[0], "1");
+  runner.assertEqual(result[1], "2");
+  runner.assertEqual(result[2], "4");
+  runner.assertEqual(result[3], "5");
+});
+
+runner.test("function with no args, no parens call", () => {
+  const code = "fn greet:\n  print 'hello'\ngreet\ngreet";
+  const result = run(code);
+  runner.assertEqual(result.length, 2);
+  runner.assertEqual(result[0], "hello");
+  runner.assertEqual(result[1], "hello");
+});
+
+runner.test("closure captures enclosing scope", () => {
+  const code = "x = 10\nfn addx a:\n  return a + x\nprint addx 5";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "15");
+});
+
 runner.report();
