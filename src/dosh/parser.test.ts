@@ -45,7 +45,7 @@ runner.test("parse string constant", () => {
 });
 
 runner.test("parse boolean constants", () => {
-  const t = parse("True");
+  const t = parse("true");
 
   runner.assertEqual(t.type, "Module");
   runner.assertEqual(t.body.length, 1);
@@ -53,7 +53,7 @@ runner.test("parse boolean constants", () => {
   runner.assertEqual((t.body[0] as ExprStmt).value.type, "Constant");
   runner.assertEqual(((t.body[0] as ExprStmt).value as Constant).value, true);
 
-  const f = parse("False");
+  const f = parse("false");
 
   runner.assertEqual(f.type, "Module");
   runner.assertEqual(f.body.length, 1);
@@ -306,7 +306,7 @@ runner.test("parse chained comparisons", () => {
 // ============================================================
 
 runner.test("parse and operator", () => {
-  const ast = parse("True and False");
+  const ast = parse("true and false");
   const expr = ast.body[0].value;
   runner.assertEqual(expr.type, "BoolOp");
   runner.assertEqual(expr.op, "and");
@@ -679,7 +679,7 @@ runner.test("parse conditional chain", () => {
 });
 
 runner.test("parse while statement", () => {
-  const ast = parse("while True:\n  y");
+  const ast = parse("while true:\n  y");
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0] as WhileStmt;
   runner.assertEqual(stmt.type, "While");

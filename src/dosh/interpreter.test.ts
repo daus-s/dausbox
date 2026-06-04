@@ -59,7 +59,7 @@ runner.test("function def and call", () => {
 });
 
 runner.test("if statement", () => {
-  const code = "if True:\n  print(67)";
+  const code = "if true:\n  print(67)";
 
   const result = run(code);
   runner.assertEqual(result.length, 1);
@@ -67,43 +67,43 @@ runner.test("if statement", () => {
 });
 
 runner.test("if statement with else", () => {
-  const code = "if False:\n  print(67)\nelse:\n  print(42)";
+  const code = "if false:\n  print(67)\nelse:\n  print(42)";
 
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "42");
 });
 
-runner.test("chained conditionals (x=True, y=False)", () => {
+runner.test("chained conditionals (x=true, y=false)", () => {
   const code =
-    "a=67\nb=42\nc=0\nx=True\ny=False\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
+    "a=67\nb=42\nc=0\nx=true\ny=false\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
 
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "67");
 });
 
-runner.test("chained conditionals (x=True, y=True)", () => {
+runner.test("chained conditionals (x=true, y=true)", () => {
   const code =
-    "a=67\nb=42\nc=0\nx=True\ny=True\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
+    "a=67\nb=42\nc=0\nx=true\ny=true\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
 
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "67");
 });
 
-runner.test("chained conditionals (x=False, y=True)", () => {
+runner.test("chained conditionals (x=false, y=true)", () => {
   const code =
-    "a=67\nb=42\nc=0\nx=False\ny=True\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
+    "a=67\nb=42\nc=0\nx=false\ny=true\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
 
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "42");
 });
 
-runner.test("chained conditionals (x=False, y=False)", () => {
+runner.test("chained conditionals (x=false, y=false)", () => {
   const code =
-    "a=67\nb=42\nc=0\nx=False\ny=False\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
+    "a=67\nb=42\nc=0\nx=false\ny=false\nif x:\n  print(a)\nelif y:\n  print(b)\nelse:\n  print(c)";
 
   const result = run(code);
   runner.assertEqual(result.length, 1);
@@ -230,7 +230,7 @@ runner.test("while loop", () => {
 
 runner.test("break exits while loop", () => {
   const code =
-    "x = 0\nwhile True:\n  x = x + 1\n  if x == 5:\n    break\nprint(x)";
+    "x = 0\nwhile true:\n  x = x + 1\n  if x == 5:\n    break\nprint(x)";
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "5");

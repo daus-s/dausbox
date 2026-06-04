@@ -368,9 +368,9 @@ runner.test("all keywords tokenize correctly", () => {
     "and",
     "or",
     "not",
-    "True",
-    "False",
-    "None",
+    "true",
+    "false",
+    "null",
   ];
 
   for (const kw of keywords) {

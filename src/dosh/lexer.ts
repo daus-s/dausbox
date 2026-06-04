@@ -196,9 +196,9 @@ class Lexer {
       and: "AND",
       or: "OR",
       not: "NOT",
-      True: "TRUE",
-      False: "FALSE",
-      None: "NONE",
+      true: "TRUE",
+      false: "FALSE",
+      null: "NONE",
     };
 
     if (value in keywords) {
