@@ -222,7 +222,7 @@ class Parser {
     this.match("NEWLINE");
 
     if (expr.type === "Assign") {
-      return { type: "Assign", expr };
+      return { type: "Assign", assign: expr };
     }
 
     return { type: "Expr", value: expr };

@@ -23,7 +23,7 @@ import type {
   Stmt,
   WhileStmt,
 } from "./stmt";
-import type { Value } from "./value";
+import { typeOf, type Value } from "./value.ts";
 
 class Interpreter {
   private _global: Environment;
@@ -104,6 +104,38 @@ class Interpreter {
         this._global,
       ),
     );
+
+    this._builtins["join"] = (args: Value[]) => {
+      if (args.length !== 2 || args[0] === null || args[1] === null)
+        throw new Error("join: expects two arguments");
+
+      const type1 = typeOf(args[0]);
+      const type2 = typeOf(args[1]);
+      switch (type1) {
+        case "string": {
+          const str = args[0] as string;
+          if (type2 === "string") {
+            const x = args[1] as string;
+            return str + x;
+          } else {
+            const num = this.stringify(args[1]);
+            return str + num;
+          }
+        }
+        case "array": {
+          const arr = args[0] as Value[];
+          const newArr = [...arr, args[1]];
+          return newArr;
+        }
+      }
+
+      return null;
+    };
+
+    this._global.assign(
+      "join",
+      new Func("join", ["xs", "x"], { type: "Module", body: [] }, this._global),
+    );
   }
 
   eval(ast: Module): Value {
@@ -145,8 +177,8 @@ class Interpreter {
       }
       case "Assign": {
         const assign = stmt as AssignStmt;
-        const name = assign.expr.target.id;
-        const value = this.evalExpr(assign.expr.value);
+        const name = assign.assign.target.id;
+        const value = this.evalExpr(assign.assign.value);
         this.local.assign(name, value);
         return value;
       }

@@ -273,11 +273,90 @@ runner.test("function with no args, no parens call", () => {
   runner.assertEqual(result[1], "hello");
 });
 
+//add extra shadowing tests
 runner.test("closure captures enclosing scope", () => {
   const code = "x = 10\nfn addx a:\n  return a + x\nprint addx 5";
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "15");
+});
+
+runner.test("join: string + string", () => {
+  const code = "print join 'hello', ' world'";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "hello world");
+});
+
+runner.test("join: string + number", () => {
+  const code = "print join 'score: ', 42";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "score: 42");
+});
+
+runner.test("join: array + element", () => {
+  const code = "xs = [1, 2, 3]\nprint join xs, 4";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1, 2, 3, 4]");
+});
+
+runner.test("join: array + string element", () => {
+  const code = "xs = ['a', 'b']\nprint join xs, 'c'";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[a, b, c]");
+});
+
+runner.test("join: empty array + element", () => {
+  const code = "print join([], 1)";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1]");
+});
+
+runner.test("join: wrong arg count throws", () => {
+  const code = "join 'a'";
+  let throws = false;
+  try {
+    run(code);
+  } catch (_) {
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
+runner.test("join: null first arg throws", () => {
+  const code = "join null, 'a'";
+  let throws = false;
+  try {
+    run(code);
+  } catch (_) {
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
+runner.test("join: chained joins build string", () => {
+  const code = "x = join 'foo', 'bar'\nprint join x, '!'";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "foobar!");
+});
+
+runner.test("join: chained joins build array", () => {
+  const code = "xs = join( [1, 2], 3)\nxs = join xs, 4\nprint xs";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1, 2, 3, 4]");
+});
+
+runner.test("idiomatic join chain", () => {
+  const code = "xs = [1,2]\nxs = join xs, 3\nxs = join xs, 4\nprint xs";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "[1, 2, 3, 4]");
 });
 
 runner.report();

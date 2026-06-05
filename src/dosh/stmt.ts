@@ -23,7 +23,7 @@ export interface ExprStmt {
 
 export interface AssignStmt {
   type: "Assign";
-  expr: Assign;
+  assign: Assign;
 }
 
 export interface IfStmt {

@@ -369,10 +369,10 @@ runner.test("parse simple assignment", () => {
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0] as AssignStmt;
   runner.assertEqual(stmt.type, "Assign");
-  runner.assertEqual(stmt.expr.target.type, "Name");
-  runner.assertEqual(stmt.expr.target.id, "x");
-  runner.assertEqual(stmt.expr.value.type, "Constant");
-  runner.assertEqual(stmt.expr.value.value, 5);
+  runner.assertEqual(stmt.assign.target.type, "Name");
+  runner.assertEqual(stmt.assign.target.id, "x");
+  runner.assertEqual(stmt.assign.value.type, "Constant");
+  runner.assertEqual(stmt.assign.value.value, 5);
 });
 
 runner.test("parse right-associative assignment", () => {
@@ -381,13 +381,13 @@ runner.test("parse right-associative assignment", () => {
   runner.assertEqual(ast.body.length, 1);
   const stmt = ast.body[0] as AssignStmt;
   runner.assertEqual(stmt.type, "Assign");
-  runner.assertEqual(stmt.expr.target.type, "Name");
-  runner.assertEqual(stmt.expr.target.id, "x");
-  runner.assertEqual(stmt.expr.value.type, "Assign");
-  runner.assertEqual(stmt.expr.value.target.type, "Name");
-  runner.assertEqual(stmt.expr.value.target.id, "y");
-  runner.assertEqual(stmt.expr.value.value.type, "Constant");
-  runner.assertEqual(stmt.expr.value.value.value, 5);
+  runner.assertEqual(stmt.assign.target.type, "Name");
+  runner.assertEqual(stmt.assign.target.id, "x");
+  runner.assertEqual(stmt.assign.value.type, "Assign");
+  runner.assertEqual(stmt.assign.value.target.type, "Name");
+  runner.assertEqual(stmt.assign.value.target.id, "y");
+  runner.assertEqual(stmt.assign.value.value.type, "Constant");
+  runner.assertEqual(stmt.assign.value.value.value, 5);
 });
 
 runner.test("fail to parse non identifier assignment", () => {
@@ -707,10 +707,10 @@ runner.test("parse multi-line program", () => {
   runner.assertEqual(ast.body.length, 2);
   const stmt1 = ast.body[0] as AssignStmt;
   runner.assertEqual(stmt1.type, "Assign");
-  runner.assertEqual(stmt1.expr.target.type, "Name");
-  runner.assertEqual(stmt1.expr.target.id, "x");
-  runner.assertEqual(stmt1.expr.value.type, "Constant");
-  runner.assertEqual(stmt1.expr.value.value, 4);
+  runner.assertEqual(stmt1.assign.target.type, "Name");
+  runner.assertEqual(stmt1.assign.target.id, "x");
+  runner.assertEqual(stmt1.assign.value.type, "Constant");
+  runner.assertEqual(stmt1.assign.value.value, 4);
   const stmt2 = ast.body[1] as ExprStmt;
   runner.assertEqual(stmt2.type, "Expr");
   runner.assertEqual(stmt2.value.type, "BinOp");
@@ -878,7 +878,7 @@ runner.test("parse for loop", () => {
     body: [
       {
         type: "Assign",
-        expr: {
+        assign: {
           type: "Assign",
           target: { type: "Name", id: "x" },
           value: { type: "Constant", value: 1 },
@@ -900,7 +900,7 @@ runner.test("parse for loop", () => {
         body: [
           {
             type: "Assign",
-            expr: {
+            assign: {
               type: "Assign",
               target: { type: "Name", id: "x" },
               value: {
@@ -916,6 +916,90 @@ runner.test("parse for loop", () => {
       {
         type: "Expr",
         value: { type: "Name", id: "x" },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+// when passing an argument in dosh with a literal list parentheses are required.
+// there may be some flexibility if it is the second argument or later but this is
+// not recommended.
+//
+// Ex: use `join([1, 2, 3], 4)` instead of `join [1, 2, 3], 4`
+runner.test("parse base case join", () => {
+  const ast = parse("join([], 1)");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: { type: "Name", id: "join" },
+          args: [
+            {
+              type: "List",
+              elts: [],
+            },
+            { type: "Constant", value: 1 },
+          ],
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse complex function evaluation", () => {
+  const ast = parse("xs = join([1, 2], 3)\nxs = join(xs, 4)\nprint xs");
+
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Assign",
+        assign: {
+          type: "Assign",
+          target: { type: "Name", id: "xs" },
+          value: {
+            type: "Call",
+            func: { type: "Name", id: "join" },
+            args: [
+              {
+                type: "List",
+                elts: [
+                  { type: "Constant", value: 1 },
+                  { type: "Constant", value: 2 },
+                ],
+              },
+              { type: "Constant", value: 3 },
+            ],
+          },
+        },
+      },
+      {
+        type: "Assign",
+        assign: {
+          type: "Assign",
+          target: { type: "Name", id: "xs" },
+          value: {
+            type: "Call",
+            func: { type: "Name", id: "join" },
+            args: [
+              { type: "Name", id: "xs" },
+              { type: "Constant", value: 4 },
+            ],
+          },
+        },
+      },
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: { type: "Name", id: "print" },
+          args: [{ type: "Name", id: "xs" }],
+        },
       },
     ],
   };
