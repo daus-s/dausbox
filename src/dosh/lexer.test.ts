@@ -362,6 +362,7 @@ runner.test("all keywords tokenize correctly", () => {
     "for",
     "in",
     "def",
+    "obj",
     "return",
     "break",
     "continue",
@@ -527,6 +528,17 @@ runner.test("series of known operators", () => {
   runner.assertEqual(tokens[3].type, "RIGHT_BRACKET");
   runner.assertEqual(tokens[4].type, "LEFT_BRACE");
   runner.assertEqual(tokens[5].type, "RIGHT_BRACE");
+});
+
+runner.test("tokenize object attribute", () => {
+  const lexer = new Lexer();
+  const tokens = lexer.tokenize("x.len");
+  runner.assertEqual(tokens.length - 1, 3);
+  runner.assertEqual(tokens[0].type, "IDENTIFIER");
+  runner.assertEqual(tokens[0].value, "x");
+  runner.assertEqual(tokens[1].type, "DOT");
+  runner.assertEqual(tokens[2].type, "IDENTIFIER");
+  runner.assertEqual(tokens[2].value, "len");
 });
 
 runner.report();

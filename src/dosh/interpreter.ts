@@ -1,4 +1,3 @@
-import Environment from "./environment.ts";
 import type {
   BinOp,
   BoolOp,
@@ -10,8 +9,6 @@ import type {
   Subscript,
   UnaryOp,
 } from "./expr";
-import Func from "./func.ts";
-import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 import type {
   AssignStmt,
   ExprStmt,
@@ -19,11 +16,18 @@ import type {
   FuncDef,
   IfStmt,
   Module,
+  ObjStmt,
   ReturnStmt,
   Stmt,
   WhileStmt,
 } from "./stmt";
+
 import { typeOf, type Value } from "./value.ts";
+import Environment from "./environment.ts";
+import Func from "./func.ts";
+import { Obj, ObjDef } from "./object.ts";
+
+import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 
 class Interpreter {
   private _global: Environment;
@@ -106,8 +110,7 @@ class Interpreter {
     );
 
     this._builtins["join"] = (args: Value[]) => {
-      if (args.length !== 2 || args[0] === null || args[1] === null)
-        throw new Error("join: expects two arguments");
+      if (args.length !== 2) throw new Error("join: expects two  arguments");
 
       const type1 = typeOf(args[0]);
       const type2 = typeOf(args[1]);
@@ -146,41 +149,46 @@ class Interpreter {
     return value;
   }
 
-  private evalStmt(stmt: Stmt): Value | null {
+  private evalStmt(stmt: Stmt): Value {
     switch (stmt.type) {
       case "Expr": {
         const expr = stmt as ExprStmt;
         const val = this.evalExpr(expr.value);
 
-        if (!(val instanceof Func)) {
+        if (val instanceof Func) {
+          const func: Func = val;
+          return this.callFunc(func, []);
+        } else {
           return val;
         }
-
-        if (val && val instanceof Func && val.args.length === 0) {
-          this.local = new Environment(this.local);
-          val.activate(this.local);
-          val.assign([]);
-          try {
-            return this.eval(val.body);
-          } catch (e) {
-            if (e instanceof ReturnSignal) {
-              return e.value;
-            } else {
-              throw e;
-            }
-          } finally {
-            this.local = this.local.pop();
-          }
-        }
-
-        return val;
       }
       case "Assign": {
-        const assign = stmt as AssignStmt;
-        const name = assign.assign.target.id;
-        const value = this.evalExpr(assign.assign.value);
-        this.local.assign(name, value);
-        return value;
+        const assign = (stmt as AssignStmt).assign;
+
+        switch (assign.target.type) {
+          case "Name": {
+            const name = assign.target.id;
+            const value = this.evalExpr(assign.value);
+            this.local.assign(name, value);
+            return value;
+          }
+          case "Attr": {
+            const obj = this.evalExpr(assign.target.target);
+
+            if (!(obj instanceof Obj)) {
+              throw new Error(`Invalid target type: ${assign.target.type}`);
+            }
+
+            const name = assign.target.attr.id;
+            const value = this.evalExpr(assign.value);
+
+            obj.assign(name, value);
+
+            return value;
+          }
+          default:
+            throw new Error(`Invalid target type: ${assign.target}`);
+        }
       }
       case "If": {
         const ifstmt = stmt as IfStmt;
@@ -249,6 +257,69 @@ class Interpreter {
         );
         return null;
       }
+      case "ObjDef": {
+        const obj = stmt as ObjStmt;
+
+        const env = new Environment(this.local);
+
+        const name = obj.name;
+        const body = obj.body;
+
+        this.local = env;
+        for (const stmt of body) {
+          switch (stmt.type) {
+            case "Expr": {
+              const type = stmt.value.type;
+              if (type !== "Name") {
+                throw new Error(`Expected field to be a Name, got: ${type}`);
+              }
+              env.assign(stmt.value.id, null);
+              break;
+            }
+            case "Assign":
+            case "FuncDef":
+            case "ObjDef":
+              this.evalStmt(stmt);
+              break;
+
+            default:
+              throw new Error(
+                `Unexpected statement type in Object definition. expected: Expr | Assign | FuncDef | ObjDef got: ${stmt.type}`,
+              );
+          }
+        }
+
+        if (!env.has("_init")) {
+          const fields = env.entries().filter((e) => !(e[1] instanceof Func));
+
+          const initFunc = new Func(
+            "_init",
+            fields.map(([name]) => name),
+            {
+              type: "Module",
+              body: fields.map(([name]) => ({
+                type: "Assign",
+                assign: {
+                  type: "Assign",
+                  target: {
+                    type: "Attr",
+                    target: { type: "Name", id: "self" },
+                    attr: { type: "Name", id: name },
+                  },
+                  value: { type: "Name", id: name },
+                },
+              })),
+            },
+            env,
+          );
+          env.assign("_init", initFunc);
+        }
+
+        this.local = this.local.pop();
+        this.local.assign(name, new ObjDef(name, env));
+
+        return null;
+      }
       case "Return":
         {
           const ret = stmt as ReturnStmt;
@@ -270,9 +341,39 @@ class Interpreter {
         return expr.value;
       case "Name":
         return this.local.get(expr.id);
+
       case "Assign": {
         const value = this.evalExpr(expr.value);
-        this.local.assign(expr.target.id, value);
+        const target = expr.target;
+
+        switch (target.type) {
+          case "Attr": {
+            const obj = this.evalExpr(target.target);
+
+            if (!(obj instanceof Obj))
+              throw new Error(
+                "Invalid attribute target: " + this.stringify(obj),
+              );
+
+            obj.assign(target.attr.id, value);
+
+            return value;
+          }
+          case "Name":
+            this.local.assign(target.id, value);
+            return value;
+          default:
+            throw new Error("Invalid target type.");
+        }
+      }
+      case "Attr": {
+        const target = this.evalExpr(expr.target);
+
+        if (!(target instanceof Obj))
+          throw new Error("Invalid attribute target: " + typeOf(target));
+
+        const value = target.access(expr.attr.id);
+
         return value;
       }
       case "BinOp":
@@ -445,32 +546,83 @@ class Interpreter {
   }
 
   private evalCallExpr(expr: Call): Value {
-    const func = this.evalExpr(expr.func);
+    const callee = this.evalExpr(expr.func);
 
-    if (!(func instanceof Func)) {
-      throw new Error(`Call: func must be a function, got ${func}`);
+    if (!(callee instanceof Func) && !(callee instanceof ObjDef)) {
+      throw new Error(`Call: func must be a function, got ${typeOf(callee)}`);
     }
 
     const args = expr.args.map((arg) => this.evalExpr(arg));
 
-    if (func.id in this._builtins) {
-      return this._builtins[func.id](args);
+    if (callee instanceof Func) {
+      const func = callee as Func;
+
+      if (func.id in this._builtins) {
+        return this._builtins[func.id](args);
+      }
+
+      if (expr.func.type === "Attr") {
+        const inst = this.evalExpr(expr.func.target);
+
+        if (!(inst instanceof Obj))
+          throw new Error("Invalid attribute target.");
+
+        return this.callMethod(func, inst, args);
+      } else {
+        return this.callFunc(func, args);
+      }
+    } else if (callee instanceof ObjDef) {
+      return this.callConstructor(callee, args);
     }
 
-    this.local = new Environment(this.local);
-    func.activate(this.local);
-    func.assign(args);
+    throw new Error("can only call objects of type Func or constructors");
+  }
+
+  private callFunc(func: Func, args: Value[]): Value {
+    const prevLocal = this.local;
+    this.local = new Environment(func.closure);
+
+    func.apply(this.local, args);
+
     try {
       return this.eval(func.body);
     } catch (e) {
-      if (e instanceof ReturnSignal) {
-        return e.value;
-      } else {
-        throw e;
-      }
+      if (e instanceof ReturnSignal) return e.value;
+      else throw e;
     } finally {
-      this.local = this.local.pop();
+      this.local = prevLocal;
     }
+  }
+
+  private callMethod(func: Func, inst: Obj, args: Value[]): Value {
+    const prevLocal = this.local;
+    const callEnv = new Environment(func.closure);
+
+    this.local = callEnv;
+    this.local.assign("self", inst);
+
+    func.apply(callEnv, args);
+
+    try {
+      return this.eval(func.body);
+    } catch (sig) {
+      if (sig instanceof ReturnSignal) return sig.value;
+      else throw sig;
+    } finally {
+      this.local = prevLocal;
+    }
+  }
+
+  private callConstructor(def: ObjDef, args: Value[]): Value {
+    const obj = new Obj(def);
+    const initFunc = def.init();
+
+    if (!(initFunc instanceof Func)) {
+      throw new Error("ObjDef: _init must be a Func");
+    }
+
+    this.callMethod(initFunc, obj, args);
+    return obj;
   }
 
   private evalSubscriptExpr(expr: Subscript): Value {
@@ -492,8 +644,8 @@ class Interpreter {
   private stringify(val: Value): string {
     if (typeof val === "string") return val;
     if (typeof val === "number") return val.toString();
-    if (typeof val === "boolean") return val ? "True" : "False";
-    if (val === null) return "None";
+    if (typeof val === "boolean") return val ? "true" : "false";
+    if (val === null) return "null";
     if (Array.isArray(val))
       return `[${val.map((v) => this.stringify(v)).join(", ")}]`;
     return val.toString();

@@ -2,6 +2,7 @@ export type Expr =
   | Constant
   | Name
   | Assign
+  | Attr
   | BinOp
   | UnaryOp
   | Compare
@@ -23,8 +24,14 @@ export interface Name {
 
 export interface Assign {
   type: "Assign";
-  target: Name;
+  target: Name | Attr;
   value: Expr;
+}
+
+export interface Attr {
+  type: "Attr";
+  target: Expr;
+  attr: Name;
 }
 
 export interface BinOp {

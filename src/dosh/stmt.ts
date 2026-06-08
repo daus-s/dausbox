@@ -12,6 +12,7 @@ export type Stmt =
   | WhileStmt
   | ForStmt
   | FuncDef
+  | ObjStmt
   | ReturnStmt
   | BreakStmt
   | ContinueStmt;
@@ -50,6 +51,12 @@ export interface FuncDef {
   type: "FuncDef";
   name: string;
   args: string[]; // parameter names
+  body: Stmt[];
+}
+
+export interface ObjStmt {
+  type: "ObjDef";
+  name: string;
   body: Stmt[];
 }
 

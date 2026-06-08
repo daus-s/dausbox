@@ -72,6 +72,7 @@ class Parser {
 
   private parseStmt(): Stmt | null {
     if (this.match("FUNC")) return this.funcDef();
+    if (this.match("OBJ")) return this.objDef();
     if (this.match("IF")) return this.ifStatement();
     if (this.match("WHILE")) return this.whileStatement();
     if (this.match("FOR")) return this.forStatement();
@@ -115,6 +116,28 @@ class Parser {
     this.match("NEWLINE");
 
     return { type: "FuncDef", name: name.value, args, body: stmts };
+  }
+
+  private objDef(): Stmt | null {
+    const name = this.consume(
+      "IDENTIFIER",
+      "Expected identifier after `obj` keyword",
+    );
+
+    this.consume("COLON", "Expected ':'");
+    this.consume("NEWLINE", "Expected newline after `obj` definition");
+    this.consume("INDENT", "Expected indent after `obj` definition");
+
+    const stmts: Stmt[] = [];
+
+    while (!this.match("DEDENT")) {
+      const stmt = this.parseStmt();
+      if (stmt) stmts.push(stmt);
+    }
+
+    this.match("NEWLINE");
+
+    return { type: "ObjDef", name: name.value, body: stmts };
   }
 
   private parseArgs(parens: boolean = false): string[] {
@@ -236,7 +259,8 @@ class Parser {
     const left = this.orExpr();
 
     if (this.match("EQUAL")) {
-      if (left.type !== "Name") throw new Error("Invalid assignment target.");
+      if (!(left.type === "Name" || left.type === "Attr"))
+        throw new Error("Invalid assignment target.");
 
       const right = this.assignExpr();
 
@@ -376,6 +400,7 @@ class Parser {
     while (
       this.check("LEFT_PAREN") ||
       this.check("LEFT_BRACKET") ||
+      this.check("DOT") ||
       this.canStartArg()
     ) {
       if (this.match("LEFT_PAREN")) {
@@ -404,6 +429,14 @@ class Parser {
           args.push(this.expr());
         } while (this.match("COMMA"));
         expr = { type: "Call", func: expr, args };
+      } else if (this.match("DOT")) {
+        const attr = this.consume("IDENTIFIER", "Expected attribute name");
+
+        expr = {
+          type: "Attr",
+          target: expr,
+          attr: { type: "Name", id: attr.value as string },
+        };
       }
     }
 

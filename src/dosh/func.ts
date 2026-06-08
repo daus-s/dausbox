@@ -6,20 +6,16 @@ class Func {
   id: string;
   args: string[];
   body: Module;
-  private env: Environment;
+  closure: Environment;
 
   constructor(id: string, args: string[], body: Module, env: Environment) {
     this.id = id;
     this.args = args;
     this.body = body;
-    this.env = env;
+    this.closure = env;
   }
 
-  activate(env: Environment): void {
-    this.env = env;
-  }
-
-  assign(args: Value[]): void {
+  apply(env: Environment, args: Value[]): void {
     if (args.length !== this.args.length) {
       throw new Error(
         `Expected ${this.args.length} arguments, got ${args.length}`,
@@ -27,7 +23,7 @@ class Func {
     }
 
     for (let i = 0; i < this.args.length; i++) {
-      this.env.assign(this.args[i], args[i]);
+      env.assign(this.args[i], args[i]);
     }
   }
 }

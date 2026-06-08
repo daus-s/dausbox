@@ -36,6 +36,7 @@ export type TokenType =
   | "FOR"
   | "IN"
   | "FUNC"
+  | "OBJ"
   | "RETURN"
   | "PASS"
   | "BREAK"

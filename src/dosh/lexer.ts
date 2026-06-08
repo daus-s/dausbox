@@ -189,6 +189,7 @@ class Lexer {
       for: "FOR",
       in: "IN",
       fn: "FUNC",
+      obj: "OBJ",
       return: "RETURN",
       pass: "PASS",
       break: "BREAK",

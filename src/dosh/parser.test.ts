@@ -1006,4 +1006,314 @@ runner.test("parse complex function evaluation", () => {
   runner.assertDeepEqual(ast, expectedAst);
 });
 
+// test attributes
+runner.test("parse attribute access", () => {
+  const ast = parse("d.name");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Attr",
+          target: { type: "Name", id: "d" },
+          attr: { type: "Name", id: "name" },
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse chained attribute access", () => {
+  const ast = parse("d.foo.bar");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Attr",
+          target: {
+            type: "Attr",
+            target: { type: "Name", id: "d" },
+            attr: { type: "Name", id: "foo" },
+          },
+          attr: { type: "Name", id: "bar" },
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse method call with parens", () => {
+  const ast = parse("d.bark()");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: {
+            type: "Attr",
+            target: { type: "Name", id: "d" },
+            attr: { type: "Name", id: "bark" },
+          },
+          args: [],
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse method call with args no parens", () => {
+  const ast = parse("d.greet 'rex'");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: {
+            type: "Attr",
+            target: { type: "Name", id: "d" },
+            attr: { type: "Name", id: "greet" },
+          },
+          args: [{ type: "Constant", value: "rex" }],
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse attr access on call result", () => {
+  const ast = parse("getObj().name");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Attr",
+          target: {
+            type: "Call",
+            func: { type: "Name", id: "getObj" },
+            args: [],
+          },
+          attr: { type: "Name", id: "name" },
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse attr assign", () => {
+  const ast = parse("d.name = 'rex'");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Assign",
+        assign: {
+          type: "Assign",
+          target: {
+            type: "Attr",
+            target: { type: "Name", id: "d" },
+            attr: { type: "Name", id: "name" },
+          },
+          value: { type: "Constant", value: "rex" },
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+//test objects
+runner.test("parse obj def", () => {
+  const ast = parse("obj Dog:\n  name = 'rex'");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "ObjDef",
+        name: "Dog",
+        body: [
+          {
+            type: "Assign",
+            assign: {
+              type: "Assign",
+              target: { type: "Name", id: "name" },
+              value: { type: "Constant", value: "rex" },
+            },
+          },
+        ],
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse obj def with method", () => {
+  const ast = parse("obj Dog:\n  fn bark:\n    print 'woof'");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "ObjDef",
+        name: "Dog",
+        body: [
+          {
+            type: "FuncDef",
+            name: "bark",
+            args: [],
+            body: [
+              {
+                type: "Expr",
+                value: {
+                  type: "Call",
+                  func: { type: "Name", id: "print" },
+                  args: [{ type: "Constant", value: "woof" }],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse obj def with init", () => {
+  const ast = parse("obj Dog:\n  fn init name:\n    self.name = name");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "ObjDef",
+        name: "Dog",
+        body: [
+          {
+            type: "FuncDef",
+            name: "init",
+            args: ["name"],
+            body: [
+              {
+                type: "Assign",
+                assign: {
+                  type: "Assign",
+                  target: {
+                    type: "Attr",
+                    target: { type: "Name", id: "self" },
+                    attr: { type: "Name", id: "name" },
+                  },
+                  value: { type: "Name", id: "name" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse obj instantiation no args", () => {
+  const ast = parse("d = Dog()");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Assign",
+        assign: {
+          type: "Assign",
+          target: { type: "Name", id: "d" },
+          value: {
+            type: "Call",
+            func: { type: "Name", id: "Dog" },
+            args: [],
+          },
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse obj instantiation with args", () => {
+  const ast = parse("d = Dog 'rex'");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Assign",
+        assign: {
+          type: "Assign",
+          target: { type: "Name", id: "d" },
+          value: {
+            type: "Call",
+            func: { type: "Name", id: "Dog" },
+            args: [{ type: "Constant", value: "rex" }],
+          },
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse obj method call", () => {
+  const ast = parse("d.bark()");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: {
+            type: "Attr",
+            target: { type: "Name", id: "d" },
+            attr: { type: "Name", id: "bark" },
+          },
+          args: [],
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
+runner.test("parse obj field access", () => {
+  const ast = parse("print d.name");
+  const expectedAst: Module = {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: { type: "Name", id: "print" },
+          args: [
+            {
+              type: "Attr",
+              target: { type: "Name", id: "d" },
+              attr: { type: "Name", id: "name" },
+            },
+          ],
+        },
+      },
+    ],
+  };
+  runner.assertDeepEqual(ast, expectedAst);
+});
+
 runner.report();

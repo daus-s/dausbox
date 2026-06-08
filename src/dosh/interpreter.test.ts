@@ -14,7 +14,6 @@ function run(code: string) {
   const tokens: Token[] = lexer.tokenize(code);
   const ast = parser.parse(tokens);
   interpreter.eval(ast);
-  interpreter.debug();
   return interpreter.results();
 }
 
@@ -357,6 +356,91 @@ runner.test("idiomatic join chain", () => {
   const result = run(code);
   runner.assertEqual(result.length, 1);
   runner.assertEqual(result[0], "[1, 2, 3, 4]");
+});
+
+runner.test("object", () => {
+  const code = "obj Dog:\n  name\nprint Dog\n";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+});
+
+runner.test("object: explicit init", () => {
+  const code =
+    "obj Dog:\n  name\n  fn _init name:\n    self.name = name\n    print join 'created dog: ', self.name\nd = Dog 'fido'\nprint join 'hi doggy, ', d.name";
+  const result = run(code);
+  runner.assertEqual(result.length, 2);
+  runner.assertEqual(result[0], "created dog: fido");
+  runner.assertEqual(result[1], "hi doggy, fido");
+});
+
+runner.test("object: implicit init", () => {
+  const code = "obj Dog:\n  name\nd = Dog 'fido'\nprint d.name";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "fido");
+});
+
+runner.test("object: default values 1", () => {
+  const code =
+    "obj Dog:\n  name = 'fido'\n  fn _init:\n    print join 'created dog: ', self.name\nd = Dog()\nprint d.name";
+  const result = run(code);
+  runner.assertEqual(result.length, 2);
+  runner.assertEqual(result[0], "created dog: fido");
+  runner.assertEqual(result[1], "fido");
+});
+
+runner.test("object: default values 2", () => {
+  const code =
+    "obj Coord:\n  x = 0\n  fn _init:\n    pass\nc = Coord()\nprint c.x";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "0");
+});
+
+runner.test("object: test overriden implicit init", () => {
+  const code = "obj Foo:\n  bar=1\nfoo = Foo 69420\nprint foo.bar";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "69420");
+});
+
+runner.test("object: non-spanning provided init", () => {
+  const code =
+    "obj Observation:\n  x\n  y\n  temp\n  fn _init x, y:\n    self.x = x\n    self.y = y\n  fn record temp:\n    self.temp = temp\nobs = Observation 1, 2\nprint obs.x, obs.y, obs.temp\nobs.record 3\nprint obs.x, obs.y, obs.temp\n";
+  const result = run(code);
+  runner.assertEqual(result.length, 2);
+  runner.assertEqual(result[0], "1, 2, null");
+  runner.assertEqual(result[1], "1, 2, 3");
+});
+
+runner.test("object: prevent leaking variables from scope", () => {
+  const code = "x = 42\nobj O:\n  fn _init:\n    pass\no = O()\nprint o.x";
+  let throws = false;
+  try {
+    run(code);
+  } catch (e) {
+    throws = true;
+    runner.assertEqual("Variable not found: x", (e as Error).message);
+  }
+  runner.assert(
+    throws,
+    "expected error: should not have access to outer scope",
+  );
+});
+
+runner.test("functions as 1st class", () => {
+  const code = "fn add x,y:\n  x + y\nplus = add\nprint plus 4, 5";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "9");
+});
+
+runner.test("complex class object", () => {
+  const code =
+    "obj Foo:\n  fn bar:\n    print 'deez'\n  fn _init:\n    self.bar\nf = Foo()";
+  const result = run(code);
+  runner.assertEqual(result.length, 1);
+  runner.assertEqual(result[0], "deez");
 });
 
 runner.report();
