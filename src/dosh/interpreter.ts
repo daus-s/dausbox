@@ -19,6 +19,7 @@ import type {
   ObjStmt,
   ReturnStmt,
   Stmt,
+  UseStmt,
   WhileStmt,
 } from "./stmt";
 
@@ -30,33 +31,28 @@ import { Obj, ObjDef } from "./object.ts";
 import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 
 class Interpreter {
-  private _global: Environment;
+  private global: Environment;
   private local: Environment;
 
   private _builtins: Record<string, (args: Value[]) => Value> = {};
 
   constructor() {
-    this._global = new Environment();
-    this._global.assign("_out", [] as Value[]);
+    this.global = new Environment();
+    this.global.assign("_out", [] as Value[]);
     this.registerBuiltins();
-    this.local = this._global;
+    this.local = this.global;
   }
 
   private registerBuiltins() {
     this._builtins["print"] = (args: Value[]) => {
       const s = args.map((arg) => this.stringify(arg)).join(", ");
-      const out = this._global.get("_out") as Value[];
-      this._global.assign("_out", [...out, s]);
+      const out = this.global.get("_out") as Value[];
+      this.global.assign("_out", [...out, s]);
       return s;
     };
-    this._global.assign(
+    this.global.assign(
       "print",
-      new Func(
-        "print",
-        ["...args"],
-        { type: "Module", body: [] },
-        this._global,
-      ),
+      new Func("print", ["...args"], { type: "Module", body: [] }, this.global),
     );
 
     //range is only builtin to allow function overloading
@@ -99,13 +95,13 @@ class Interpreter {
       }
     };
 
-    this._global.assign(
+    this.global.assign(
       "range",
       new Func(
         "range",
         ["length", "start", "step"],
         { type: "Module", body: [] },
-        this._global,
+        this.global,
       ),
     );
 
@@ -135,9 +131,9 @@ class Interpreter {
       return null;
     };
 
-    this._global.assign(
+    this.global.assign(
       "join",
-      new Func("join", ["xs", "x"], { type: "Module", body: [] }, this._global),
+      new Func("join", ["xs", "x"], { type: "Module", body: [] }, this.global),
     );
   }
 
@@ -320,14 +316,17 @@ class Interpreter {
 
         return null;
       }
-      case "Return":
-        {
-          const ret = stmt as ReturnStmt;
-          const value = ret.value ? this.evalExpr(ret.value) : null;
+      case "UseStmt": {
+        const use = stmt as UseStmt;
 
-          throw new ReturnSignal(value);
-        }
-        break;
+        return null;
+      }
+      case "Return": {
+        const ret = stmt as ReturnStmt;
+        const value = ret.value ? this.evalExpr(ret.value) : null;
+
+        throw new ReturnSignal(value);
+      }
       case "Break":
         throw new BreakSignal();
       case "Continue":
@@ -652,7 +651,7 @@ class Interpreter {
   }
 
   debug() {
-    const out = this._global.get("_out") as Value[];
+    const out = this.global.get("_out") as Value[];
     out.forEach((v) => console.log(v));
   }
 

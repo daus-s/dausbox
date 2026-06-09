@@ -191,6 +191,8 @@ class Lexer {
       fn: "FUNC",
       obj: "OBJ",
       return: "RETURN",
+      use: "USE",
+      super: "SUPER",
       pass: "PASS",
       break: "BREAK",
       continue: "CONTINUE",

@@ -76,6 +76,7 @@ class Parser {
     if (this.match("IF")) return this.ifStatement();
     if (this.match("WHILE")) return this.whileStatement();
     if (this.match("FOR")) return this.forStatement();
+    if (this.match("USE")) return this.useStatement();
     if (this.match("RETURN")) return this.returnStatement();
     if (this.match("PASS") || this.match("NEWLINE")) return null;
     if (this.match("BREAK")) return { type: "Break" };
@@ -230,6 +231,26 @@ class Parser {
       if (stmt) body.push(stmt);
     }
     return { type: "For", target, iter, body };
+  }
+
+  private useStatement(): Stmt | null {
+    const src = [];
+    while (this.check("SUPER") || this.check("IDENTIFIER")) {
+      if (!this.match("SUPER")) {
+        const s = this.consume("IDENTIFIER", "Expected identifier.");
+
+        src.push(s.value);
+      } else {
+        src.push("super");
+      }
+
+      if (!this.match("DOT")) break;
+    }
+
+    return {
+      type: "UseStmt",
+      src,
+    };
   }
 
   private returnStatement(): Stmt | null {

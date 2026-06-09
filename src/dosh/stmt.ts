@@ -13,6 +13,7 @@ export type Stmt =
   | ForStmt
   | FuncDef
   | ObjStmt
+  | UseStmt
   | ReturnStmt
   | BreakStmt
   | ContinueStmt;
@@ -58,6 +59,11 @@ export interface ObjStmt {
   type: "ObjDef";
   name: string;
   body: Stmt[];
+}
+
+export interface UseStmt {
+  type: "UseStmt";
+  src: string[];
 }
 
 export interface ReturnStmt {

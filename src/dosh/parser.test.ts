@@ -1316,4 +1316,20 @@ runner.test("parse obj field access", () => {
   runner.assertDeepEqual(ast, expectedAst);
 });
 
+runner.test("parse use stmt", () => {
+  const ast = parse("use math");
+
+  runner.assertDeepEqual(ast, {
+    type: "Module",
+    body: [{ type: "UseStmt", src: ["math"] }],
+  });
+});
+
+runner.test("parse use with super ", () => {
+  const ast = parse("use super.math");
+  runner.assertDeepEqual(ast, {
+    type: "Module",
+    body: [{ type: "UseStmt", src: ["super", "math"] }],
+  });
+});
 runner.report();

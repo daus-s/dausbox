@@ -38,6 +38,8 @@ export type TokenType =
   | "FUNC"
   | "OBJ"
   | "RETURN"
+  | "USE"
+  | "SUPER"
   | "PASS"
   | "BREAK"
   | "CONTINUE"

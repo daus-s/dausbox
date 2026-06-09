@@ -541,4 +541,15 @@ runner.test("tokenize object attribute", () => {
   runner.assertEqual(tokens[2].value, "len");
 });
 
+runner.test("tokenize use statement", () => {
+  const lexer = new Lexer();
+  const tokens = lexer.tokenize("use super.vec2");
+
+  runner.assertEqual(tokens.length - 1, 4);
+  runner.assertEqual(tokens[0].type, "USE");
+  runner.assertEqual(tokens[1].type, "SUPER");
+  runner.assertEqual(tokens[2].type, "DOT");
+  runner.assertEqual(tokens[3].type, "IDENTIFIER");
+});
+
 runner.report();
