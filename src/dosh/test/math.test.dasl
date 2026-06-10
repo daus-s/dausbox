@@ -1,0 +1,19 @@
+use math
+
+ln2 = math.ln 2
+
+if ln2 - 0.6931471805599453 < 0.00000001 and ln2 - 0.6931471805599453 > -0.00000001:
+  print "test: ln passed"
+else:
+  print join "test: ln failed. expected: 0.6931471805599453, got: ", ln2
+
+
+if math.fact(5) != 120:
+  print join "test: factorial(5) failed, expected: 120, got: ", math.fact 5
+else:
+  print "test: factorial(5) passed"
+
+if math.fact(0) != 1:
+  print join "test: factorial(0) failed, expected: 1, got: ", math.fact 0
+else:
+  print "test: factorial(0) passed"

@@ -247,6 +247,8 @@ class Parser {
       if (!this.match("DOT")) break;
     }
 
+    this.match("NEWLINE");
+
     return {
       type: "UseStmt",
       src,

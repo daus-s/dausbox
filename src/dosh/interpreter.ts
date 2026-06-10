@@ -30,7 +30,12 @@ import { Obj, ObjDef } from "./object.ts";
 
 import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 
+type Resolver = (file: string, src: string[]) => Module;
+
 class Interpreter {
+  private currFile: string | null = null;
+  private resolver: Resolver | null = null;
+
   private global: Environment;
   private local: Environment;
 
@@ -135,6 +140,23 @@ class Interpreter {
       "join",
       new Func("join", ["xs", "x"], { type: "Module", body: [] }, this.global),
     );
+  }
+
+  setFile(file: string) {
+    this.currFile = file;
+  }
+
+  setResolver(resolver: Resolver) {
+    this.resolver = resolver;
+  }
+
+  private resolve(src: string[]): Module {
+    if (!this.resolver)
+      throw new Error("tried to resolve use without defined resolver");
+    if (!this.currFile)
+      throw new Error("tried to resolve use without defined current file");
+
+    return this.resolver(this.currFile, src);
   }
 
   eval(ast: Module): Value {
@@ -319,6 +341,21 @@ class Interpreter {
       case "UseStmt": {
         const use = stmt as UseStmt;
 
+        const ast = this.resolve(use.src);
+
+        const moddef = new ObjDef("module", new Environment(this.global));
+        const mod = new Obj(moddef);
+
+        const saved = this.local;
+
+        this.local = mod.env;
+
+        this.eval(ast);
+
+        this.local = saved;
+
+        this.local.assign(use.src[use.src.length - 1], mod);
+
         return null;
       }
       case "Return": {
@@ -456,65 +493,63 @@ class Interpreter {
   }
 
   private evalCompareExpr(expr: Compare): Value {
-    const val = this.evalExpr(expr.left);
+    let left = this.evalExpr(expr.left);
     if (expr.ops.length !== expr.comparators.length) {
       throw new Error("Compare: ops and comparators must have the same length");
     }
 
-    let result: boolean = false;
-    for (const [op, right] of expr.ops.map(
+    for (const [op, comp] of expr.ops.map(
       (op, i) => [op, expr.comparators[i]] as [string, Expr],
     )) {
-      const comp = this.evalExpr(right);
-      switch (op) {
-        case "==":
-          if (typeof val !== typeof comp) {
-            return false;
-          }
+      const right = this.evalExpr(comp);
+      if (!this.compare(left, op, right)) return false;
 
-          result = val === comp;
-          break;
-        case "!=":
-          if (typeof val !== typeof comp) {
-            return true;
-          }
-
-          result = val !== comp;
-          break;
-        case "<":
-          if (typeof val !== "number" || typeof comp !== "number") {
-            throw new Error("CompareOp (<): operands must be numbers");
-          }
-
-          result = val < comp;
-          break;
-        case "<=":
-          if (typeof val !== "number" || typeof comp !== "number") {
-            throw new Error("CompareOp (<=): operands must be numbers");
-          }
-
-          result = val <= comp;
-          break;
-        case ">":
-          if (typeof val !== "number" || typeof comp !== "number") {
-            throw new Error("CompareOp (>): operands must be numbers");
-          }
-
-          result = val > comp;
-          break;
-        case ">=":
-          if (typeof val !== "number" || typeof comp !== "number") {
-            throw new Error("CompareOp (>=): operands must be numbers");
-          }
-
-          result = val >= comp;
-          break;
-        default:
-          throw new Error(`Unknown CompareOp: ${op}`);
-      }
+      left = right;
     }
+    return true;
+  }
 
-    return result;
+  private compare(left: Value, op: string, right: Value): boolean {
+    switch (op) {
+      case "==":
+        if (typeof left !== typeof right) {
+          return false;
+        }
+
+        return left === right;
+      case "!=":
+        if (typeof left !== typeof right) {
+          return true;
+        }
+
+        return left !== right;
+      case "<":
+        if (typeof left !== "number" || typeof right !== "number") {
+          throw new Error("CompareOp (<): operands must be numbers");
+        }
+
+        return left < right;
+      case "<=":
+        if (typeof left !== "number" || typeof right !== "number") {
+          throw new Error("CompareOp (<=): operands must be numbers");
+        }
+
+        return left <= right;
+      case ">":
+        if (typeof left !== "number" || typeof right !== "number") {
+          throw new Error("CompareOp (>): operands must be numbers");
+        }
+
+        return left > right;
+      case ">=":
+        if (typeof left !== "number" || typeof right !== "number") {
+          throw new Error("CompareOp (>=): operands must be numbers");
+        }
+
+        return left >= right;
+      default:
+        throw new Error(`Unknown CompareOp: ${op}`);
+    }
   }
 
   private evalBoolOpExpr(expr: BoolOp): Value {

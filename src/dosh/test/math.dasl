@@ -1,0 +1,27 @@
+fn sqrt x:
+  if x < 0:
+    return null
+  else:
+    return x ** 0.5
+
+
+fn ln x:
+  if x <= 0:
+    return null
+  elif 0 < x < 2:
+    r = 0
+    for n in range 1, 101:
+      r = r + ((x - 1) ** n / n)
+    return r
+  else:
+    r = 0
+    for n in range 1, 101:
+      r = r - (-1) ** (n - 1) / n * (1 / x - 1) ** n
+    return r
+
+fn fact x:
+  r = 1
+  while x > 0:
+    r = r * x
+    x = x - 1
+  return r

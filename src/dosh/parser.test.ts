@@ -556,6 +556,51 @@ runner.test("parse function def with arg", () => {
   runner.assertDeepEqual(ast.body[0], expectedAst.body[0]);
 });
 
+runner.test("parse math.sqrt function", () => {
+  const ast = parse(
+    "fn sqrt x:\n  if x < 0:\n    return null\n  else:\n    return x ** 0.5",
+  );
+
+  runner.assertDeepEqual(ast, {
+    type: "Module",
+    body: [
+      {
+        type: "FuncDef",
+        name: "sqrt",
+        args: ["x"],
+        body: [
+          {
+            type: "If",
+            cond: {
+              type: "Compare",
+              left: { type: "Name", id: "x" },
+              ops: ["<"],
+              comparators: [{ type: "Constant", value: 0 }],
+            },
+            body: [
+              {
+                type: "Return",
+                value: { type: "Constant", value: null },
+              },
+            ],
+            orelse: [
+              {
+                type: "Return",
+                value: {
+                  type: "BinOp",
+                  op: "**",
+                  left: { type: "Name", id: "x" },
+                  right: { type: "Constant", value: 0.5 },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+});
+
 runner.test("parse function def with arg (no parens)", () => {
   const ast = parse("fn square a:\n    return a ** 2");
   const expectedAst = {
@@ -593,6 +638,60 @@ runner.test("parse function with multiple args", () => {
   runner.assertEqual(stmt.args[0], "a");
   runner.assertEqual(stmt.args[1], "b");
   runner.assertEqual(stmt.body.length, 0);
+});
+
+runner.test("parse nested function call as an argument", () => {
+  const ast = parse("use math\nprint math.sqrt 9");
+
+  runner.assertDeepEqual(ast, {
+    type: "Module",
+    body: [
+      {
+        type: "UseStmt",
+        src: ["math"],
+      },
+      {
+        type: "Expr",
+        value: {
+          type: "Call",
+          func: { type: "Name", id: "print" },
+          args: [
+            {
+              type: "Call",
+              func: {
+                type: "Attr",
+                target: { type: "Name", id: "math" },
+                attr: {
+                  type: "Name",
+                  id: "sqrt",
+                },
+              },
+              args: [{ type: "Constant", value: 9 }],
+            },
+          ],
+        },
+      },
+    ],
+  });
+});
+
+runner.test("parse function with multiple statements", () => {
+  const ast = parse("fn foo(a):\n    a\n    b");
+  runner.assertEqual(ast.body.length, 1);
+  const stmt = ast.body[0] as FuncDef;
+  runner.assertEqual(stmt.type, "FuncDef");
+  runner.assertEqual(stmt.name, "foo");
+  runner.assertEqual(stmt.args.length, 1);
+  runner.assertEqual(stmt.args[0], "a");
+  runner.assertEqual(stmt.body.length, 2);
+  runner.assertDeepEqual(stmt.body[0], {
+    type: "Expr",
+    value: { type: "Name", id: "a" },
+  });
+  runner.assertDeepEqual(stmt.body[1], {
+    type: "Expr",
+    value: { type: "Name", id: "b" },
+  });
 });
 
 runner.test("parse if statement", () => {
@@ -1317,7 +1416,7 @@ runner.test("parse obj field access", () => {
 });
 
 runner.test("parse use stmt", () => {
-  const ast = parse("use math");
+  const ast = parse("use math\n");
 
   runner.assertDeepEqual(ast, {
     type: "Module",
@@ -1326,7 +1425,7 @@ runner.test("parse use stmt", () => {
 });
 
 runner.test("parse use with super ", () => {
-  const ast = parse("use super.math");
+  const ast = parse("use super.math\n");
   runner.assertDeepEqual(ast, {
     type: "Module",
     body: [{ type: "UseStmt", src: ["super", "math"] }],
