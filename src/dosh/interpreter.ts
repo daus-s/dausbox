@@ -111,7 +111,8 @@ class Interpreter {
     );
 
     this._builtins["join"] = (args: Value[]) => {
-      if (args.length !== 2) throw new Error("join: expects two  arguments");
+      if (args.length !== 2)
+        throw new Error("join: expects 2 arguments, got: " + args.length);
 
       const type1 = typeOf(args[0]);
       const type2 = typeOf(args[1]);
@@ -133,12 +134,38 @@ class Interpreter {
         }
       }
 
-      return null;
+      throw new Error(
+        `join: expected args:\n - string, any\n - array, any\n received:\n - ${type1}, ${type2}`,
+      );
     };
 
     this.global.assign(
       "join",
       new Func("join", ["xs", "x"], { type: "Module", body: [] }, this.global),
+    );
+
+    this._builtins["_type"] = (args: Value[]) => {
+      if (args.length !== 1)
+        throw new Error("_type: expects one argument, got: " + args.length);
+
+      return typeOf(args[0]);
+    };
+
+    this.global.assign(
+      "_type",
+      new Func("_type", ["x"], { type: "Module", body: [] }, this.global),
+    );
+
+    this._builtins["_str"] = (args: Value[]) => {
+      if (args.length !== 1)
+        throw new Error("_str: expects one argument, got: " + args.length);
+
+      return this.stringify(args[0]);
+    };
+
+    this.global.assign(
+      "_str",
+      new Func("_str", ["x"], { type: "Module", body: [] }, this.global),
     );
   }
 
@@ -175,7 +202,18 @@ class Interpreter {
 
         if (val instanceof Func) {
           const func: Func = val;
-          return this.callFunc(func, []);
+          if (expr.value.type === "Attr") {
+            const inst = this.evalExpr(expr.value.target);
+
+            if (typeOf(inst) !== "obj")
+              throw new Error(
+                "invalid method call, expected Object, got " + typeOf(inst),
+              );
+
+            return this.callMethod(func, inst as Obj, []);
+          } else {
+            return this.callFunc(func, []);
+          }
         } else {
           return val;
         }
@@ -690,7 +728,7 @@ class Interpreter {
     out.forEach((v) => console.log(v));
   }
 
-  results(): string[] {
+  output(): string[] {
     const out = this.local.get("_out") as Value[];
     return out.map((v) => this.stringify(v));
   }

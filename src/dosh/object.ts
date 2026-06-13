@@ -1,12 +1,14 @@
 import Environment from "./environment.ts";
-import type Func from "./func.ts";
+import Func from "./func.ts";
 import { type Value } from "./value.ts";
 
 class Obj {
   env: Environment;
+  attrs: string[];
 
   constructor(def: ObjDef) {
     this.env = new Environment(def.env);
+    this.attrs = def.getAttrs();
   }
 
   access(name: string): Value {
@@ -21,10 +23,18 @@ class Obj {
 class ObjDef {
   name: string;
   env: Environment;
+  private attrs: string[];
 
   constructor(name: string, env: Environment) {
     this.name = name;
     this.env = env;
+    this.attrs = env
+      .entries()
+      .map(([k, v]) => (v instanceof Func ? `${k}(${v.args.join(",")})` : k));
+  }
+
+  has(name: string): boolean {
+    return this.env.has(name);
   }
 
   init(): Func | null {
@@ -32,6 +42,10 @@ class ObjDef {
       return this.env.get("_init") as Func;
     }
     return null;
+  }
+
+  getAttrs(): string[] {
+    return this.attrs;
   }
 }
 

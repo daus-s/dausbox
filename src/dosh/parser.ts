@@ -66,7 +66,8 @@ class Parser {
       this.check("LEFT_PAREN") ||
       this.check("LEFT_BRACKET") ||
       this.check("TRUE") ||
-      this.check("FALSE")
+      this.check("FALSE") ||
+      this.check("NONE")
     );
   }
 

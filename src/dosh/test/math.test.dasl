@@ -1,19 +1,51 @@
 use math
 
+obj TestRunner:
+  fn _init:
+    self.successes = 0
+    self.failures = 0
+    print self.successes, self.failures
+
+  fn succeed msg:
+    self.successes = self.successes + 1
+    print self.successes
+    print join("✓ ", msg)
+
+  fn fail msg:
+    self.failures = self.failures + 1
+    print self.failures
+    print join("✗ ", msg)
+
+  fn report:
+    print join((join "ran ", (self.successes + self.failures)), " tests.")
+    print join "  ✓ ", join(_str(self.successes), " passed")
+    print join "  ✗ ", join(_str(self.failures), " failed")
+
+
+runner = TestRunner()
+
+# begin tests
+
 ln2 = math.ln 2
 
-if ln2 - 0.6931471805599453 < 0.00000001 and ln2 - 0.6931471805599453 > -0.00000001:
-  print "test: ln passed"
+fn within_tol actual, target, epsilon:
+  (actual - target) < epsilon and (target - actual) < epsilon
+
+if within_tol ln2, 0.6931471805599453, 0.00000000000001:
+  runner.succeed "ln passed"
 else:
-  print join "test: ln failed. expected: 0.6931471805599453, got: ", ln2
+  runner.fail join("test: ln failed. expected: 0.6931471805599453, got: ", ln2)
 
 
 if math.fact(5) != 120:
-  print join "test: factorial(5) failed, expected: 120, got: ", math.fact 5
+  runner.fail join("test: factorial(5) failed, expected: 120, got: ", math.fact 5 )
 else:
-  print "test: factorial(5) passed"
+  runner.succeed "factorial(5) passed"
 
 if math.fact(0) != 1:
-  print join "test: factorial(0) failed, expected: 1, got: ", math.fact 0
+  runner.fail join("factorial(0) failed, expected: 1, got: ", math.fact 0 )
 else:
-  print "test: factorial(0) passed"
+  runner.succeed "factorial(0)"
+
+
+runner.report
