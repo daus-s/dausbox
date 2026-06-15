@@ -4,41 +4,43 @@ obj TestRunner:
   fn _init:
     self.successes = 0
     self.failures = 0
-    print self.successes, self.failures
 
   fn succeed msg:
     self.successes = self.successes + 1
-    print self.successes
     print join("✓ ", msg)
 
   fn fail msg:
     self.failures = self.failures + 1
-    print self.failures
     print join("✗ ", msg)
 
   fn report:
     print join((join "ran ", (self.successes + self.failures)), " tests.")
-    print join "  ✓ ", join(_str(self.successes), " passed")
-    print join "  ✗ ", join(_str(self.failures), " failed")
+    print join "  ✓ test:", join(_str(self.successes), " passed")
+    print join "  ✗ test:", join(_str(self.failures), " failed")
 
 
 runner = TestRunner()
 
-# begin tests
-
-ln2 = math.ln 2
-
 fn within_tol actual, target, epsilon:
   (actual - target) < epsilon and (target - actual) < epsilon
 
-if within_tol ln2, 0.6931471805599453, 0.00000000000001:
-  runner.succeed "ln passed"
+epsilon = 0.00000000001
+
+# begin tests
+
+if within_tol math.ln(2), 0.6931471805599453, epsilon:
+  runner.succeed "ln(2) passed"
 else:
-  runner.fail join("test: ln failed. expected: 0.6931471805599453, got: ", ln2)
+  runner.fail join("ln(2) failed. expected: 0.6931471805599453, got: ", math.ln 2)
+
+if within_tol math.ln(1.5), 0.4054651081, epsilon:
+  runner.succeed "ln(1.5) passed"
+else:
+  runner.fail join("ln(1.5) failed. expected: 0.4054651081, got: ", math.ln 1.5 )
 
 
 if math.fact(5) != 120:
-  runner.fail join("test: factorial(5) failed, expected: 120, got: ", math.fact 5 )
+  runner.fail join("factorial(5) failed, expected: 120, got: ", math.fact 5 )
 else:
   runner.succeed "factorial(5) passed"
 
@@ -46,6 +48,40 @@ if math.fact(0) != 1:
   runner.fail join("factorial(0) failed, expected: 1, got: ", math.fact 0 )
 else:
   runner.succeed "factorial(0)"
+
+
+if math.ceil(5.9) != 6:
+  runner.fail join("ceil(5.9) failed, expected 6, got ", math.ceil 5.9)
+else:
+  runner.succeed "ceil(5.9)"
+
+if math.floor(5.1) != 5:
+  runner.fail join("floor(5.1) failed, expected: 5, got: ", math.floor 5.1 )
+else:
+  runner.succeed "floor(5.1)"
+
+
+if math.isprime(2):
+  runner.succeed "isPrime(2)"
+else:
+  runner.fail "Expected isPrime(2) to be true but it was false."
+
+if math.isprime(3):
+  runner.succeed "isPrime(3)"
+else:
+  runner.fail "Expected isPrime(3) to be true but it was false."
+
+
+if math.isprime(4):
+  runner.fail "Expected isPrime(4) to be false but it was true."
+else:
+  runner.succeed "isPrime(4)"
+
+if math.isprime(-5):
+  runner.succeed "isPrime(-5)"
+else:
+  runner.fail "Expected isPrime(-5) to be true but it was false."
+
 
 
 runner.report

@@ -116,7 +116,8 @@ runner.test("unassigned variable throws", () => {
   try {
     const output = run(code);
     runner.assertEqual(output.length, 0);
-  } catch (_) {
+  } catch (e) {
+    runner.assertEqual((e as Error).message, "Variable not found: b");
     throws = true;
   }
   runner.assertEqual(throws, true);
@@ -176,7 +177,11 @@ runner.test("range, invalid args", () => {
   let throws = false;
   try {
     run(code);
-  } catch (_) {
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "range requires at least 1 and at most 3 arguments, got 4",
+    );
     throws = true;
   }
   runner.assertEqual(throws, true);
@@ -187,7 +192,11 @@ runner.test("range, invalid args (no parens)", () => {
   let throws = false;
   try {
     run(code);
-  } catch (_) {
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "range requires at least 1 and at most 3 arguments, got 4",
+    );
     throws = true;
   }
   runner.assertEqual(throws, true);
@@ -198,7 +207,11 @@ runner.test("range, empty args", () => {
   let throws = false;
   try {
     run(code);
-  } catch (_) {
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "range requires at least 1 and at most 3 arguments, got 0",
+    );
     throws = true;
   }
   runner.assertEqual(throws, true);
@@ -468,6 +481,13 @@ runner.test("object: prevent leaking variables from scope", () => {
   );
 });
 
+runner.test("nested side effects", () => {
+  const code = "n=0\nfor i in range 5:\n  n = n + i\nprint n";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "10");
+});
+
 runner.test("functions as 1st class", () => {
   const code = "fn add x,y:\n  x + y\nplus = add\nprint plus 4, 5";
   const output = run(code);
@@ -602,6 +622,37 @@ runner.test("comparator: chained three segment", () => {
   runner.assertEqual(output.length, 2);
   runner.assertEqual(output[0], "true");
   runner.assertEqual(output[1], "false");
+});
+
+runner.test("modulo: single-digit modulus", () => {
+  const code = "print 7 % 3\n";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "1");
+});
+
+runner.test("modulo: double-digit modulus", () => {
+  const code = "print 25 % 4\n";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "1");
+});
+
+runner.test("modulo: zero modulus", () => {
+  const code = "print 15 % 0\n";
+  try {
+    run(code);
+  } catch (e) {
+    // Check the expected error message
+    runner.assertEqual((e as Error).message, "Division by zero is not allowed");
+  }
+});
+
+runner.test("modulo: negative dividend", () => {
+  const code = "print(-15 % 4)\n";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "-3");
 });
 
 runner.report();

@@ -28,8 +28,8 @@ class TestRunner {
     }
   }
 
-  assertDeepEqual(obj1: any, obj2: any) {
-    if (JSON.stringify(obj1) !== JSON.stringify(obj2)) {
+  assertDeepEqual(actual: any, expected: any) {
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
       throw new Error("Objects are not deeply equal.");
     }
   }

@@ -54,6 +54,13 @@ class Parser {
     throw new Error(message);
   }
 
+  private consumeMany(type: string, message: string) {
+    this.consume(type, message); //must consume at least 1
+    while (this.match(type)) {
+      void 0;
+    }
+  }
+
   private isDone() {
     return this.idx >= this.tokens.length || this.peek().type === "EOF";
   }
@@ -79,7 +86,9 @@ class Parser {
     if (this.match("FOR")) return this.forStatement();
     if (this.match("USE")) return this.useStatement();
     if (this.match("RETURN")) return this.returnStatement();
+
     if (this.match("PASS") || this.match("NEWLINE")) return null;
+
     if (this.match("BREAK")) return { type: "Break" };
     if (this.match("CONTINUE")) return { type: "Continue" };
 
@@ -105,7 +114,7 @@ class Parser {
     const args = this.parseArgs(parens);
 
     this.consume("COLON", "Expected ':'");
-    this.consume("NEWLINE", "Expected newline after function definition");
+    this.consumeMany("NEWLINE", "Expected newline after function definition");
     this.consume("INDENT", "Expected indent after function definition");
 
     const stmts: Stmt[] = [];
@@ -114,8 +123,6 @@ class Parser {
       const stmt = this.parseStmt();
       if (stmt) stmts.push(stmt);
     }
-
-    this.match("NEWLINE");
 
     return { type: "FuncDef", name: name.value, args, body: stmts };
   }
@@ -127,7 +134,7 @@ class Parser {
     );
 
     this.consume("COLON", "Expected ':'");
-    this.consume("NEWLINE", "Expected newline after `obj` definition");
+    this.consumeMany("NEWLINE", "Expected newline after `obj` definition");
     this.consume("INDENT", "Expected indent after `obj` definition");
 
     const stmts: Stmt[] = [];
@@ -136,8 +143,6 @@ class Parser {
       const stmt = this.parseStmt();
       if (stmt) stmts.push(stmt);
     }
-
-    this.match("NEWLINE");
 
     return { type: "ObjDef", name: name.value, body: stmts };
   }
@@ -168,7 +173,7 @@ class Parser {
   private ifStatement(): Stmt | null {
     const cond = this.expr();
     this.consume("COLON", "Expected ':'");
-    this.consume("NEWLINE", "Expected 'NEWLINE'");
+    this.consumeMany("NEWLINE", "Expected 'NEWLINE'");
     this.consume("INDENT", "Expected 'INDENT'");
 
     const body: Stmt[] = [];
@@ -180,7 +185,7 @@ class Parser {
 
     if (this.match("ELSE")) {
       this.consume("COLON", "Expected ':'");
-      this.consume("NEWLINE", "Expected 'NEWLINE'");
+      this.consumeMany("NEWLINE", "Expected 'NEWLINE'");
       this.consume("INDENT", "Expected 'INDENT'");
 
       const orelse: Stmt[] = [];
@@ -203,7 +208,7 @@ class Parser {
   private whileStatement(): Stmt | null {
     const cond = this.expr();
     this.consume("COLON", "Expected ':'");
-    this.consume("NEWLINE", "Expected 'NEWLINE'");
+    this.consumeMany("NEWLINE", "Expected 'NEWLINE'");
     this.consume("INDENT", "Expected 'INDENT'");
 
     const body: Stmt[] = [];
@@ -223,7 +228,7 @@ class Parser {
     const iter = this.expr();
 
     this.consume("COLON", "Expected ':'");
-    this.consume("NEWLINE", "Expected 'NEWLINE'");
+    this.consumeMany("NEWLINE", "Expected 'NEWLINE'");
     this.consume("INDENT", "Expected 'INDENT'");
 
     const body: Stmt[] = [];
