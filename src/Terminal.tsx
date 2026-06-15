@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import Cursor from "./Cursor";
 
-import DausBox from "./dosh/dausbox";
+import DausBox from "./dasl/dausbox";
 
 function Terminal() {
   const bottomRef = useRef<HTMLDivElement>(null);

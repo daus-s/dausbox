@@ -8,7 +8,7 @@ import type {
   ListLiteral,
   Subscript,
   UnaryOp,
-} from "./expr";
+} from "./expr.ts";
 import type {
   AssignStmt,
   ExprStmt,
@@ -21,7 +21,7 @@ import type {
   Stmt,
   UseStmt,
   WhileStmt,
-} from "./stmt";
+} from "./stmt.ts";
 
 import { typeOf, type Value } from "./value.ts";
 import Environment from "./environment.ts";
