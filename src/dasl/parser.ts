@@ -295,7 +295,6 @@ class Parser {
           left.type === "Subscript"
         )
       ) {
-        console.log(left.type);
         throw new Error(
           `Invalid assignment target.\n  - expected: Name | Attr | Subscript\n  - received: ${left.type}`,
         );

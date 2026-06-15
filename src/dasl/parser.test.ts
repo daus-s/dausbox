@@ -615,8 +615,8 @@ runner.test("parse subscript", () => {
         type: "Expr",
         value: {
           type: "Subscript",
-          value: { type: "Name", id: "foo" },
-          slice: { type: "Constant", value: 0 },
+          collection: { type: "Name", id: "foo" },
+          key: { type: "Constant", value: 0 },
         },
       },
     ],
@@ -633,12 +633,12 @@ runner.test("parse chained subscripts", () => {
         type: "Expr",
         value: {
           type: "Subscript",
-          value: {
+          collection: {
             type: "Subscript",
-            value: { type: "Name", id: "foo" },
-            slice: { type: "Constant", value: 0 },
+            collection: { type: "Name", id: "foo" },
+            key: { type: "Constant", value: 0 },
           },
-          slice: { type: "Constant", value: 1 },
+          key: { type: "Constant", value: 1 },
         },
       },
     ],
@@ -656,12 +656,12 @@ runner.test("parse chained calls", () => {
         type: "Expr",
         value: {
           type: "Subscript",
-          value: {
+          collection: {
             type: "Call",
             func: { type: "Name", id: "foo" },
             args: [],
           },
-          slice: { type: "Constant", value: 0 },
+          key: { type: "Constant", value: 0 },
         },
       },
     ],
@@ -681,8 +681,8 @@ runner.test("parse chained calls", () => {
           type: "Call",
           func: {
             type: "Subscript",
-            value: { type: "Name", id: "foo" },
-            slice: { type: "Constant", value: 0 },
+            collection: { type: "Name", id: "foo" },
+            key: { type: "Constant", value: 0 },
           },
           args: [{ type: "Constant", value: 0 }],
         },

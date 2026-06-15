@@ -550,8 +550,6 @@ class Interpreter {
     const right = this.evalExpr(expr.right);
 
     if (typeof left !== "number") {
-      console.log(expr);
-      this.debug();
       throw new Error(`Left operand must be a number but got ${typeOf(left)}.`);
     } else if (typeof right !== "number") {
       throw new Error(
