@@ -23,7 +23,7 @@ import type {
   WhileStmt,
 } from "./stmt.ts";
 
-import { typeOf, type Value } from "./value.ts";
+import { stringify, typeOf, type Value } from "./value.ts";
 import Environment from "./environment.ts";
 import Func from "./func.ts";
 import { Obj, ObjDef } from "./object.ts";
@@ -50,7 +50,7 @@ class Interpreter {
 
   private registerBuiltins() {
     this._builtins["print"] = (args: Value[]) => {
-      const s = args.map((arg) => this.stringify(arg)).join(", ");
+      const s = args.map((arg) => stringify(arg)).join(", ");
       const out = this.global.get("_out") as Value[];
       this.global.assign("_out", [...out, s]);
       return s;
@@ -123,7 +123,7 @@ class Interpreter {
             const x = args[1] as string;
             return str + x;
           } else {
-            const num = this.stringify(args[1]);
+            const num = stringify(args[1]);
             return str + num;
           }
         }
@@ -160,7 +160,7 @@ class Interpreter {
       if (args.length !== 1)
         throw new Error("_str: expects one argument, got: " + args.length);
 
-      return this.stringify(args[0]);
+      return stringify(args[0]);
     };
 
     this.global.assign(
@@ -458,9 +458,7 @@ class Interpreter {
             const obj = this.evalExpr(target.target);
 
             if (!(obj instanceof Obj))
-              throw new Error(
-                "Invalid attribute target: " + this.stringify(obj),
-              );
+              throw new Error("Invalid attribute target: " + stringify(obj));
 
             obj.assign(target.attr.id, value);
 
@@ -784,16 +782,6 @@ class Interpreter {
 
   // BEGIN OUTPUT ===============================================================================
 
-  private stringify(val: Value): string {
-    if (typeof val === "string") return val;
-    if (typeof val === "number") return val.toString();
-    if (typeof val === "boolean") return val ? "true" : "false";
-    if (val === null) return "null";
-    if (Array.isArray(val))
-      return `[${val.map((v) => this.stringify(v)).join(", ")}]`;
-    return val.toString();
-  }
-
   debug() {
     const out = this.global.get("_out") as Value[];
     out.forEach((v) => console.log(v));
@@ -801,7 +789,7 @@ class Interpreter {
 
   output(): string[] {
     const out = this.local.get("_out") as Value[];
-    return out.map((v) => this.stringify(v));
+    return out.map((v) => stringify(v));
   }
 }
 
