@@ -24,7 +24,7 @@ export interface Name {
 
 export interface Assign {
   type: "Assign";
-  target: Name | Attr;
+  target: Expr;
   value: Expr;
 }
 
@@ -68,8 +68,8 @@ export interface Call {
 
 export interface Subscript {
   type: "Subscript";
-  value: Expr;
-  slice: Expr; // index or slice
+  collection: Expr;
+  key: Expr;
 }
 
 export interface ListLiteral {

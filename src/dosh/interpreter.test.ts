@@ -655,4 +655,119 @@ runner.test("modulo: negative dividend", () => {
   runner.assertEqual(output[0], "-3");
 });
 
+runner.test("list definition", () => {
+  const code = "xs = [1,1,2,3,5,8]\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[1, 1, 2, 3, 5, 8]");
+});
+
+runner.test("list index assignment: basic", () => {
+  const code = "xs = [1, 2, 3]\nxs[1] = 99\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[1, 99, 3]");
+});
+
+runner.test("list index assignment: first element", () => {
+  const code = "xs = [1, 2, 3]\nxs[0] = 42\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[42, 2, 3]");
+});
+
+runner.test("list index assignment: last element", () => {
+  const code = "xs = [1, 2, 3]\nxs[2] = 42\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[1, 2, 42]");
+});
+
+runner.test("list index assignment: with variable index", () => {
+  const code = "xs = [1, 2, 3]\ni = 1\nxs[i] = 77\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[1, 77, 3]");
+});
+
+runner.test("list index assignment: with expression value", () => {
+  const code = "xs = [0, 0, 0]\nxs[0] = 2 ** 3\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[8, 0, 0]");
+});
+
+runner.test("list index assignment: string value", () => {
+  const code = "xs = ['a', 'b', 'c']\nxs[1] = 'z'\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[a, z, c]");
+});
+
+runner.test("list index assignment: reassign same index twice", () => {
+  const code = "xs = [1, 2, 3]\nxs[0] = 10\nxs[0] = 20\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[20, 2, 3]");
+});
+
+runner.test("list index assignment: inside for loop", () => {
+  const code = "xs = [0, 0, 0]\nfor i in range 3:\n  xs[i] = i * 2\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[0, 2, 4]");
+});
+
+runner.test("list index assignment: out of bounds throws", () => {
+  const code = "xs = [1, 2, 3]\nxs[5] = 99";
+  let throws = false;
+  try {
+    run(code);
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "Index out of bounds: length: 3, accepts [0, 2], got: 5",
+    );
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
+runner.test("list index assignment: negative index throws", () => {
+  const code = "xs = [1, 2, 3]\nxs[-1] = 99";
+  let throws = false;
+  try {
+    run(code);
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "Index out of bounds: length: 3, accepts [0, 2], got: -1",
+    );
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
+runner.test("list index assignment: non-number index throws", () => {
+  const code = "xs = [1, 2, 3]\nxs['a'] = 99";
+  let throws = false;
+  try {
+    run(code);
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "Cannot index array with string (expected number)",
+    );
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
+runner.test("list index assignment: nested list element", () => {
+  const code = "xs = [[1, 2], [3, 4]]\nxs[0] = [9, 9]\nprint xs";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "[[9, 9], [3, 4]]");
+});
+
 runner.report();

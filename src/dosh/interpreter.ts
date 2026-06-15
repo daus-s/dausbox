@@ -242,6 +242,39 @@ class Interpreter {
 
             return value;
           }
+          case "Subscript": {
+            const collection = this.evalExpr(assign.target.collection);
+            const key = this.evalExpr(assign.target.key);
+
+            if (typeOf(collection) === "array") {
+              const arr = collection as Value[];
+
+              if (typeof key !== "number")
+                throw new Error(
+                  `Cannot index array with ${typeOf(key)} (expected number)`,
+                );
+
+              const index = key as number;
+
+              if (index < 0 || index > arr.length - 1)
+                throw new Error(
+                  `Index out of bounds: length: ${arr.length}, accepts [0, ${arr.length - 1}], got: ${index}`,
+                );
+
+              arr[index] = this.evalExpr(assign.value);
+              return arr[index];
+            } else if (typeOf(collection) === "map") {
+              const map = collection as Map<Value, Value>;
+
+              map.set(key, this.evalExpr(assign.value));
+
+              return map.get(key) ?? null;
+            } else {
+              throw new Error(
+                `object is not known to be subscriptable. got: ${typeOf(collection)}`,
+              );
+            }
+          }
           default:
             throw new Error(`Invalid target type: ${assign.target}`);
         }
@@ -436,8 +469,42 @@ class Interpreter {
           case "Name":
             this.local.assign(target.id, value);
             return value;
+          case "Subscript": {
+            const collection = this.evalExpr(target.collection);
+            const key = this.evalExpr(target.key);
+
+            if (typeOf(collection) === "array") {
+              const arr = collection as Value[];
+
+              if (typeof key !== "number")
+                throw new Error(
+                  `Cannot index array with ${typeOf(key)} (expected number)`,
+                );
+
+              const index = key as number;
+
+              if (index < 0 || index > arr.length - 1)
+                throw new Error(
+                  `Index out of bounds: length: ${arr.length}, accepts [0, ${arr.length - 1}], got: ${index}`,
+                );
+
+              arr[index] = value;
+              return value;
+            } else if (typeOf(collection) === "map") {
+              const map = collection as Map<Value, Value>;
+
+              map.set(key, value);
+              return value;
+            } else {
+              throw new Error(
+                `object is not known to be subscriptable. got: ${typeOf(collection)}`,
+              );
+            }
+          }
           default:
-            throw new Error("Invalid target type.");
+            throw new Error(
+              `Invalid target type, cannot assign to ${target.type}`,
+            );
         }
       }
       case "Attr": {
@@ -704,8 +771,8 @@ class Interpreter {
   }
 
   private evalSubscriptExpr(expr: Subscript): Value {
-    const val = this.evalExpr(expr.value);
-    const index = this.evalExpr(expr.slice);
+    const val = this.evalExpr(expr.collection);
+    const index = this.evalExpr(expr.key);
     if (!Array.isArray(val)) {
       throw new Error("Subscript: val must be an array");
     }

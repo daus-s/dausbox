@@ -288,8 +288,18 @@ class Parser {
     const left = this.orExpr();
 
     if (this.match("EQUAL")) {
-      if (!(left.type === "Name" || left.type === "Attr"))
-        throw new Error("Invalid assignment target.");
+      if (
+        !(
+          left.type === "Name" ||
+          left.type === "Attr" ||
+          left.type === "Subscript"
+        )
+      ) {
+        console.log(left.type);
+        throw new Error(
+          `Invalid assignment target.\n  - expected: Name | Attr | Subscript\n  - received: ${left.type}`,
+        );
+      }
 
       const right = this.assignExpr();
 
@@ -449,9 +459,9 @@ class Parser {
 
         expr = { type: "Call", func: expr, args };
       } else if (this.match("LEFT_BRACKET")) {
-        const index = this.expr();
+        const key = this.expr();
         this.consume("RIGHT_BRACKET", "Unclosed delimiter '[', expected ']'");
-        expr = { type: "Subscript", value: expr, slice: index };
+        expr = { type: "Subscript", collection: expr, key };
       } else if (this.canStartArg()) {
         const args: Expr[] = [];
         do {
