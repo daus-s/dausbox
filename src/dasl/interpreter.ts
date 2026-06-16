@@ -53,7 +53,7 @@ class Interpreter {
       const s = args.map((arg) => stringify(arg)).join(", ");
       const out = this.global.get("_out") as Value[];
       this.global.assign("_out", [...out, s]);
-      return s;
+      return null;
     };
     this.global.assign(
       "print",
@@ -784,7 +784,11 @@ class Interpreter {
 
   debug() {
     const out = this.global.get("_out") as Value[];
+    console.log("OUT");
     out.forEach((v) => console.log(v));
+
+    console.log("STATE");
+    this.local.debug();
   }
 
   output(): string[] {

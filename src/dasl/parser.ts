@@ -9,6 +9,7 @@ class Parser {
   constructor() {}
 
   parse(tokens: Token[]): Module {
+    this.idx = 0;
     this.tokens = tokens;
     const stmts = new Array<Stmt>();
 
