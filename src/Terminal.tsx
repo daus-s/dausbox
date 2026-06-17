@@ -4,69 +4,71 @@ import { useEffect, useRef, useState } from "react";
 
 import Cursor from "./Cursor";
 
-import DausBox from "./dasl/dausbox";
+import DausBox from "./dausbox";
+import { History } from "./history";
 
 function Terminal() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const dausbox = useRef(new DausBox());
+  const [dausbox, setDausBox] = useState<DausBox | null>();
   const [buffer, setBuffer] = useState("");
-  const [history, setHistory] = useState<
-    { input: string; output: { code: number; result: string } }[]
-  >([]);
+  const [history, setHistory] = useState<History | null>(null);
+
+  useEffect(() => {
+    DausBox.create().then((box) => {
+      setDausBox(box);
+      setHistory(box.get_history() ?? new History());
+    });
+  }, []);
 
   //on enter pass to interpreter and add to history
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      dausbox.current.execute(buffer);
-      setHistory([
-        ...history,
-        dausbox.current.get_history()[dausbox.current.get_history().length - 1],
-      ]);
+
+      if (!dausbox) return;
+
+      console.log("executing:", buffer);
+      dausbox.execute(buffer);
+      console.log("executed");
+
+      setHistory(dausbox.get_history() ?? new History());
       setBuffer("");
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     } else if (event.key === "Backspace") {
       event.preventDefault();
       setBuffer(buffer.slice(0, -1));
-    } else if (event.key.length === 1) {
+    } else if (event.key.length === 1 && !event.ctrlKey && !event.altKey) {
       event.preventDefault();
       setBuffer(buffer + event.key);
     }
   };
-
-  useEffect(() => {}, [buffer]);
+  if (!history) return <p>loading...</p>;
 
   return (
     <div className="terminal">
-      {history.map(({ input, output }, index) => (
+      {(history ? history.entries() : []).map((entry, index) => (
         <>
           <p key={2 * index}>
             {"dausbox> "}
-            {input}
+            {entry.input}
           </p>
-          {"        "}
-          {output.result.length > 0 && (
-            <p
-              style={{
-                color:
-                  output.code === 0
-                    ? "blue"
-                    : output.code === -1
-                      ? "yellow"
-                      : "red",
-
-                fontWeight: output.code === -1 ? "bold" : "normal",
-              }}
-              key={2 * index + 1}
-            >
-              {"        "}
-              {output.result}
-            </p>
+          {entry.output != null ? (
+            entry.output.trim().startsWith("**") &&
+            entry.output.trim().endsWith("**") ? (
+              <p style={{ fontWeight: "bolder" }}>
+                {"          " + entry.output.trim().slice(2, -2)}
+              </p>
+            ) : (
+              entry.output
+                .split("\n")
+                .map((s) => <p className="output-line">{"          " + s}</p>)
+            )
+          ) : (
+            <span className="error">{entry.error}</span>
           )}
         </>
       ))}
-
       <p className="buffer">
         {"dausbox> "}
         {buffer}

@@ -31,7 +31,7 @@ const resolver = (filename: string, src: string[]): Module => {
     }
   }
 
-  if (!pathArr[pathArr.length - 1].endsWith(".ds")) {
+  if (!pathArr[pathArr.length - 1].endsWith(".dasl")) {
     pathArr[pathArr.length - 1] = pathArr[pathArr.length - 1] + ".dasl";
   }
   const path = pathArr.join("/");

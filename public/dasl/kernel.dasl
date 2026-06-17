@@ -1,0 +1,17 @@
+obj Node:
+  fn _init name, kind, data:
+    self.name = name
+    self.kind = kind   # "dir" | "file" | "project"
+    self.data = data
+    self.children = []
+
+  fn add child:
+    this.children = join self.children, child
+
+obj FileSys:
+  fn _init content:
+    self.root = Node "/", "dir", null
+    self.curr = self.root
+
+fn ls:
+  print "files files files"

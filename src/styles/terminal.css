@@ -25,3 +25,7 @@
 .terminal p {
     margin: 0;
 }
+
+.terminal .error {
+    color: #ff3b30;
+}
