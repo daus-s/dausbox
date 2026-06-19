@@ -1,11 +1,11 @@
-import "./styles/terminal.css";
+import "../styles/terminal.css";
 
 import { useEffect, useRef, useState } from "react";
 
 import Cursor from "./Cursor";
 
-import DausBox from "./dausbox";
-import { History } from "./history";
+import DausBox from "../dausbox";
+import { History } from "../history";
 
 function Terminal() {
   const bottomRef = useRef<HTMLDivElement>(null);

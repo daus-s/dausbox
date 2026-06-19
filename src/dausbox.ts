@@ -21,7 +21,6 @@ class DausBox {
     this.parser = new Parser();
     this.interpreter = new Interpreter();
     this.history = new History();
-    console.log("new dausbox");
   }
 
   static async create(): Promise<DausBox> {
