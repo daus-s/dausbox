@@ -30,11 +30,10 @@ import { Obj, ObjDef } from "./object.ts";
 
 import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 
-type Resolver = (file: string, src: string[]) => Module;
+type Resolver = (src: string[]) => Module;
 
 class Interpreter {
-  private currFile: string | null = null;
-  private resolver: Resolver | null = null;
+  private useResolver: Resolver | null = null;
 
   private global: Environment;
   private local: Environment;
@@ -169,21 +168,15 @@ class Interpreter {
     );
   }
 
-  setFile(file: string) {
-    this.currFile = file;
-  }
-
   setResolver(resolver: Resolver) {
-    this.resolver = resolver;
+    this.useResolver = resolver;
   }
 
   private resolve(src: string[]): Module {
-    if (!this.resolver)
+    if (!this.useResolver)
       throw new Error("tried to resolve use without defined resolver");
-    if (!this.currFile)
-      throw new Error("tried to resolve use without defined current file");
 
-    return this.resolver(this.currFile, src);
+    return this.useResolver(src);
   }
 
   eval(ast: Module): Value {

@@ -1,6 +1,7 @@
 import Interpreter from "./dasl/interpreter";
 import Lexer from "./dasl/lexer";
 import Parser from "./dasl/parser";
+import type { Module } from "./dasl/stmt";
 
 import { stringify } from "./dasl/value";
 
@@ -25,11 +26,54 @@ class DausBox {
 
   static async create(): Promise<DausBox> {
     const box = new DausBox();
-    const res = await fetch("/dasl/kernel.dasl");
-    if (!res.ok) throw new Error(`Failed to fetch kernel.dasl: ${res.status}`);
-    const kernel = await res.text();
-    console.log("kernel: ", kernel);
+    const cache = new Map<string, Module>();
+
+    //load dasl _std.lib manifest
+    const manifest = await fetch("/dasl/_std/manifest.txt");
+    if (!manifest.ok)
+      throw new Error(`Failed to fetch dasl manifest: ${manifest.status}`);
+
+    const mods = (await manifest.text()).split("\n");
+    //prefetch known modules
+    for (const mod of mods) {
+      if (mod.trim() === "") continue;
+      const res = await fetch(`/dasl/_std/${mod}.dasl`);
+      if (!res.ok) throw new Error(`Failed to fetch ${mod}: ${res.status}`);
+      const text = await res.text();
+
+      const ast = new Parser().parse(new Lexer().tokenize(text));
+
+      cache.set(mod, ast);
+    }
+
+    //load dausbox kernel
+    const kernelFile = await fetch("/dasl/kernel.dasl");
+    if (!kernelFile.ok)
+      throw new Error(`Failed to fetch kernel.dasl: ${kernelFile.status}`);
+    const kernel = await kernelFile.text();
     box.execute(kernel);
+
+    const resolver = (src: string[]): Module => {
+      if (src.length == 2 && src[0] === "_std") {
+        if (!cache.has(src[1]))
+          throw new Error(
+            `DausBox.useResolver: unknown _std module: ${src[1]}`,
+          );
+        return cache.get(src[1])!;
+      } else if (src.length == 1) {
+        if (!cache.has(src[0]))
+          throw new Error(`DausBox.useResolver: unknown module: ${src[0]}`);
+        return cache.get(src[0])!;
+      } else {
+        throw new Error(
+          `DausBox.useResolver takes a single string or _std module path.\nunknown module: ${src}`,
+        );
+      }
+    };
+
+    box.interpreter.setResolver(resolver);
+
+    //todo: run aliasing file
 
     box.quiet = false;
     return box;
@@ -53,7 +97,6 @@ class DausBox {
       err = null;
 
       // handle multi line stmts???
-      this.interpreter.debug();
 
       const newMsgs = this.interpreter.output().slice(this.msgs);
 
