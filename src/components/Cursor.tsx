@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
 
-function Cursor() {
-  const [isVisible, setIsVisible] = useState(true);
+export default function Cursor({ char }: { char: string }) {
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsVisible((prev) => !prev);
-    }, 670);
-
-    return () => clearInterval(interval);
+    const id = setInterval(() => setVisible((v) => !v), 670);
+    return () => clearInterval(id);
   }, []);
 
-  //timeout .8 s
-  if (isVisible) {
-    return (
-      <span style={{ color: "#41ff00", fontWeight: "bold", fontSize: "1em" }}>
-        {isVisible ? "█" : ""}
-      </span>
-    );
-  }
+  return (
+    <span
+      style={{
+        color: "#41ff00",
+        fontWeight: "bold",
+      }}
+    >
+      {visible ? "█" : char}
+    </span>
+  );
 }
-
-export default Cursor;

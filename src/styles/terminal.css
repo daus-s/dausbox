@@ -3,7 +3,7 @@
     src: url("fonts/Px437_IBM_VGA8.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
-    font-display: swap; /* Improves loading performance */
+    font-display: swap;
 }
 
 .terminal {
@@ -13,7 +13,6 @@
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    height: 100%;
     color: #41ff00;
     box-sizing: border-box;
     box-shadow:
@@ -24,8 +23,27 @@
 
 .terminal p {
     margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.history-entry {
+    display: contents;
+}
+
+.history-input {
+    margin: 0;
+}
+
+.output-bold {
+    font-weight: 900;
 }
 
 .terminal .error {
     color: #ff3b30;
+    display: block;
+}
+
+.buffer {
+    margin: 0;
 }
