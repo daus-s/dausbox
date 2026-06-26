@@ -13,56 +13,91 @@ export default function InputBuffer({
   onExec,
   scrollToBottom,
 }: BufferProps) {
-  const [idx, setIdx] = useState(0);
+  const [caretIdx, setCaretIdx] = useState(0); //refers to how the number of commands previously before the current
+  const [cmdIdx, setCmdIdx] = useState(0);
   const [buffer, setBuffer] = useState("");
+  const [draft, setDraft] = useState<string | null>(null);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
+
       dausbox.execute(buffer);
       onExec();
       setBuffer("");
-      setIdx(0);
+      setCaretIdx(0);
       // Defer scroll until after React flushes the new history into the DOM
       setTimeout(scrollToBottom, 0);
     } else if (event.key === "Backspace") {
       event.preventDefault();
-      if (idx === 0) return;
-      setBuffer(buffer.slice(0, idx - 1) + buffer.slice(idx));
-      setIdx(idx - 1);
+
+      if (caretIdx === 0) return;
+      setBuffer(buffer.slice(0, caretIdx - 1) + buffer.slice(caretIdx));
+      setCaretIdx(caretIdx - 1);
     } else if (event.key === "Delete") {
       event.preventDefault();
-      setBuffer(buffer.slice(0, idx) + buffer.slice(idx + 1));
+
+      setBuffer(buffer.slice(0, caretIdx) + buffer.slice(caretIdx + 1));
     } else if (event.key === "ArrowLeft") {
       event.preventDefault();
-      setIdx(Math.max(idx - 1, 0));
+
+      setCaretIdx(Math.max(caretIdx - 1, 0));
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
-      setIdx(Math.min(idx + 1, buffer.length));
+
+      setCaretIdx(Math.min(caretIdx + 1, buffer.length));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+
+      if (cmdIdx === dausbox.history.length()) return;
+
+      if (cmdIdx === 0) {
+        setDraft(buffer);
+      }
+      setBuffer(dausbox.getNthPrevCommand(cmdIdx + 1));
+
+      setCmdIdx(cmdIdx + 1);
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+
+      if (cmdIdx === 0) return;
+
+      if (cmdIdx === 1) {
+        setBuffer(draft || ""); //at this point draft must not be null is it provably so?
+        setDraft(null);
+      } else {
+        setBuffer(dausbox.getNthPrevCommand(cmdIdx - 1));
+      }
+
+      setCmdIdx(cmdIdx - 1);
     } else if (event.key === "Home") {
       event.preventDefault();
-      setIdx(0);
+
+      setCaretIdx(0);
     } else if (event.key === "End") {
       event.preventDefault();
-      setIdx(buffer.length);
+
+      setCaretIdx(buffer.length);
     } else if (event.key.length === 1 && noModifier(event)) {
       event.preventDefault();
-      const next = buffer.slice(0, idx) + event.key + buffer.slice(idx);
+
+      const next =
+        buffer.slice(0, caretIdx) + event.key + buffer.slice(caretIdx);
       setBuffer(next);
-      setIdx(idx + 1);
+      setCaretIdx(caretIdx + 1);
     }
   };
 
   // Split buffer around cursor position for rendering
-  const before = buffer.slice(0, idx);
-  const after = buffer.slice(idx + 1);
+  const before = buffer.slice(0, caretIdx);
+  const after = buffer.slice(caretIdx + 1);
 
   return (
     <>
       <p className="buffer">
         <span className="prompt">dausbox&gt;&nbsp;</span>
         {before}
-        <Cursor char={buffer[idx] || ""} />
+        <Cursor char={buffer[caretIdx] || ""} />
         {after}
       </p>
       <input

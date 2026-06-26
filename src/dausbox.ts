@@ -135,6 +135,10 @@ class DausBox {
   get_history(): History {
     return this.history;
   }
+
+  getNthPrevCommand(n: number): string {
+    return this.history.entries()[this.history.length() - n].input;
+  }
 }
 
 export default DausBox;

@@ -20,4 +20,8 @@ export class History {
   entries(): HistoryEntry[] {
     return [...this.history];
   }
+
+  length(): number {
+    return this.history.length;
+  }
 }
