@@ -3,7 +3,7 @@ import Lexer from "./dasl/lexer";
 import Parser from "./dasl/parser";
 import type { Module } from "./dasl/stmt";
 
-import { stringify } from "./dasl/value";
+import { stringify, type Value } from "./dasl/value";
 
 import { History } from "./history";
 
@@ -17,6 +17,9 @@ class DausBox {
 
   history: History;
 
+  private fileCache: Map<string, string> = new Map();
+  private moduleCache: Map<string, Module> = new Map();
+
   constructor() {
     this.lexer = new Lexer();
     this.parser = new Parser();
@@ -26,44 +29,16 @@ class DausBox {
 
   static async create(): Promise<DausBox> {
     const box = new DausBox();
-    const cache = new Map<string, Module>();
-
-    //load dasl _std.lib manifest
-    const manifest = await fetch("/dasl/_std/manifest.txt");
-    if (!manifest.ok)
-      throw new Error(`Failed to fetch dasl manifest: ${manifest.status}`);
-
-    const mods = (await manifest.text()).split("\n");
-    //prefetch known modules
-    for (const mod of mods) {
-      if (mod.trim() === "") continue;
-      const res = await fetch(`/dasl/_std/${mod}.dasl`);
-      if (!res.ok) throw new Error(`Failed to fetch ${mod}: ${res.status}`);
-      const text = await res.text();
-
-      const ast = new Parser().parse(new Lexer().tokenize(text));
-
-      cache.set(mod, ast);
-    }
-
-    //load dausbox kernel
-    const kernelFile = await fetch("/dasl/kernel.dasl");
-    if (!kernelFile.ok)
-      throw new Error(`Failed to fetch kernel.dasl: ${kernelFile.status}`);
-    const kernel = await kernelFile.text();
-    box.execute(kernel);
 
     const resolver = (src: string[]): Module => {
       if (src.length == 2 && src[0] === "_std") {
-        if (!cache.has(src[1]))
-          throw new Error(
-            `DausBox.useResolver: unknown _std module: ${src[1]}`,
-          );
-        return cache.get(src[1])!;
+        if (!box.moduleCache.has(src[1]))
+          throw new Error(`DausBox.useResolver: unknown module: ${src[1]}`);
+        return box.moduleCache.get(src[1])!;
       } else if (src.length == 1) {
-        if (!cache.has(src[0]))
+        if (!box.moduleCache.has(src[0]))
           throw new Error(`DausBox.useResolver: unknown module: ${src[0]}`);
-        return cache.get(src[0])!;
+        return box.moduleCache.get(src[0])!;
       } else {
         throw new Error(
           `DausBox.useResolver takes a single string or _std module path.\nunknown module: ${src}`,
@@ -73,7 +48,36 @@ class DausBox {
 
     box.interpreter.setResolver(resolver);
 
-    //todo: run aliasing file
+    box.registerBrowserBuiltins();
+
+    const mods = ["fs", "math"]; //todo: add io, time,
+
+    for (const mod of mods) {
+      const res = await fetch(`/dasl/${mod}.dasl`);
+      if (!res.ok) throw new Error(`Failed to fetch ${mod}: ${res.status}`);
+      const text = await res.text();
+
+      const ast = new Parser().parse(new Lexer().tokenize(text));
+
+      box.moduleCache.set(mod, ast);
+    }
+
+    const files = ["filesys"];
+
+    for (const file of files) {
+      const res = await fetch(`/${file}`);
+      if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
+      const text = await res.text();
+
+      box.fileCache.set(file, text);
+    }
+
+    //load dausbox kernel
+    const kernelFile = await fetch("/dasl/kernel.dasl");
+    if (!kernelFile.ok)
+      throw new Error(`Failed to fetch kernel.dasl: ${kernelFile.status}`);
+    const kernel = await kernelFile.text();
+    box.execute(kernel);
 
     box.quiet = false;
     return box;
@@ -138,6 +142,26 @@ class DausBox {
 
   getNthPrevCommand(n: number): string {
     return this.history.entries()[this.history.length() - n].input;
+  }
+
+  private async registerBrowserBuiltins() {
+    this.interpreter.register("view", ["project"], (args: Value[]): Value => {
+      if (args.length !== 1 || !(args[0] instanceof String))
+        throw new Error("view requires a single project name to render");
+
+      return null;
+    });
+
+    this.interpreter.register("read", ["src"], (args: Value[]): Value => {
+      console.log(typeof args[0]);
+      if (args.length !== 1 || !(typeof args[0] === "string"))
+        throw new Error("read requires a single source file path to read");
+
+      if (!this.fileCache.has(args[0] as string))
+        throw new Error("read: no such file: " + args[0]);
+
+      return this.fileCache.get(args[0] as string)!;
+    });
   }
 }
 

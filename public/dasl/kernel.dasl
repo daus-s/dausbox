@@ -1,17 +1,9 @@
-obj Node:
-  fn _init name, kind, data:
-    self.name = name
-    self.kind = kind   # "dir" | "file" | "project"
-    self.data = data
-    self.children = []
+use fs
 
-  fn add child:
-    this.children = join self.children, child
+data = read "filesys"
 
-obj FileSys:
-  fn _init content:
-    self.root = Node "/", "dir", null
-    self.curr = self.root
+sys = fs.FileSys "" # parse from a string
 
 fn ls:
-  print "files files files"
+  for child in sys.root.children:
+    print child.name

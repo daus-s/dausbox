@@ -47,6 +47,15 @@ class Interpreter {
     this.local = this.global;
   }
 
+  register(name: string, args: string[], func: (args: Value[]) => Value) {
+    //this allows functions with side effects outside of dasl
+    this._builtins[name] = func;
+    this.global.assign(
+      name,
+      new Func(name, args, { type: "Module", body: [] }, this.global),
+    );
+  }
+
   private registerBuiltins() {
     this._builtins["print"] = (args: Value[]) => {
       const s = args.map((arg) => stringify(arg)).join(", ");
