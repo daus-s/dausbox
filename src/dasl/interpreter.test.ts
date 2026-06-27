@@ -792,4 +792,26 @@ runner.test("string concatenation: non-string", () => {
   runner.assertEqual(throws, true);
 });
 
+runner.test("string indexing", () => {
+  const code = "print 'hello'[0]";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "h");
+});
+
+runner.test("string indexing: out of bounds", () => {
+  const code = "print 'hello'[5]";
+  let throws = false;
+  try {
+    run(code);
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "Index out of bounds: length: 5, accepts [0, 4], got: 5",
+    );
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
 runner.report();
