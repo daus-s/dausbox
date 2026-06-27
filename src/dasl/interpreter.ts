@@ -549,17 +549,25 @@ class Interpreter {
     const left = this.evalExpr(expr.left);
     const right = this.evalExpr(expr.right);
 
-    if (typeof left !== "number") {
-      throw new Error(`Left operand must be a number but got ${typeOf(left)}.`);
-    } else if (typeof right !== "number") {
+    if (expr.op === "+") {
+      if (typeof left === "string" && typeof right === "string") {
+        return left + right;
+      } else if (typeof left === "number" && typeof right === "number") {
+        return left + right;
+      } else {
+        throw new Error(
+          `adding is only defined for string, string and number, number addition. got ${typeOf(left)} and ${typeOf(right)}.`,
+        );
+      }
+    }
+
+    if (typeof left !== "number" || typeof right !== "number") {
       throw new Error(
-        `Right operand must be a number but got ${typeOf(right)}.`,
+        `cannot perform operation on ${typeOf(left)} and ${typeOf(right)}.`,
       );
     }
 
     switch (expr.op) {
-      case "+":
-        return left + right;
       case "-":
         return left - right;
       case "*":

@@ -770,4 +770,26 @@ runner.test("list index assignment: nested list element", () => {
   runner.assertEqual(output[0], "[[9, 9], [3, 4]]");
 });
 
+runner.test("string concatenation", () => {
+  const code = "print 'a' + 'b'";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "ab");
+});
+
+runner.test("string concatenation: non-string", () => {
+  const code = "print 'a' + 1";
+  let throws = false;
+  try {
+    run(code);
+  } catch (e) {
+    runner.assertEqual(
+      (e as Error).message,
+      "adding is only defined for string, string and number, number addition. got string and number.",
+    );
+    throws = true;
+  }
+  runner.assertEqual(throws, true);
+});
+
 runner.report();
