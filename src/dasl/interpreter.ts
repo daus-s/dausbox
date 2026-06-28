@@ -510,6 +510,16 @@ class Interpreter {
       case "Attr": {
         const target = this.evalExpr(expr.target);
 
+        if (expr.attr.id === "len") {
+          if (typeOf(target) === "string") {
+            return (target as string).length;
+          } else if (typeOf(target) === "array") {
+            return (target as Value[]).length;
+          } else {
+            throw new Error("Invalid attribute target: " + typeOf(target));
+          }
+        }
+
         if (!(target instanceof Obj))
           throw new Error("Invalid attribute target: " + typeOf(target));
 

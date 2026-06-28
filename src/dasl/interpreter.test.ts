@@ -814,4 +814,10 @@ runner.test("string indexing: out of bounds", () => {
   runner.assertEqual(throws, true);
 });
 
+runner.test("string length property", () => {
+  const code = "print 'hello'.len";
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "5");
+});
 runner.report();
