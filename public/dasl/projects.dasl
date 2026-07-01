@@ -1,0 +1,19 @@
+use warheads
+
+obj Project:
+  fn _init name, abstract, url, readme, github:
+    self.name = name
+    self.abstract = abstract
+    self.url = url
+    self.readme = readme
+    self.git = github
+
+  fn _str:
+    self.name + "\nurl: " + self.url + "\ngithub: " + self.git + "\n============================\n" + self.abstract + "\n============================"
+
+
+warheads = Project warheads.title, warheads.abstract, warheads.url, warheads.readme, warheads.github
+
+
+
+projects = [warheads]

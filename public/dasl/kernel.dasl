@@ -1,9 +1,11 @@
-use fs
+use projects
 
-data = read "filesys"
-
-sys = fs.FileSys "" # parse from a string
+projects = projects.projects
 
 fn ls:
-  for child in sys.root.children:
-    print child.name
+  # todo
+  for project in projects:
+    print project
+
+fn readme project:
+  print project.readme

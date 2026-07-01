@@ -50,7 +50,7 @@ class DausBox {
 
     box.registerBrowserBuiltins();
 
-    const mods = ["fs", "math"]; //todo: add io, time,
+    const mods = ["projects", "math", "warheads"]; //todo: add io, time,
 
     for (const mod of mods) {
       const res = await fetch(`/dasl/${mod}.dasl`);
@@ -62,7 +62,7 @@ class DausBox {
       box.moduleCache.set(mod, ast);
     }
 
-    const files = ["filesys"];
+    const files = ["warheads.md"];
 
     for (const file of files) {
       const res = await fetch(`/${file}`);

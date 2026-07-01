@@ -1251,7 +1251,7 @@ runner.test("parse function call (no-parens)", () => {
 
 runner.test("parse function definition and call", () => {
   const ast = parse(`
-fn add a, b:
+fn add(a, b):
   return a + b
 add 3, 4
   `);
@@ -1331,8 +1331,26 @@ add 3, 4
   });
 });
 
+runner.test("expect function without commas in arguments to fail", () => {
+  let throws = false;
+  try {
+    const ast = parse(`
+fn add a b:
+  return a + b
+add 3, 4
+    `);
+  } catch (e) {
+    console.log((e as Error).message);
+    throws = true;
+  }
+
+  runner.assert(
+    throws,
+    "expected function without commas in arguments to fail, parsed successfully",
+  );
+});
+
 runner.test("parse for loop", () => {
-  // COMPLETE THIS TEST
   const ast = parse("x = 1\nfor i in [1,2,3,4,5]:\n  x = x * i\nx");
   const expectedAst: Module = {
     type: "Module",

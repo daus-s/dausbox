@@ -1,0 +1,5 @@
+title = "WARHeads API"
+abstract = "WARHeads is a machine-learning framework specifically designed for analysis of the NBA. It provides basic models as well as ways of implementing custom models using the elementary regression models."
+url = "warheads.dausbox.dev"
+github = "https://github.com/daus-s/warheads"
+readme = read "warheads.md"
