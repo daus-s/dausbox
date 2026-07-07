@@ -3,10 +3,12 @@ import Func from "./func.ts";
 import { type Value } from "./value.ts";
 
 class Obj {
+  _type: string;
   env: Environment;
   attrs: string[];
 
   constructor(def: ObjDef) {
+    this._type = def.name;
     this.env = new Environment(def.env);
     this.attrs = def.getAttrs();
   }
@@ -17,6 +19,10 @@ class Obj {
 
   assign(name: string, value: Value): void {
     this.env.assign(name, value);
+  }
+
+  type(): string {
+    return this._type;
   }
 }
 

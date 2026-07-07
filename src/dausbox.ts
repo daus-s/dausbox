@@ -3,7 +3,7 @@ import Lexer from "./dasl/lexer";
 import Parser from "./dasl/parser";
 import type { Module } from "./dasl/stmt";
 
-import { stringify, type Value } from "./dasl/value";
+import { type Value } from "./dasl/value";
 
 import { History } from "./history";
 
@@ -114,7 +114,7 @@ class DausBox {
         output += msg + "\n";
       }
 
-      const rs = res != null ? "**" + stringify(res) + "**" : "";
+      const rs = res != null ? "**" + this.interpreter._str(res) + "**" : "";
 
       output += rs + "\n";
 

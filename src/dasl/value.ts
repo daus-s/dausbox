@@ -32,13 +32,3 @@ export function typeOf(value: Value): string {
       throw new Error("Unknown value type.");
   }
 }
-
-export function stringify(value: Value): string {
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return value.toString();
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (value === null) return "null";
-  if (Array.isArray(value))
-    return `[${value.map((v) => stringify(v)).join(", ")}]`;
-  return value.toString();
-}

@@ -820,4 +820,34 @@ runner.test("string length property", () => {
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "5");
 });
+
+runner.test("_str: implicit object print", () => {
+  const code =
+    'obj BigOlBoy:\n  fn _init:\n    self.name = "teddy"\nb = BigOlBoy()\nprint b';
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], 'BigOlBoy::\n  name: "teddy"\n::');
+});
+
+runner.test("default obj definition fields truly inherited?", () => {
+  const code = `
+obj Obj:
+  field = 1
+  fn _init:
+    pass
+o1 = Obj()
+print o1.field
+`;
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "1");
+});
+
+runner.test("_str: implicit nested object", () => {
+  const code = ``;
+  const output = run(code);
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "");
+});
+
 runner.report();

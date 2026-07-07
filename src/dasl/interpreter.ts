@@ -23,7 +23,7 @@ import type {
   WhileStmt,
 } from "./stmt.ts";
 
-import { stringify, typeOf, type Value } from "./value.ts";
+import { typeOf, type Value } from "./value.ts";
 import Environment from "./environment.ts";
 import Func from "./func.ts";
 import { Obj, ObjDef } from "./object.ts";
@@ -58,9 +58,20 @@ class Interpreter {
 
   private registerBuiltins() {
     this._builtins["print"] = (args: Value[]) => {
-      const s = args.map((arg) => stringify(arg)).join(", ");
+      const _str = this.global.get("_str");
+
+      if (!(_str instanceof Func))
+        throw new Error("builtin _str is not recognized as a function");
+
+      const s = args
+        .map((arg) => {
+          return this._str(arg);
+        })
+        .join(", ");
+
       const out = this.global.get("_out") as Value[];
       this.global.assign("_out", [...out, s]);
+
       return null;
     };
     this.global.assign(
@@ -128,11 +139,9 @@ class Interpreter {
         case "string": {
           const str = args[0] as string;
           if (type2 === "string") {
-            const x = args[1] as string;
-            return str + x;
+            return (str + args[1]) as string;
           } else {
-            const num = stringify(args[1]);
-            return str + num;
+            return str + this._str(args[1]);
           }
         }
         case "array": {
@@ -168,7 +177,7 @@ class Interpreter {
       if (args.length !== 1)
         throw new Error("_str: expects one argument, got: " + args.length);
 
-      return stringify(args[0]);
+      return this._str(args[0]);
     };
 
     this.global.assign(
@@ -460,7 +469,7 @@ class Interpreter {
             const obj = this.evalExpr(target.target);
 
             if (!(obj instanceof Obj))
-              throw new Error("Invalid attribute target: " + stringify(obj));
+              throw new Error("Invalid attribute target: " + typeOf(obj));
 
             obj.assign(target.attr.id, value);
 
@@ -522,6 +531,10 @@ class Interpreter {
 
         if (!(target instanceof Obj))
           throw new Error("Invalid attribute target: " + typeOf(target));
+
+        if (expr.attr.id === "_str") {
+          return this._str(target);
+        }
 
         const value = target.access(expr.attr.id);
 
@@ -821,8 +834,77 @@ class Interpreter {
   }
 
   output(): string[] {
-    const out = this.local.get("_out") as Value[];
-    return out.map((v) => stringify(v));
+    const out = this.global.get("_out") as Value[];
+    return out.map((v) => this._str(v) as string);
+  }
+
+  _str(value: Value): string {
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return value.toString();
+    if (typeof value === "boolean") return value ? "true" : "false";
+    if (value === null) return "null";
+    if (typeof value === "object") {
+      if (Array.isArray(value))
+        return `[${value.map((v) => this._str(v)).join(", ")}]`;
+      if (value instanceof Map) {
+        return `{${[...value.entries()].map(([k, v]) => `${this._str(k)}: ${this._str(v)}`).join(", ")}}`;
+      }
+      if (value instanceof Func) {
+        return `${value.id}(${value.args.join(", ")})`;
+      }
+      if (value instanceof ObjDef) {
+        return value.name;
+      }
+      if (value instanceof Obj) {
+        if ("_str" in value.attrs) {
+          const f = value.access("_str");
+          if (f instanceof Func && f.args.length === 0) {
+            const res = this.callMethod(f, value, []);
+            return typeof res === "string" ? res : "null";
+          }
+        } else {
+          const lines: string[] = [];
+
+          lines.push(value.type() + ":");
+          value.env.entries().forEach(([k, v]) => {
+            if (typeof v === "string") {
+              v = `"${v}"`;
+            }
+
+            lines.push(`${k}: ${this._str(v)}`);
+          });
+          lines.push("::");
+
+          console.log(lines);
+          const ind = "  ";
+          let d = 0;
+
+          const s = lines
+            .map((line) => {
+              const sublines = line.split("\n");
+              const reconstructed: string[] = [];
+
+              for (const subline of sublines) {
+                if (subline.endsWith("::")) {
+                  d -= 1;
+                  reconstructed.push(ind.repeat(d) + subline);
+                } else if (subline.endsWith(":")) {
+                  d += 1;
+                  reconstructed.push(ind.repeat(d - 1) + subline);
+                } else {
+                  reconstructed.push(ind.repeat(d) + subline);
+                }
+              }
+
+              return reconstructed.join("\n");
+            })
+            .join("\n");
+          return s;
+        }
+      }
+      throw new Error("Unknown object type.");
+    }
+    throw new Error("Unknown value type.");
   }
 }
 

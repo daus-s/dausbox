@@ -14,7 +14,6 @@ class Environment {
     if (depth < 0) {
       throw new Error(`Variable not found: ${name}`);
     }
-
     if (!(name in this._variables)) {
       if (this.parent) {
         return this.parent.get(name, depth - 1);
