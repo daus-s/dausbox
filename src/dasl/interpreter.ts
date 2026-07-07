@@ -23,7 +23,7 @@ import type {
   WhileStmt,
 } from "./stmt.ts";
 
-import { typeOf, type Value } from "./value.ts";
+import { type Value } from "./value.ts";
 import Environment from "./environment.ts";
 import Func from "./func.ts";
 import { Obj, ObjDef } from "./object.ts";
@@ -133,8 +133,8 @@ class Interpreter {
       if (args.length !== 2)
         throw new Error("join: expects 2 arguments, got: " + args.length);
 
-      const type1 = typeOf(args[0]);
-      const type2 = typeOf(args[1]);
+      const type1 = this._type(args[0]);
+      const type2 = this._type(args[1]);
       switch (type1) {
         case "string": {
           const str = args[0] as string;
@@ -165,7 +165,7 @@ class Interpreter {
       if (args.length !== 1)
         throw new Error("_type: expects one argument, got: " + args.length);
 
-      return typeOf(args[0]);
+      return this._type(args[0]);
     };
 
     this.global.assign(
@@ -216,12 +216,12 @@ class Interpreter {
           if (expr.value.type === "Attr") {
             const inst = this.evalExpr(expr.value.target);
 
-            if (typeOf(inst) !== "obj")
+            if (!(inst instanceof Obj))
               throw new Error(
-                "invalid method call, expected Object, got " + typeOf(inst),
+                "invalid method call, expected Object, got " + this._type(inst),
               );
 
-            return this.callMethod(func, inst as Obj, []);
+            return this.callMethod(func, inst, []);
           } else {
             return this.callFunc(func, []);
           }
@@ -257,12 +257,12 @@ class Interpreter {
             const collection = this.evalExpr(assign.target.collection);
             const key = this.evalExpr(assign.target.key);
 
-            if (typeOf(collection) === "array") {
+            if (this._type(collection) === "array") {
               const arr = collection as Value[];
 
               if (typeof key !== "number")
                 throw new Error(
-                  `Cannot index array with ${typeOf(key)} (expected number)`,
+                  `Cannot index array with ${this._type(key)} (expected number)`,
                 );
 
               const index = key as number;
@@ -274,7 +274,7 @@ class Interpreter {
 
               arr[index] = this.evalExpr(assign.value);
               return arr[index];
-            } else if (typeOf(collection) === "map") {
+            } else if (this._type(collection) === "map") {
               const map = collection as Map<Value, Value>;
 
               map.set(key, this.evalExpr(assign.value));
@@ -282,7 +282,7 @@ class Interpreter {
               return map.get(key) ?? null;
             } else {
               throw new Error(
-                `object is not known to be subscriptable. got: ${typeOf(collection)}`,
+                `object is not known to be subscriptable. got: ${this._type(collection)}`,
               );
             }
           }
@@ -469,7 +469,7 @@ class Interpreter {
             const obj = this.evalExpr(target.target);
 
             if (!(obj instanceof Obj))
-              throw new Error("Invalid attribute target: " + typeOf(obj));
+              throw new Error("Invalid attribute target: " + this._type(obj));
 
             obj.assign(target.attr.id, value);
 
@@ -482,12 +482,12 @@ class Interpreter {
             const collection = this.evalExpr(target.collection);
             const key = this.evalExpr(target.key);
 
-            if (typeOf(collection) === "array") {
+            if (this._type(collection) === "array") {
               const arr = collection as Value[];
 
               if (typeof key !== "number")
                 throw new Error(
-                  `Cannot index array with ${typeOf(key)} (expected number)`,
+                  `Cannot index array with ${this._type(key)} (expected number)`,
                 );
 
               const index = key as number;
@@ -499,14 +499,14 @@ class Interpreter {
 
               arr[index] = value;
               return value;
-            } else if (typeOf(collection) === "map") {
+            } else if (this._type(collection) === "map") {
               const map = collection as Map<Value, Value>;
 
               map.set(key, value);
               return value;
             } else {
               throw new Error(
-                `object is not known to be subscriptable. got: ${typeOf(collection)}`,
+                `object is not known to be subscriptable. got: ${this._type(collection)}`,
               );
             }
           }
@@ -520,17 +520,17 @@ class Interpreter {
         const target = this.evalExpr(expr.target);
 
         if (expr.attr.id === "len") {
-          if (typeOf(target) === "string") {
+          if (this._type(target) === "string") {
             return (target as string).length;
-          } else if (typeOf(target) === "array") {
+          } else if (this._type(target) === "array") {
             return (target as Value[]).length;
           } else {
-            throw new Error("Invalid attribute target: " + typeOf(target));
+            throw new Error("Invalid attribute target: " + this._type(target));
           }
         }
 
         if (!(target instanceof Obj))
-          throw new Error("Invalid attribute target: " + typeOf(target));
+          throw new Error("Invalid attribute target: " + this._type(target));
 
         if (expr.attr.id === "_str") {
           return this._str(target);
@@ -579,14 +579,14 @@ class Interpreter {
         return left + right;
       } else {
         throw new Error(
-          `adding is only defined for string, string and number, number addition. got ${typeOf(left)} and ${typeOf(right)}.`,
+          `adding is only defined for string, string and number, number addition. got ${this._type(left)} and ${this._type(right)}.`,
         );
       }
     }
 
     if (typeof left !== "number" || typeof right !== "number") {
       throw new Error(
-        `cannot perform operation on ${typeOf(left)} and ${typeOf(right)}.`,
+        `cannot perform operation on ${this._type(left)} and ${this._type(right)}.`,
       );
     }
 
@@ -723,7 +723,9 @@ class Interpreter {
     const callee = this.evalExpr(expr.func);
 
     if (!(callee instanceof Func) && !(callee instanceof ObjDef)) {
-      throw new Error(`Call: func must be a function, got ${typeOf(callee)}`);
+      throw new Error(
+        `Call: func must be a function, got ${this._type(callee)}`,
+      );
     }
 
     const args = expr.args.map((arg) => this.evalExpr(arg));
@@ -865,7 +867,7 @@ class Interpreter {
         } else {
           const lines: string[] = [];
 
-          lines.push(value.type() + ":");
+          lines.push(value._type + ":");
           value.env.entries().forEach(([k, v]) => {
             if (typeof v === "string") {
               v = `"${v}"`;
@@ -875,7 +877,6 @@ class Interpreter {
           });
           lines.push("::");
 
-          console.log(lines);
           const ind = "  ";
           let d = 0;
 
@@ -905,6 +906,27 @@ class Interpreter {
       throw new Error("Unknown object type.");
     }
     throw new Error("Unknown value type.");
+  }
+
+  _type(value: Value): string {
+    switch (typeof value) {
+      case "number":
+        return "number";
+      case "string":
+        return "string";
+      case "boolean":
+        return "boolean";
+      case "object":
+        if (value === null) return "null";
+        if (Array.isArray(value)) return "array";
+        if (value instanceof Map) return "map";
+        if (value instanceof Func) return "func";
+        if (value instanceof Obj) return value._type;
+        if (value instanceof ObjDef) return "objdef";
+        throw new Error("Unknown object type.");
+      default:
+        throw new Error("Unknown value type.");
+    }
   }
 }
 

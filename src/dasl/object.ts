@@ -20,10 +20,6 @@ class Obj {
   assign(name: string, value: Value): void {
     this.env.assign(name, value);
   }
-
-  type(): string {
-    return this._type;
-  }
 }
 
 class ObjDef {

@@ -1,6 +1,6 @@
 import Func from "./func.ts";
 import { ObjDef } from "./object.ts";
-import { typeOf, type Value } from "./value.ts";
+import { type Value } from "./value.ts";
 
 class Environment {
   private _variables: Record<string, Value> = {};
@@ -55,11 +55,11 @@ class Environment {
     }
     for (const e of this.entries()) {
       if (e[1] instanceof Func) {
-        s.push(`[function] ${e[0]}: ${typeOf(e[1])}`);
+        s.push(`[function] ${e[0]}`);
       } else if (e[1] instanceof ObjDef) {
-        s.push(`[class] ${e[0]}: ${typeOf(e[1])}`);
+        s.push(`[class] ${e[0]}`);
       } else {
-        s.push(`[variable] ${e[0]}: ${typeOf(e[1])}`);
+        s.push(`[variable] ${e[0]}`);
       }
     }
 

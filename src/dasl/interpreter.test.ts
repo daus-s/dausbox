@@ -1,3 +1,7 @@
+import fs from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
+
 import Interpreter from "./interpreter.ts";
 import Lexer from "./lexer.ts";
 import Parser from "./parser.ts";
@@ -15,6 +19,13 @@ function run(code: string) {
   const ast = parser.parse(tokens);
   interpreter.eval(ast);
   return interpreter.output();
+}
+
+function read(filename: string): string {
+  const location =
+    path.dirname(fileURLToPath(import.meta.url)) + `/test/${filename}`; //change to location of the file istself as opposed to its invocation
+
+  return fs.readFileSync(location, "utf-8").toString();
 }
 
 runner.test("test print", () => {
@@ -826,7 +837,7 @@ runner.test("_str: implicit object print", () => {
     'obj BigOlBoy:\n  fn _init:\n    self.name = "teddy"\nb = BigOlBoy()\nprint b';
   const output = run(code);
   runner.assertEqual(output.length, 1);
-  runner.assertEqual(output[0], 'BigOlBoy::\n  name: "teddy"\n::');
+  runner.assertEqual(output[0], 'BigOlBoy:\n  name: "teddy"\n::');
 });
 
 runner.test("default obj definition fields truly inherited?", () => {
@@ -844,10 +855,58 @@ print o1.field
 });
 
 runner.test("_str: implicit nested object", () => {
-  const code = ``;
+  const code = read("nested_obj_fields.dasl");
   const output = run(code);
   runner.assertEqual(output.length, 1);
-  runner.assertEqual(output[0], "");
+  runner.assertEqual(
+    output[0],
+    'Outer:\n  space: true\n  inner: Inner:\n      state: "i"\n  ::\n::',
+  );
+});
+
+runner.test("_type: number", () => {
+  const output = run("print _type 5");
+  runner.assertEqual(output[0], "number");
+});
+
+runner.test("_type: string", () => {
+  const output = run('print _type "o-o"');
+  runner.assertEqual(output[0], "string");
+});
+
+runner.test("_type: boolean", () => {
+  const output = run("print _type true");
+  runner.assertEqual(output[0], "boolean");
+});
+
+runner.test("_type: null", () => {
+  const output = run("print _type null");
+  runner.assertEqual(output[0], "null");
+});
+
+runner.test("_type: array", () => {
+  const output = run("print _type([])");
+  runner.assertEqual(output[0], "array");
+});
+
+runner.test("_type: map", () => {
+  const output = run("print _type({})");
+  runner.assertEqual(output[0], "map");
+});
+
+runner.test("_type: func", () => {
+  const output = run("fn f x:\n  x+1\nprint _type f");
+  runner.assertEqual(output[0], "func");
+});
+
+runner.test("_type: obj", () => {
+  const output = run("obj BingBong:\n  pass\no = BingBong () \nprint _type o");
+  runner.assertEqual(output[0], "BingBong");
+});
+
+runner.test("_type: objdef", () => {
+  const output = run("obj Type:\n  pass\nprint _type Type");
+  runner.assertEqual(output[0], "objdef");
 });
 
 runner.report();
