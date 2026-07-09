@@ -1,9 +1,9 @@
-import Interpreter from "./dasl/interpreter";
-import Lexer from "./dasl/lexer";
-import Parser from "./dasl/parser";
-import type { Module } from "./dasl/stmt";
+import Interpreter from "../dasl/interpreter";
+import Lexer from "../dasl/lexer";
+import Parser from "../dasl/parser";
+import type { Module } from "../dasl/stmt";
 
-import { type Value } from "./dasl/value";
+import { type Value } from "../dasl/value";
 
 import { History } from "./history";
 
@@ -162,6 +162,20 @@ class DausBox {
 
       return this.fileCache.get(args[0] as string)!;
     });
+  }
+
+  setWidth(width: number) {
+    this.interpreter.eval({
+      type: "Module", body: [
+        {
+          type: "Assign",
+          assign: {
+            type: "Assign",
+            target: {type: "Name",id: "_width"},
+            value: {type: "Constant", value: width},
+          }
+      }
+    ]})
   }
 }
 

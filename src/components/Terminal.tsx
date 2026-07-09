@@ -2,8 +2,8 @@ import "../styles/terminal.css";
 
 import { useEffect, useRef, useState } from "react";
 
-import DausBox from "../dausbox";
-import { History } from "../history";
+import DausBox from "../dausbox/dausbox";
+import { History } from "../dausbox/history";
 import InputBuffer from "./InputBuffer";
 
 function renderOutput(output: string, entryIdx: number) {
@@ -30,9 +30,33 @@ export default function Terminal() {
 
   useEffect(() => {
     DausBox.create().then((box) => {
+      box.setWidth(Math.floor(innerWidth / 12));
       setDausBox(box);
     });
   }, []);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const handleResize = () => {
+
+      if (!dausbox)
+        return;
+
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        dausbox.setWidth(
+          Math.floor(innerWidth / 12)
+          )
+      }, 150); // adjust delay to taste
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [dausbox]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -69,8 +93,18 @@ export default function Terminal() {
         onExec={() => setTick(tick + 1)}
         scrollToBottom={scrollToBottom}
       />
-      {/* Sentinel — always at the bottom of the DOM */}
       <div ref={bottomRef} />
     </div>
   );
+}
+
+function Ruler() {
+  return <div>
+    {[...Array(101).keys()]
+      .slice(1)
+      .map((x) => `.........${x % 10}`)
+      .join("")}
+    <br />
+    {"1234567890".repeat(100)}
+  </div>;
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Cursor from "./Cursor";
-import type DausBox from "../dausbox";
+import type DausBox from "../dausbox/dausbox";
 
 type BufferProps = {
   dausbox: DausBox;
