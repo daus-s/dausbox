@@ -804,22 +804,31 @@ class Interpreter {
   private evalSubscriptExpr(expr: Subscript): Value {
     const val = this.evalExpr(expr.collection);
     const index = this.evalExpr(expr.key);
-    if (!Array.isArray(val) && typeof val !== "string") {
-      throw new Error("Subscript: val must be an array or string");
-    }
-    if (typeof index !== "number") {
-      throw new Error("Subscript: index must be a number");
-    }
-    if (
-      index < 0 ||
-      index >= (typeof val === "string" ? val.length : val.length)
-    ) {
-      throw new Error(
-        `Index out of bounds: length: ${val.length}, accepts [0, ${val.length - 1}], got: ${index}`,
-      );
+
+    if (val instanceof Map) {
+      return val.get(index) || null;
     }
 
-    return val[index];
+    if (
+      val instanceof Array || typeof val === "string") {
+
+        if (typeof index !== "number") {
+          throw new Error("Subscript: index must be a number");
+        }
+
+      if (
+        index < 0 ||
+        index >= val.length
+      ) {
+        throw new Error(
+          `Index out of bounds: length: ${val.length}, accepts [0, ${val.length - 1}], got: ${index}`,
+        );
+      } else {
+
+        return val[index];
+      }
+    }
+    throw new Error(`Subscript: ${this._type(val)} is not subscriptable`)
   }
 
   // END LOGIC ==================================================================================

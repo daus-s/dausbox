@@ -3,9 +3,11 @@ use projects
 projects = projects.projects
 
 fn ls:
+  print _width
   # todo
+  s = []
   for project in projects:
-    print project
+    print project.name
 
 fn readme project:
   print project.readme

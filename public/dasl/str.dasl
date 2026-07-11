@@ -1,0 +1,23 @@
+fn split s, x:
+  parts = []
+  token = ""
+  for c in chars s:
+    if c != x:
+      token = token + c
+    else:
+      parts = join parts, token
+      token  = ""
+  parts = join parts, token
+
+  parts
+
+
+fn chars str:
+  cs = []
+  for i in range str.len:
+    cs = join cs, str[i]
+  cs
+
+res1 = split "a-b-c-d-e-f", "-"
+if res1 != ["a","b","c","d","e","f"]:
+  print "split test failed"
