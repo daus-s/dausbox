@@ -51,3 +51,25 @@ fn isprime x:
       if (x % i) == 0:
         return false;
   return true
+
+
+fn min a, b:
+  print _type(a), _type(b)
+  if _type(a) != "number" or _type(b) != "number":
+    print "WARN! math.min requires two numbers. got " + _type(a) + " and "+ _type(b)
+    return null
+
+  if a < b:
+    return a
+  else:
+    return b
+
+fn max a, b:
+  if  _type(a) != "number" or _type(b) != "number":
+    print "WARN! math.max requires two numbers."
+    return null
+
+  if a > b:
+    return a
+  else:
+    return b

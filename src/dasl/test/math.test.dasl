@@ -83,5 +83,48 @@ else:
   runner.fail "Expected isPrime(-5) to be true but it was false."
 
 
+if math.min (1,2) == 1:
+  runner.succeed "min(1,2)"
+elif math.min (1,2) == 2:
+  runner.fail "Expected min(1,2) to be 1 but it was 2."
+else:
+  runner.fail "Expected min to be in the set."
+
+if math.min (1,-2) == -2:
+  runner.succeed "min(1,2)"
+elif math.min (1,-2) == 1:
+  runner.fail "Expected min(1,-2) to be -2 but it was 1"
+else:
+  runner.fail "Expected min to be in the set. " + _str math.min(1,-2)
+
+# Test with zero values
+if math.min(0,2) == 0:
+  runner.succeed("min(0,2)")
+else:
+  runner.fail("Expected min(0,2) to be 0 but it was " + _str(math.min(0,2)))
+
+if math.min(1,0) == 0:
+  runner.succeed("min(1,0)")
+else:
+  runner.fail("Expected min(1,0) to be 0 but it was " + _str(math.min(1,0)))
+
+
+# Test with positive values
+if math.max(1,2) == 2:
+  runner.succeed("max(1,2)")
+else:
+  runner.fail("Expected max(1,2) to be 2 but it was " + _str(math.max(1,2)))
+
+# Test with negative values
+if math.max(-1,-2) == -1:
+  runner.succeed("max(-1,-2)")
+else:
+  runner.fail("Expected max(-1,-2) to be -1 but it was " + _str(math.max(-1,-2)))
+
+# Test with zero
+if math.max(0,2) == 2:
+  runner.succeed("max(0,2)")
+else:
+  runner.fail("Expected max(0,2) to be 2 but it was " + _str(math.max(0,2)))
 
 runner.report
