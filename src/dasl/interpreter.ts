@@ -656,13 +656,20 @@ class Interpreter {
           return false;
         }
 
-        return left === right;
-      case "!=":
-        if (typeof left !== typeof right) {
-          return true;
+        if (Array.isArray(left) && Array.isArray(right)) {
+          if (left.length !== right.length)
+            return false;
+
+          let equal = true;
+          for (let i = 0; i < left.length; i++) {
+            equal &&= this.compare(left[i], "==", right[i]);
+          }
+          return equal;
         }
 
-        return left !== right;
+        return left === right;
+      case "!=":
+        return !(this.compare(left, "==", right));
       case "<":
         if (typeof left !== "number" || typeof right !== "number") {
           throw new Error("CompareOp (<): operands must be numbers");
