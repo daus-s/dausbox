@@ -54,7 +54,12 @@ if (process.argv.length === 3) {
 
   interpreter.setResolver(resolver);
 
-  exec(content);
+  try {
+    exec(content);
+  } catch (e) {
+    interpreter.output().forEach((line) => console.log(line));
+    throw e;
+  }
 } else {
   throw new Error("interactive mode not implemented yet.");
 }

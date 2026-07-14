@@ -79,7 +79,7 @@ class Lexer {
   }
 
   private pushToken(value: string = "", type: TokenType): void {
-    this.tokens.push({ type, value, line: this.line, col: this.col });
+    this.tokens.push({ type, value, line: this.line, col: this.col - value.length });
   }
 
   private atEnd(): boolean {

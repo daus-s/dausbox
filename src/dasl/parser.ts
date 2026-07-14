@@ -52,7 +52,7 @@ class Parser {
     if (this.check(type)) {
       return this.step();
     }
-    throw new Error(message);
+    throw new Error(this.locationString() + "\n" + message);
   }
 
   private consumeMany(type: string, message: string) {
@@ -60,6 +60,10 @@ class Parser {
     while (this.match(type)) {
       void 0;
     }
+  }
+  private locationString(): string {
+    return `line ${this.peek().line}, col ${this.peek().col} `;
+
   }
 
   private isDone() {
