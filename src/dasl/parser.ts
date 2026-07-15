@@ -528,7 +528,7 @@ class Parser {
       return { type: "List", elts };
     }
 
-    throw new Error("Expected primary expression, got " + this.peek().type);
+    throw new Error(this.locationString() + "Expected primary expression, got " + this.peek().type);
   }
 }
 

@@ -1,0 +1,17 @@
+obj TestRunner:
+  fn _init:
+    self.successes = 0
+    self.failures = 0
+
+  fn succeed msg:
+    self.successes = self.successes + 1
+    print append "✓ ", msg
+
+  fn fail msg:
+    self.failures = self.failures + 1
+    print append "✗ ", msg
+
+  fn report:
+    print append((append "ran ", (self.successes + self.failures)), " tests.")
+    print append "  ✓ test:", append(_str(self.successes), " passed")
+    print append "  ✗ test:", append(_str(self.failures), " failed")

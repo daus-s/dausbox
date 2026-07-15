@@ -1,0 +1,203 @@
+use str #import
+use test
+
+tr = test.TestRunner()
+
+# ============================================================================
+# SPLIT TESTS
+# ============================================================================
+
+res = str.split "a-b-c-d-e-f", "-"
+if res != ["a","b","c","d","e","f"]:
+  tr.fail "split basic test"
+else:
+  tr.succeed "split basic test"
+
+res = str.split "hello,world,test", ","
+if res != ["hello","world","test"]:
+  tr.fail "split comma test"
+else:
+  tr.succeed "split comma test"
+
+res = str.split "x", "x"
+if res != ["",""]:
+  tr.fail "split single char test"
+else:
+  tr.succeed "split single char test"
+
+res = str.split "abc", "z"
+if res != ["abc"]:
+  tr.fail "split no match test"
+else:
+  tr.succeed "split no match test"
+
+res = str.split "", "-"
+if res != [""]:
+  tr.fail "split empty string test"
+else:
+  tr.succeed "split empty string test"
+
+res = str.split "---", "-"
+if res != ["","","",""]:
+  tr.fail "split consecutive delim test"
+else:
+  tr.succeed "split consecutive delim test"
+
+# ============================================================================
+# SUBSTR TESTS
+# ============================================================================
+
+if str.substr("abc", 1, 2) != "b":
+  tr.fail "substr basic test"
+else:
+  tr.succeed "substr basic test"
+
+if str.substr("hello", 0, 5) != "hello":
+  tr.fail "substr full string test"
+else:
+  tr.succeed "substr full string test"
+
+if str.substr("world", 1, 4) != "orl":
+  tr.fail "substr middle test"
+else:
+  tr.succeed "substr middle test"
+
+if str.substr("test", 0, 1) != "t":
+  tr.fail "substr first char test"
+else:
+  tr.succeed "substr first char test"
+
+if str.substr("test", 3, 4) != "t":
+  tr.fail "substr last char test"
+else:
+  tr.succeed "substr last char test"
+
+if str.substr("abc", -1, 2) != null:
+  tr.fail "substr negative index test"
+else:
+  tr.succeed "substr negative index test"
+
+if str.substr("abc", 0, 5) != null:
+  tr.fail "substr out of bounds test"
+else:
+  tr.succeed "substr out of bounds test"
+
+if str.substr("test", 2, 2) != "":
+  tr.fail "substr zero length test"
+else:
+  tr.succeed "substr zero length test"
+
+# ============================================================================
+# CHARS TESTS
+# ============================================================================
+
+res = str.chars "abc"
+if res != ["a","b","c"]:
+  tr.fail "chars basic test"
+else:
+  tr.succeed "chars basic test"
+
+res = str.chars "x"
+if res != ["x"]:
+  tr.fail "chars single char test"
+else:
+  tr.succeed "chars single char test"
+
+res = str.chars ""
+if res != []:
+  tr.fail "chars empty string test"
+else:
+  tr.succeed "chars empty string test"
+
+res = str.chars "hello"
+if res != ["h","e","l","l","o"]:
+  tr.fail "chars multi char test"
+else:
+  tr.succeed "chars multi char test"
+
+# ============================================================================
+# JOIN TESTS
+# ============================================================================
+
+res = str.join([ "a","b","c" ], "-")
+if res != "a-b-c":
+  print res
+  tr.fail "join basic test"
+else:
+  tr.succeed "join basic test"
+
+res = str.join(["hello"], " ")
+if res != "hello":
+  tr.fail "join single element test"
+else:
+  tr.succeed "join single element test"
+
+res = str.join([], ",")
+if res != "":
+  tr.fail "join empty list test"
+else:
+  tr.succeed "join empty list test"
+
+res = str.join(["x","y","z"], "")
+if res != "xyz":
+  tr.fail "join empty sep test"
+else:
+  tr.succeed "join empty sep test"
+
+# ============================================================================
+# WRAP_LINES TESTS
+# ============================================================================
+
+res = str.wrap_lines "hello world", 5
+expected = ["hello", "world"]
+if res != expected:
+  tr.fail "wrap_lines basic test"
+else:
+  tr.succeed "wrap_lines basic test"
+
+res = str.wrap_lines "a b c d e", 3
+if res != ["a b", "c d", "e  "]:
+  tr.fail "wrap_lines multi word test"
+else:
+  tr.succeed "wrap_lines multi word test"
+
+res = str.wrap_lines "short", 10
+if res != ["short     "]:
+  tr.fail "wrap_lines no wrap needed test"
+else:
+  tr.succeed "wrap_lines no wrap needed test"
+
+res = str.wrap_lines "verylongword", 4
+if res != ["ver-", "ylo-","ngw-", "ord "]:
+  tr.fail "wrap_lines long word test"
+else:
+  tr.succeed "wrap_lines long word test"
+
+# ============================================================================
+# INTEGRATION TESTS
+# ============================================================================
+
+parts = str.split "a,b,c", ","
+chars_of_first = str.chars parts[0]
+if chars_of_first != ["a"]:
+  tr.fail "split+chars integration test"
+else:
+  tr.succeed "split+chars integration test"
+
+parts = str.split "hello-world", "-"
+first_part = parts[0]
+sub = str.substr first_part, 0, 2
+if sub != "he":
+  tr.fail "split+substr integration test"
+else:
+  tr.succeed "split+substr integration test"
+
+letters = str.chars "abc"
+rejoined = str.join letters, ""
+if rejoined != "abc":
+  tr.fail "chars+join integration test"
+else:
+  tr.succeed "chars+join integration test"
+
+print ""
+tr.report

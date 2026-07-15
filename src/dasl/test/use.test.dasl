@@ -5,4 +5,4 @@ res = mod.foo()
 if res == 42:
   print "✓ passed dasl-ts interpreter import"
 else:
-  print join "✗ failed dasl-ts interpreter import, expected 42, got ", res
+  print append "✗ failed dasl-ts interpreter import, expected 42, got ", res

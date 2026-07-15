@@ -129,9 +129,9 @@ class Interpreter {
       ),
     );
 
-    this._builtins["join"] = (args: Value[]) => {
+    this._builtins["append"] = (args: Value[]) => {
       if (args.length !== 2)
-        throw new Error("join: expects 2 arguments, got: " + args.length);
+        throw new Error("append: expects 2 arguments, got: " + args.length);
 
       const type1 = this._type(args[0]);
       const type2 = this._type(args[1]);
@@ -152,13 +152,13 @@ class Interpreter {
       }
 
       throw new Error(
-        `join: expected args:\n - string, any\n - array, any\n received:\n - ${type1}, ${type2}`,
+        `append: expected args:\n - string, any\n - array, any\n received:\n - ${type1}, ${type2}`,
       );
     };
 
     this.global.assign(
-      "join",
-      new Func("join", ["xs", "x"], { type: "Module", body: [] }, this.global),
+      "append",
+      new Func("append", ["xs", "x"], { type: "Module", body: [] }, this.global),
     );
 
     this._builtins["_type"] = (args: Value[]) => {

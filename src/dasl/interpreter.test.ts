@@ -304,119 +304,119 @@ runner.test("closure captures enclosing scope", () => {
   runner.assertEqual(output[0], "15");
 });
 
-runner.test("join: string + string", () => {
-  const code = "print join 'hello', ' world'";
+runner.test("append: string + string", () => {
+  const code = "print append 'hello', ' world'";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "hello world");
 });
 
-runner.test("join: string + number", () => {
-  const code = "print join 'score: ', 42";
+runner.test("append: string + number", () => {
+  const code = "print append 'score: ', 42";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "score: 42");
 });
 
-runner.test("join: array + element", () => {
-  const code = "xs = [1, 2, 3]\nprint join xs, 4";
+runner.test("append: array + element", () => {
+  const code = "xs = [1, 2, 3]\nprint append xs, 4";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "[1, 2, 3, 4]");
 });
 
-runner.test("join: array + string element", () => {
-  const code = "xs = ['a', 'b']\nprint join xs, 'c'";
+runner.test("append: array + string element", () => {
+  const code = "xs = ['a', 'b']\nprint append xs, 'c'";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "[a, b, c]");
 });
 
-runner.test("join: empty array + element", () => {
-  const code = "print join([], 1)";
+runner.test("append: empty array + element", () => {
+  const code = "print append([], 1)";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "[1]");
 });
 
-runner.test("join: wrong arg count throws", () => {
-  const code = "join 'a'";
+runner.test("append: wrong arg count throws", () => {
+  const code = "append 'a'";
   let throws = false;
   try {
     run(code);
   } catch (e) {
     runner.assertEqual(
       (e as Error).message,
-      "join: expects 2 arguments, got: 1",
+      "append: expects 2 arguments, got: 1",
     );
     throws = true;
   }
   runner.assertEqual(throws, true);
 });
 
-runner.test("join: null first arg throws", () => {
-  const code = "join null, 'a'";
+runner.test("append: null first arg throws", () => {
+  const code = "append null, 'a'";
   let throws = false;
   try {
     run(code);
   } catch (e) {
     runner.assertEqual(
       (e as Error).message,
-      "join: expected args:\n - string, any\n - array, any\n received:\n - null, string",
+      "append: expected args:\n - string, any\n - array, any\n received:\n - null, string",
     );
     throws = true;
   }
   runner.assertEqual(throws, true);
 });
 
-runner.test("join: one argument throws error", () => {
+runner.test("append: one argument throws error", () => {
   let throws = false;
   try {
-    run("join 'a'");
+    run("append 'a'");
   } catch (e) {
     runner.assertEqual(
       (e as Error).message,
-      "join: expects 2 arguments, got: 1",
+      "append: expects 2 arguments, got: 1",
     );
     throws = true;
   }
-  runner.assertEqual(throws, true, "expected join with one argument to throw");
+  runner.assertEqual(throws, true, "expected append with one argument to throw");
 });
 
-runner.test("join: two bad arguments throws error", () => {
+runner.test("append: two bad arguments throws error", () => {
   let throws = false;
   try {
-    run("join true, 'a'");
+    run("append true, 'a'");
   } catch (e) {
     runner.assertEqual(
       (e as Error).message,
-      "join: expected args:\n - string, any\n - array, any\n received:\n - boolean, string",
+      "append: expected args:\n - string, any\n - array, any\n received:\n - boolean, string",
     );
     throws = true;
   }
   runner.assertEqual(
     throws,
     true,
-    "expected join with null first argument to throw",
+    "expected append with null first argument to throw",
   );
 });
 
-runner.test("join: chained joins build string", () => {
-  const code = "x = join 'foo', 'bar'\nprint join x, '!'";
+runner.test("append: chained appends build string", () => {
+  const code = "x = append 'foo', 'bar'\nprint append x, '!'";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "foobar!");
 });
 
-runner.test("join: chained joins build array", () => {
-  const code = "xs = join( [1, 2], 3)\nxs = join xs, 4\nprint xs";
+runner.test("append: chained appends build array", () => {
+  const code = "xs = append( [1, 2], 3)\nxs = append xs, 4\nprint xs";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "[1, 2, 3, 4]");
 });
 
-runner.test("idiomatic join chain", () => {
-  const code = "xs = [1,2]\nxs = join xs, 3\nxs = join xs, 4\nprint xs";
+runner.test("idiomatic append chain", () => {
+  const code = "xs = [1,2]\nxs = append xs, 3\nxs = append xs, 4\nprint xs";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "[1, 2, 3, 4]");
@@ -430,7 +430,7 @@ runner.test("object", () => {
 
 runner.test("object: explicit init", () => {
   const code =
-    "obj Dog:\n  name\n  fn _init name:\n    self.name = name\n    print join 'created dog: ', self.name\nd = Dog 'fido'\nprint join 'hi doggy, ', d.name";
+    "obj Dog:\n  name\n  fn _init name:\n    self.name = name\n    print append 'created dog: ', self.name\nd = Dog 'fido'\nprint append 'hi doggy, ', d.name";
   const output = run(code);
   runner.assertEqual(output.length, 2);
   runner.assertEqual(output[0], "created dog: fido");
@@ -446,7 +446,7 @@ runner.test("object: implicit init", () => {
 
 runner.test("object: default values 1", () => {
   const code =
-    "obj Dog:\n  name = 'fido'\n  fn _init:\n    print join 'created dog: ', self.name\nd = Dog()\nprint d.name";
+    "obj Dog:\n  name = 'fido'\n  fn _init:\n    print append 'created dog: ', self.name\nd = Dog()\nprint d.name";
   const output = run(code);
   runner.assertEqual(output.length, 2);
   runner.assertEqual(output[0], "created dog: fido");
