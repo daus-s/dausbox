@@ -1,13 +1,58 @@
 use projects
+use str
+use math
 
 projects = projects.projects
 
 fn ls:
-  print _width
-  # todo
-  s = []
+  col_width = (_width - 18) // 3
+  num_rows =  math.ceil projects.len // 3
+  contents = []
+
+  row_height = 0
+
   for project in projects:
-    print project.name
+    data = Contents project.name, str.wrap_lines project.abstract, col_width
+    row_height = math.max row_height, data.lines.len
+
+    contents = append contents, data
+
+  msg = " ╔═"
+  for i in range col_width:
+    msg = msg + "═"
+  msg = msg + "═╗"
+
+  msg = msg + " " + msg + " " + msg + "\n"
+
+
+  # go line by line in each 3 projects at a time
+  # for i in range num_rows:
+  #   for k in range 3:
+
+  title = contents[0].title
+  if title.len > col_width:
+    title = str.substr title, 0, col_width-3 + "..."
+  else:
+    while title.len < col_width:
+      title = title + " "
+  msg = msg + " ║ " + title + " ║ "
+  msg = msg + "\n"
+
+  msg = msg + " ╠═" + str.rep("═", col_width) + "═╣ \n"
+
+  for i in range row_height:
+    msg = msg + " ║ " + contents[0].lines[i] + " ║ \n"
+
+  msg = msg + " ╚═" + str.rep("═", col_width) + "═╝\n"
+
+  msg = msg + "\n"
+
+  print msg
+
+obj Contents:
+  fn _init title, lines:
+    self.title = title
+    self.lines = lines
 
 fn readme project:
   print project.readme

@@ -13,8 +13,13 @@ fn split s, x:
 
 fn join strs, sep:
   s = ""
+  first = true
   for str in strs:
-    s = s + str + sep
+    if first:
+      s = s + str
+      first = false
+    else:
+      s = s + sep + str
   s
 
 
@@ -33,22 +38,40 @@ fn wrap_lines s, width:
     while tkn.len > width:
       final = append final, ((substr tkn, 0, width-1) + "-")
       tkn = substr tkn, width-1, tkn.len
-    line = line + tkn
+      if tkn == null:
+        break
 
-    if (line.len % width) + tkn.len >= width:
+    if line.len + tkn.len > width: #because we need the space before
       #append and clear line
-      final = append final, line
-      line = ""
+      if line.len != 0:
+        while line.len < width:
+            line = line + " "
+        final = append final, line
+      line = tkn
     else:
+      if line.len == 0:
+        line = tkn
+      else:
+        line = line + " " + tkn
+  if line.len > 0:
+    while line.len < width:
       line = line + " "
-  append final, "\n"
+    final = append final, line
+  return final
 
 
 fn substr str, first, last:
-  if first < 0 or last >= str.len:
+  if first < 0 or last > str.len or first > last:
     return null
 
   s = ""
   for i in range first, last:
     s = s + str[i]
-  return s
+  s
+
+
+fn rep str, n:
+  s = ""
+  for i in range n:
+    s = s + str
+  s

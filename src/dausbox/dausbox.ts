@@ -50,7 +50,7 @@ class DausBox {
 
     box.registerBrowserBuiltins();
 
-    const mods = ["projects", "math", "warheads", "str"]; //todo: add io, time,
+    const mods = ["projects", "math", "str", "warheads", /*"betties", "optics", "desmos-algebra", "tictactoe", "dauslang (dasl)"*/]; //todo: add io, time,
 
     for (const mod of mods) {
       const res = await fetch(`/dasl/${mod}.dasl`);
