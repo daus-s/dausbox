@@ -1,0 +1,5 @@
+title = "betties.app"
+abstract = "Betties is a currency free social betting platform powered by supabase. Aloowing users to place bets whenever and wherever they are, Betties is a great alternative to predatory betting platforms."
+url = "https://betties.app"
+github = "https://github.com/daus-s/the-green-book"
+readme = null # read "betties.md"

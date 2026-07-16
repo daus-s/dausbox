@@ -41,7 +41,7 @@ fn wrap_lines s, width:
       if tkn == null:
         break
 
-    if line.len + tkn.len > width: #because we need the space before
+    if line.len + tkn.len >= width: #because we need the space before
       #append and clear line
       if line.len != 0:
         while line.len < width:

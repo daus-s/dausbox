@@ -1,4 +1,6 @@
 use warheads
+use betties
+use dauslang
 
 obj Project:
   fn _init name, abstract, url, readme, github:
@@ -13,5 +15,7 @@ obj Project:
 
 
 warheads = Project warheads.title, warheads.abstract, warheads.url, warheads.readme, warheads.github
+betties = Project betties.title, betties.abstract, betties.url, betties.readme, betties.github
+dasl = Project dauslang.title, dauslang.abstract, dauslang.url, dauslang.readme, dauslang.github
 
-projects = [warheads]
+projects = [warheads, betties, dasl]

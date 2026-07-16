@@ -28,10 +28,18 @@ fn fact x:
 
 
 fn floor x:
-  x - (x % 1)
+  r = x % 1
+  if r < 0:
+    x - r - 1
+  else:
+    x - r
 
 fn ceil x:
-  x + (1 - x % 1)
+  r = x % 1
+  if r > 0:
+    x - r + 1
+  else:
+    x - r
 
 fn abs x:
   if x < 0:
