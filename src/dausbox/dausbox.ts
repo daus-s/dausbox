@@ -50,7 +50,14 @@ class DausBox {
 
     box.registerBrowserBuiltins();
 
-    const mods = ["projects", "math", "str", "warheads", "betties"/*, "optics", "desmos-algebra", "tictactoe"*/, "dauslang"]; //todo: add io, time,
+    const mods = [
+      "projects",
+      "math",
+      "str",
+      "warheads",
+      "betties" /*, "optics", "desmos-algebra", "tictactoe"*/,
+      "dauslang",
+    ]; //todo: add io, time,
 
     for (const mod of mods) {
       const res = await fetch(`/dasl/${mod}.dasl`);
@@ -62,7 +69,7 @@ class DausBox {
       box.moduleCache.set(mod, ast);
     }
 
-    const files = ["warheads.md"];
+    const files = ["warheads.md", "bio.txt"];
 
     for (const file of files) {
       const res = await fetch(`/${file}`);
@@ -166,16 +173,18 @@ class DausBox {
 
   setWidth(width: number) {
     this.interpreter.eval({
-      type: "Module", body: [
+      type: "Module",
+      body: [
         {
           type: "Assign",
           assign: {
             type: "Assign",
-            target: {type: "Name",id: "_width"},
-            value: {type: "Constant", value: width},
-          }
-      }
-    ]})
+            target: { type: "Name", id: "_width" },
+            value: { type: "Constant", value: width },
+          },
+        },
+      ],
+    });
   }
 }
 
