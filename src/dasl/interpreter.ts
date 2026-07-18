@@ -57,36 +57,39 @@ class Interpreter {
   }
 
   private registerBuiltins() {
-    this._builtins["print"] = (args: Value[]) => {
+    this.register("print", ["...args"], (args: Value[]) => {
       const _str = this.global.get("_str");
-
       if (!(_str instanceof Func))
         throw new Error("builtin _str is not recognized as a function");
-
       const s = args
         .map((arg) => {
           return this._str(arg);
         })
         .join(", ");
-
       const out = this.global.get("_out") as Value[];
       this.global.assign("_out", [...out, s]);
-
       return null;
-    };
-    this.global.assign(
-      "print",
-      new Func("print", ["...args"], { type: "Module", body: [] }, this.global),
-    );
+    });
+
+    this.register("flush", [], (args: Value[]) => {
+      if (args.length > 0)
+        throw new Error(`flush: takes no arguments, ${args.length} provided. `);
+
+      const out = this.global.get("_out") as string[];
+      const last = out[out.length - 1];
+
+      this.global.assign("_out", out.slice(0, -1));
+
+      return last;
+    });
 
     //range is only builtin to allow function overloading
-    this._builtins["range"] = (args: Value[]) => {
+    this.register("range", ["length", "start", "step"], (args: Value[]) => {
       if (args.length < 1 || args.length > 3)
         throw new Error(
           "range requires at least 1 and at most 3 arguments, got " +
             args.length,
         );
-
       if (args.length === 1 && typeof args[0] === "number") {
         if (!Number.isInteger(args[0]))
           throw new Error(
@@ -117,22 +120,11 @@ class Interpreter {
           "range: Invalid arguments provided\nexpects:\n - length: number\n - start: number, end: number # default step: 1\n - start: number, end: number, step: number",
         );
       }
-    };
+    });
 
-    this.global.assign(
-      "range",
-      new Func(
-        "range",
-        ["length", "start", "step"],
-        { type: "Module", body: [] },
-        this.global,
-      ),
-    );
-
-    this._builtins["append"] = (args: Value[]) => {
+    this.register("append", ["xs", "x"], (args: Value[]) => {
       if (args.length !== 2)
         throw new Error("append: expects 2 arguments, got: " + args.length);
-
       const type1 = this._type(args[0]);
       const type2 = this._type(args[1]);
       switch (type1) {
@@ -150,40 +142,22 @@ class Interpreter {
           return newArr;
         }
       }
-
       throw new Error(
         `append: expected args:\n - string, any\n - array, any\n received:\n - ${type1}, ${type2}`,
       );
-    };
+    });
 
-    this.global.assign(
-      "append",
-      new Func("append", ["xs", "x"], { type: "Module", body: [] }, this.global),
-    );
-
-    this._builtins["_type"] = (args: Value[]) => {
+    this.register("_type", ["x"], (args: Value[]) => {
       if (args.length !== 1)
         throw new Error("_type: expects one argument, got: " + args.length);
-
       return this._type(args[0]);
-    };
+    });
 
-    this.global.assign(
-      "_type",
-      new Func("_type", ["x"], { type: "Module", body: [] }, this.global),
-    );
-
-    this._builtins["_str"] = (args: Value[]) => {
+    this.register("_str", ["x"], (args: Value[]) => {
       if (args.length !== 1)
         throw new Error("_str: expects one argument, got: " + args.length);
-
       return this._str(args[0]);
-    };
-
-    this.global.assign(
-      "_str",
-      new Func("_str", ["x"], { type: "Module", body: [] }, this.global),
-    );
+    });
   }
 
   setResolver(resolver: Resolver) {
@@ -213,6 +187,11 @@ class Interpreter {
 
         if (val instanceof Func) {
           const func: Func = val;
+
+          if (func.id in this._builtins) {
+            return this._builtins[func.id]([]);
+          }
+
           if (expr.value.type === "Attr") {
             const inst = this.evalExpr(expr.value.target);
 
@@ -222,12 +201,12 @@ class Interpreter {
               );
 
             return this.callMethod(func, inst, []);
-          } else {
-            return this.callFunc(func, []);
           }
-        } else {
-          return val;
+
+          return this.callFunc(func, []);
         }
+
+        return val;
       }
       case "Assign": {
         const assign = (stmt as AssignStmt).assign;
@@ -657,8 +636,7 @@ class Interpreter {
         }
 
         if (Array.isArray(left) && Array.isArray(right)) {
-          if (left.length !== right.length)
-            return false;
+          if (left.length !== right.length) return false;
 
           let equal = true;
           for (let i = 0; i < left.length; i++) {
@@ -669,7 +647,7 @@ class Interpreter {
 
         return left === right;
       case "!=":
-        return !(this.compare(left, "==", right));
+        return !this.compare(left, "==", right);
       case "<":
         if (typeof left !== "number" || typeof right !== "number") {
           throw new Error("CompareOp (<): operands must be numbers");
@@ -816,26 +794,20 @@ class Interpreter {
       return val.get(index) || null;
     }
 
-    if (
-      val instanceof Array || typeof val === "string") {
+    if (val instanceof Array || typeof val === "string") {
+      if (typeof index !== "number") {
+        throw new Error("Subscript: index must be a number");
+      }
 
-        if (typeof index !== "number") {
-          throw new Error("Subscript: index must be a number");
-        }
-
-      if (
-        index < 0 ||
-        index >= val.length
-      ) {
+      if (index < 0 || index >= val.length) {
         throw new Error(
           `Index out of bounds: length: ${val.length}, accepts [0, ${val.length - 1}], got: ${index}`,
         );
       } else {
-
         return val[index];
       }
     }
-    throw new Error(`Subscript: ${this._type(val)} is not subscriptable`)
+    throw new Error(`Subscript: ${this._type(val)} is not subscriptable`);
   }
 
   // END LOGIC ==================================================================================

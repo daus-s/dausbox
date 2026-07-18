@@ -380,7 +380,11 @@ runner.test("append: one argument throws error", () => {
     );
     throws = true;
   }
-  runner.assertEqual(throws, true, "expected append with one argument to throw");
+  runner.assertEqual(
+    throws,
+    true,
+    "expected append with one argument to throw",
+  );
 });
 
 runner.test("append: two bad arguments throws error", () => {
@@ -907,6 +911,22 @@ runner.test("_type: obj", () => {
 runner.test("_type: objdef", () => {
   const output = run("obj Type:\n  pass\nprint _type Type");
   runner.assertEqual(output[0], "objdef");
+});
+
+runner.test("flush: basic flush", () => {
+  const output = run("print 'a'\nflush");
+  runner.assertEqual(output.length, 0);
+});
+
+runner.test("flush: flush multiline", () => {
+  const output = run("print 'a\nb'\nflush");
+  runner.assertEqual(output.length, 0);
+});
+
+runner.test("flush: leave 1 entry", () => {
+  const output = run("print 'a'\nprint 'b'\nflush");
+  runner.assertEqual(output.length, 1);
+  runner.assertEqual(output[0], "a");
 });
 
 runner.report();
