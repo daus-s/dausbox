@@ -24,7 +24,7 @@
 
 .terminal p {
     margin: 0;
-    white-space: pre-wrap;
+    white-space: pre;
     word-break: break-all;
 }
 
