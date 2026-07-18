@@ -25,12 +25,19 @@ function renderOutput(output: string, entryIdx: number) {
 }
 
 export default function Terminal() {
+  const [rerender, setRerender] = useState(false);
   const [dausbox, setDausBox] = useState<DausBox | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // rerender when rerender is invoked
+  }, [rerender])
+
+  useEffect(() => {
     DausBox.create().then((box) => {
       box.setWidth(Math.floor(innerWidth / 12));
+      const rerenderCallBack = () => setRerender(r => !r);
+      box.setRerenderCallBack(rerenderCallBack);
       setDausBox(box);
     });
   }, []);
@@ -96,15 +103,4 @@ export default function Terminal() {
       <div ref={bottomRef} />
     </div>
   );
-}
-
-function Ruler() {
-  return <div>
-    {[...Array(101).keys()]
-      .slice(1)
-      .map((x) => `.........${x % 10}`)
-      .join("")}
-    <br />
-    {"1234567890".repeat(100)}
-  </div>;
 }
