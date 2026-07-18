@@ -41,11 +41,11 @@ fn ls:
       else:
         title = contents[idx].title
         if title.len > col_width:
-            title = str.substr title, 0, col_width-3 + "..."
+          title = str.substr(title, 0, col_width-3)+ "..."
         else:
-            while title.len < col_width:
-              title = title + " "
-            msg = msg + " ║ " + title + " ║ "
+          while title.len < col_width:
+            title = title + " "
+        msg = msg + " ║ " + title + " ║ "
 
     msg = msg + "\n"
 
