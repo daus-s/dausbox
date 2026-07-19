@@ -26,6 +26,7 @@
     margin: 0;
     white-space: pre;
     word-break: break-all;
+    line-height: 1em;
 }
 
 .history-entry {
