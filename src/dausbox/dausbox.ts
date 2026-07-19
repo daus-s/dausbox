@@ -130,7 +130,15 @@ class DausBox {
   }
 
   getNthPrevCommand(n: number): string {
-    return this.history.entries()[this.history.length() - n].input;
+    const entries = this.history.entries();
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entry = entries[i];
+      if ("input" in entry) {
+        n--;
+        if (n === 0) return entry.input;
+      }
+    }
+    return "";
   }
 
   private async registerBrowserBuiltins() {

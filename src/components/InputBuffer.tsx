@@ -26,6 +26,7 @@ export default function InputBuffer({
       onExec();
       setBuffer("");
       setCaretIdx(0);
+      setCmdIdx(0);
       // Defer scroll until after React flushes the new history into the DOM
       setTimeout(scrollToBottom, 0);
     } else if (event.key === "Backspace") {
@@ -54,19 +55,34 @@ export default function InputBuffer({
       if (cmdIdx === 0) {
         setDraft(buffer);
       }
-      setBuffer(dausbox.getNthPrevCommand(cmdIdx + 1));
 
+      const newCmd = dausbox.getNthPrevCommand(cmdIdx + 1);
+
+      if (caretIdx === buffer.length) {
+        setCaretIdx(newCmd.length);
+      } else {
+        setCaretIdx(Math.min(caretIdx, newCmd.length))
+      }
+
+      setBuffer(newCmd);
       setCmdIdx(cmdIdx + 1);
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
 
       if (cmdIdx === 0) return;
 
+      const newCmd = cmdIdx === 1 ? draft || "" : dausbox.getNthPrevCommand(cmdIdx - 1);
+
       if (cmdIdx === 1) {
-        setBuffer(draft || ""); //at this point draft must not be null is it provably so?
-        setDraft(null);
+        setDraft(null)
+      }
+
+      setBuffer(newCmd);
+
+      if (caretIdx === buffer.length) {
+        setCaretIdx(newCmd.length);
       } else {
-        setBuffer(dausbox.getNthPrevCommand(cmdIdx - 1));
+        setCaretIdx(Math.min(caretIdx, newCmd.length))
       }
 
       setCmdIdx(cmdIdx - 1);
