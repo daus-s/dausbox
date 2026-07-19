@@ -1,6 +1,4 @@
-type HistoryEntry =
-  | { input: string; output: string; error?: never }
-  | { input: string; output?: never; error: string };
+type HistoryEntry = Input | Output | Error;
 
 export class History {
   private history: HistoryEntry[];
@@ -9,12 +7,8 @@ export class History {
     this.history = [];
   }
 
-  record(input: string, result: { output: string } | { error: string }): void {
-    if ("output" in result) {
-      this.history.push({ input, output: result.output });
-    } else if ("error" in result) {
-      this.history.push({ input, error: result.error });
-    }
+  record(entry: HistoryEntry): void {
+    this.history.push(entry);
   }
 
   entries(): HistoryEntry[] {
@@ -25,3 +19,15 @@ export class History {
     return this.history.length;
   }
 }
+
+type Input = {
+  input: string;
+};
+
+type Output = {
+  output: string;
+};
+
+type Error = {
+  error: string;
+};

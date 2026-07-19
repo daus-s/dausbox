@@ -91,53 +91,35 @@ class DausBox {
   }
 
   execute(input: string): void {
+    if (!this.quiet) this.history.record({ input });
     let err: string | null = "lex";
     try {
-      console.log("DausBox: executing:", input);
-
       const tokens = this.lexer.tokenize(input);
-
       err = "par";
       const ast = this.parser.parse(tokens);
-
-      // TODO: handle multi line stmts
-
       err = "int";
       const res = this.interpreter.eval(ast);
-
       err = null;
-
-      // handle multi line stmts???
-
       const newMsgs = this.interpreter.output().slice(this.msgs);
 
       this.msgs += newMsgs.length;
 
       if (this.quiet) return;
 
-      let output = "";
-
       for (const msg of newMsgs) {
-        output += msg + "\n";
+        this.history.record({ output: msg });
       }
 
-      const rs = res != null ? "**" + this.interpreter._str(res) + "**" : "";
-
-      output += rs + "\n";
-
-      if (output) {
-        this.history.record(input, { output });
-      } else {
-        this.history.record(input, { output });
-      }
+      if (res != null)
+        this.history.record({ output: this.interpreter._str(res) });
     } catch (e) {
       if (err === "lex") {
-        this.history.record(input, { error: "Lexer:" + (e as Error).message });
+        this.history.record({ error: "lexer:" + (e as Error).message });
       } else if (err === "par") {
-        this.history.record(input, { error: "Parser:" + (e as Error).message });
+        this.history.record({ error: "parser:" + (e as Error).message });
       } else if (err === "int") {
-        this.history.record(input, {
-          error: "Interpreter: " + (e as Error).message,
+        this.history.record({
+          error: "interpreter: " + (e as Error).message,
         });
       }
     }
@@ -160,7 +142,6 @@ class DausBox {
     });
 
     this.interpreter.register("read", ["src"], (args: Value[]): Value => {
-      console.log(typeof args[0]);
       if (args.length !== 1 || !(typeof args[0] === "string"))
         throw new Error("read requires a single source file path to read");
 

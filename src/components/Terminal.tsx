@@ -25,19 +25,13 @@ function renderOutput(output: string, entryIdx: number) {
 }
 
 export default function Terminal() {
-  const [rerender, setRerender] = useState(false);
   const [dausbox, setDausBox] = useState<DausBox | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // rerender when rerender is invoked
-  }, [rerender])
 
   useEffect(() => {
     DausBox.create().then((box) => {
       box.setWidth(Math.floor(innerWidth / 12));
-      const rerenderCallBack = () => setRerender(r => !r);
-      box.setRerenderCallBack(rerenderCallBack);
       setDausBox(box);
     });
   }, []);
@@ -82,19 +76,24 @@ export default function Terminal() {
 
   return (
     <div className="terminal">
-      {history.entries().map((entry, i) => (
-        <div key={i} className="history-entry">
-          <p className="history-input">
-            <span className="prompt">dausbox&gt;&nbsp;</span>
-            {entry.input}
-          </p>
-          {entry.output != null ? (
-            renderOutput(entry.output, i)
-          ) : (
-            <span className="error">{entry.error}</span>
-          )}
-        </div>
-      ))}
+      {history.entries().map((entry, i) => {
+        if ("input" in entry) {
+          return (
+            <p key={i} className="history-input">
+              <span className="prompt">dausbox&gt;&nbsp;</span>
+              {entry.input}
+            </p>
+          );
+        }
+        if ("output" in entry) {
+          return renderOutput(entry.output, i);
+        }
+        return (
+          <span key={i} className="error">
+            {entry.error}
+          </span>
+        );
+      })}
       <InputBuffer
         dausbox={dausbox}
         onExec={() => setTick(tick + 1)}
