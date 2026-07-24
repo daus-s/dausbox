@@ -5,24 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import DausBox from "../dausbox/dausbox";
 import { History } from "../dausbox/history";
 import InputBuffer from "./InputBuffer";
-
-function renderOutput(output: string, entryIdx: number) {
-  // Bold block: **text**
-  const trimmed = output.trim();
-  if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
-    return (
-      <p key={`out-${entryIdx}`} className="output-line output-bold">
-        {trimmed.slice(2, -2)}
-      </p>
-    );
-  }
-
-  return output.split("\n").map((line, lineIdx) => (
-    <p key={`out-${entryIdx}-${lineIdx}`} className="output-line">
-      {line}
-    </p>
-  ));
-}
+import OutputBlock from "./OutputBlock";
 
 export default function Terminal() {
   const [dausbox, setDausBox] = useState<DausBox | null>(null);
@@ -37,7 +20,7 @@ export default function Terminal() {
   }, []);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
 
     const handleResize = () => {
 
@@ -86,7 +69,7 @@ export default function Terminal() {
           );
         }
         if ("output" in entry) {
-          return renderOutput(entry.output, i);
+          return <OutputBlock output={entry.output} entryIdx={i} />;
         }
         return (
           <span key={i} className="error">

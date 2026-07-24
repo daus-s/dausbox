@@ -49,3 +49,21 @@
 .buffer {
     margin: 0;
 }
+
+.terminal {
+    a {
+      color: #41ff00;
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+
+    a:hover {
+      filter: brightness(200%);
+      transform: translateY(-2px);
+    }
+}
+
+.output-line img {
+    vertical-align: text-bottom;
+    background-color: black;
+}
