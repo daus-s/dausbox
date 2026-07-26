@@ -6,8 +6,9 @@ projects = projects.projects
 
 fn ls:
   obj Contents:
-    fn _init title, lines:
+    fn _init title, url, lines:
       self.title = title
+      self.url = url
       self.lines = lines
   col_width = (_width - 18) // 3
   num_rows =  math.ceil projects.len // 3
@@ -16,7 +17,7 @@ fn ls:
   row_height = 0
 
   for project in projects:
-    data = Contents project.name, str.wrap_lines project.abstract, col_width
+    data = Contents project.name, project.url, str.wrap_lines project.abstract, col_width
     row_height = math.max row_height, data.lines.len
 
     contents = append contents, data
@@ -43,9 +44,17 @@ fn ls:
         if title.len > col_width:
           title = str.substr(title, 0, col_width-3)+ "..."
         else:
-          while title.len < col_width:
-            title = title + " "
-        msg = msg + " ║ " + title + " ║ "
+          padding = ""
+          while padding.len + title.len < col_width:
+            padding = padding + " "
+
+        if contents[idx].url != null:
+          link = contents[idx].url
+        else:
+          link = ""
+
+        title_link = "$$link:{\"link\": \"" + link + "\", \"display\": \"" + title + "\"}$$"
+        msg = msg + " ║ " + title_link + padding + " ║ "
 
     msg = msg + "\n"
 
