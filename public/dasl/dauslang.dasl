@@ -1,5 +1,5 @@
 title = "dauslang (dasl)"
-abstract = "Dauslang, dasl for short, is the language which powers this website, dausbox.dev! I created the language to have \"cool\" syntax including parenthese free invocation, all built in typescript and running in the browser. "
-url = "dasl.dausbox.dev"
+abstract = "a high-level interpreted programming language with python-like syntax, better keywords, and parentheses free invocation"
+url = "https://dasl.dausbox.dev"
 github = "https://github.com/daus-s/warheads"
 readme = null # read "dasl.md"
