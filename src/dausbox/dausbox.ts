@@ -130,16 +130,23 @@ class DausBox {
   }
 
   getNthPrevCommand(n: number): string {
-    const entries = this.history.entries();
-    for (let i = entries.length - 1; i >= 0; i--) {
-      const entry = entries[i];
-      if ("input" in entry) {
+      const entries = this.history.entries();
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const entry = entries[i];
+        if (!("input" in entry)) continue;
+
+        const lines = entry.input.split("\n");
+        if (lines.length > 1) {
+          for (let j = lines.length - 1; j >= 0; j--) {
+            n--;
+            if (n === 0) return lines[j].trim();
+          }
+        }
         n--;
         if (n === 0) return entry.input;
       }
+      return "";
     }
-    return "";
-  }
 
   private async registerBrowserBuiltins() {
     this.interpreter.register("view", ["project"], (args: Value[]): Value => {
