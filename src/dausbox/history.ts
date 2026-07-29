@@ -1,33 +1,27 @@
-type HistoryEntry = Input | Output | Error;
+export type HistoryEntry = Input | Output | Error;
 
 export class History {
   private history: HistoryEntry[];
-
   constructor() {
     this.history = [];
   }
-
   record(entry: HistoryEntry): void {
     this.history.push(entry);
   }
-
   entries(): HistoryEntry[] {
     return [...this.history];
   }
-
   length(): number {
     return this.history.length;
   }
 }
 
-type Input = {
+export type Input = {
   input: string;
 };
-
-type Output = {
+export type Output = {
   output: string;
 };
-
-type Error = {
+export type Error = {
   error: string;
 };
