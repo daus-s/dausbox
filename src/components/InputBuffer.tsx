@@ -97,7 +97,7 @@ export default function InputBuffer({
         } else if (event.key === "ArrowUp") {
           event.preventDefault();
           if (depth > 0 && cmdIdx === 0) return;
-          if (cmdIdx === dausbox.history.length()) return;
+          if (cmdIdx === dausbox.commandCount()) return;
           if (cmdIdx === 0) setDraft(buffer);
           const raw = dausbox.getNthPrevCommand(cmdIdx + 1);
           const next = expandForEdit(raw);

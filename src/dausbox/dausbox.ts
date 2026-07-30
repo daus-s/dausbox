@@ -129,6 +129,19 @@ class DausBox {
     return this.history;
   }
 
+  commandCount(): number {
+      const entries = this.history.entries();
+      let count = 0;
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const entry = entries[i];
+        if (!("input" in entry)) continue;
+        const lines = entry.input.split("\n");
+        if (lines.length > 1) count += lines.length;
+        count += 1;
+      }
+      return count;
+    }
+
   getNthPrevCommand(n: number): string {
       const entries = this.history.entries();
       for (let i = entries.length - 1; i >= 0; i--) {
