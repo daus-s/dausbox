@@ -2,6 +2,10 @@ use projects
 use str
 use math
 
+warheads = projects.warheads
+betties = projects.betties
+dauslang = projects.dauslang
+
 projects = projects.projects
 
 fn ls:

@@ -30,6 +30,11 @@ if (process.argv.length === 3) {
 
   const resolver = (src: string[]): Module => {
     const pathArr = path.split("/").slice(0, -1);
+    pathArr.push("..");
+    pathArr.push("..");
+    pathArr.push("..");
+    pathArr.push("public");
+    pathArr.push("dasl");
 
     for (const module of src) {
       if (module === "super") {
