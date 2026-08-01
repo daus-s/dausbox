@@ -1,5 +1,6 @@
 import Interpreter from "../dasl/interpreter";
 import Lexer from "../dasl/lexer";
+import type { Obj } from "../dasl/object";
 import Parser from "../dasl/parser";
 import type { Module } from "../dasl/stmt";
 
@@ -130,36 +131,36 @@ class DausBox {
   }
 
   commandCount(): number {
-      const entries = this.history.entries();
-      let count = 0;
-      for (let i = entries.length - 1; i >= 0; i--) {
-        const entry = entries[i];
-        if (!("input" in entry)) continue;
-        const lines = entry.input.split("\n");
-        if (lines.length > 1) count += lines.length;
-        count += 1;
-      }
-      return count;
+    const entries = this.history.entries();
+    let count = 0;
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entry = entries[i];
+      if (!("input" in entry)) continue;
+      const lines = entry.input.split("\n");
+      if (lines.length > 1) count += lines.length;
+      count += 1;
     }
+    return count;
+  }
 
   getNthPrevCommand(n: number): string {
-      const entries = this.history.entries();
-      for (let i = entries.length - 1; i >= 0; i--) {
-        const entry = entries[i];
-        if (!("input" in entry)) continue;
+    const entries = this.history.entries();
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entry = entries[i];
+      if (!("input" in entry)) continue;
 
-        const lines = entry.input.split("\n");
-        if (lines.length > 1) {
-          for (let j = lines.length - 1; j >= 0; j--) {
-            n--;
-            if (n === 0) return lines[j].trim();
-          }
+      const lines = entry.input.split("\n");
+      if (lines.length > 1) {
+        for (let j = lines.length - 1; j >= 0; j--) {
+          n--;
+          if (n === 0) return lines[j].trim();
         }
-        n--;
-        if (n === 0) return entry.input;
       }
-      return "";
+      n--;
+      if (n === 0) return entry.input;
     }
+    return "";
+  }
 
   private async registerBrowserBuiltins() {
     this.interpreter.register("view", ["project"], (args: Value[]): Value => {
@@ -177,6 +178,29 @@ class DausBox {
         throw new Error("read: no such file: " + args[0]);
 
       return this.fileCache.get(args[0] as string)!;
+    });
+
+    this.interpreter.register("open", ["proj"], (args: Value[]): Value => {
+      if (args.length !== 1)
+        throw new Error(`open: requires 1 argument, got ${args.length}`);
+      if (this.interpreter._type(args[0]) !== "Project")
+        throw new Error(
+          `open: requires a Project, got ${this.interpreter._type(args[0])}`,
+        );
+
+      const proj = args[0] as Obj;
+
+      if (proj.access("url") === null)
+        throw new Error(`open requires project to have a valid url`);
+
+      const url = proj.access("url") as string;
+
+      const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+      if (newWindow) {
+        newWindow.focus();
+      }
+
+      return null;
     });
   }
 
