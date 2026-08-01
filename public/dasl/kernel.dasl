@@ -47,10 +47,10 @@ fn ls:
         title = contents[idx].title
         if title.len > col_width:
           title = str.substr(title, 0, col_width-3)+ "..."
-        else:
-          padding = ""
-          while padding.len + title.len < col_width:
-            padding = padding + " "
+
+        padding = ""
+        while padding.len + title.len < col_width:
+          padding = padding + " "
 
         if contents[idx].url != null:
           link = contents[idx].url
