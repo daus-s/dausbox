@@ -846,7 +846,7 @@ class Interpreter {
         return value.name;
       }
       if (value instanceof Obj) {
-        if ("_str" in value.attrs) {
+        if (value.attrs.includes("_str")) {
           const f = value.access("_str");
           if (f instanceof Func && f.args.length === 0) {
             const res = this.callMethod(f, value, []);

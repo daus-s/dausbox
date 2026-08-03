@@ -32,7 +32,7 @@ class ObjDef {
     this.env = env;
     this.attrs = env
       .entries()
-      .map(([k, v]) => (v instanceof Func ? `${k}(${v.args.join(",")})` : k));
+      .map(([k, _v]) => (k));
   }
 
   has(name: string): boolean {
