@@ -1,5 +1,6 @@
-title = "Desmos Algebra System (dasio)"
-abstract = "a custom algebra system for Desmos recursivvely applying algebraic transformations to trees"
-url = null
+title = "Desmos Algebra System"
+alias = "desmos"
+abstract = "Computer algebra system that parses expressions from desmos syntax into ASTs and recursively applying algebraic transformations"
+url = "/desmos-algebra.pdf"
 readme = null
 github = "https://github.com/daus-s/desmos-algebra"

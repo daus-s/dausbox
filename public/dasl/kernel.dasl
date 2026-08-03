@@ -4,24 +4,27 @@ use math
 
 warheads = projects.warheads
 betties = projects.betties
-dauslang = projects.dauslang
+dasl = projects.dasl
+desmos = projects.desmos
+optics = projects.optics
 
 projects = projects.projects
 
 fn ls:
   obj Contents:
-    fn _init title, url, lines:
+    fn _init title, alias, url, lines:
       self.title = title
+      self.alias = alias
       self.url = url
       self.lines = lines
   col_width = (_width - 18) // 3
-  num_rows =  math.ceil projects.len // 3
+  num_rows =  math.ceil projects.len / 3
   contents = []
 
   row_height = 0
 
   for project in projects:
-    data = Contents project.name, project.url, str.wrap_lines project.abstract, col_width
+    data = Contents project.name, project.alias, project.url, str.wrap_lines(project.abstract, col_width)
     row_height = math.max row_height, data.lines.len
 
     contents = append contents, data
@@ -62,6 +65,23 @@ fn ls:
 
     msg = msg + "\n"
 
+
+    for j in range 3:
+      idx = 3 * i + j
+      if idx >= contents.len:
+        msg = msg + str.rep(" ", col_width + 6)
+      else:
+        padded_alias = "@" + contents[idx].alias + ""
+        if padded_alias.len > col_width:
+          padded_alias = str.substr(padded_alias, 0, col_width-3)+ "..."
+        padding = ""
+        while padding.len + padded_alias.len < col_width:
+          padding = padding + " "
+
+        msg = msg + " ║ " + padded_alias + padding + " ║ "
+
+    msg = msg + "\n"
+
     for j in range 3:
       idx = 3 * i + j
       if idx >= contents.len:
@@ -94,6 +114,11 @@ fn ls:
 
     msg = msg + "\n"
 
+  info_msg = "use `open`, `github` or `readme` followed by a project named to learn more."
+  padding = math.ceil((_width - info_msg.len) / 2)
+  info_msg = str.rep(" ", padding) + info_msg + str.rep(" ", padding)
+  msg = msg + "\n" + info_msg
+  # msg = msg + str.wrap_lines("to learn more about these projects, use open to view the webpage, github to view the repo, or readme to view the projects readme", _width)
   print msg
 
 fn whoami:

@@ -56,8 +56,10 @@ class DausBox {
       "math",
       "str",
       "warheads",
-      "betties" /*, "optics", "desmos-algebra", "tictactoe"*/,
+      "betties" /*"tictactoe", conway*/,
       "dauslang",
+      "desmos",
+      "optics",
     ]; //todo: add io, time,
 
     for (const mod of mods) {
@@ -191,9 +193,32 @@ class DausBox {
       const proj = args[0] as Obj;
 
       if (proj.access("url") === null)
-        throw new Error(`open requires project to have a valid url`);
+        throw new Error(`open: project must have a valid url`);
 
       const url = proj.access("url") as string;
+
+      const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+      if (newWindow) {
+        newWindow.focus();
+      }
+
+      return null;
+    });
+
+    this.interpreter.register("github", ["proj"], (args: Value[]): Value => {
+      if (args.length !== 1)
+        throw new Error(`github: requires 1 argument, got ${args.length}`);
+      if (this.interpreter._type(args[0]) !== "Project")
+        throw new Error(
+          `github: requires a Project, got ${this.interpreter._type(args[0])}`,
+        );
+
+      const proj = args[0] as Obj;
+
+      if (proj.access("git") === null)
+        throw new Error(`github: project must have a valid url`);
+
+      const url = proj.access("git") as string;
 
       const newWindow = window.open(url, "_blank", "noopener,noreferrer");
       if (newWindow) {

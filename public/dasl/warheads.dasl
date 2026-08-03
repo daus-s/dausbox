@@ -1,4 +1,5 @@
 title = "WARHeads API"
+alias = "warheads"
 abstract = "a custom machine learning framework for NBA analysis, streamlined for data fetching and model training"
 url = "https://warheads.dausbox.dev"
 github = "https://github.com/daus-s/warheads"
