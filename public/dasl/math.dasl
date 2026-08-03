@@ -108,3 +108,100 @@ fn lcm a, b:
     print "WARN! math.lcm requires two numbers."
     return null
   return a * b / gcf a, b
+
+fn factor x:
+  print PrimeFactorization x
+
+fn sieve_of_eratosthenes n:
+  if n <= 0:
+    print "WARN! math.sieve_of_eratosthenes: expects a non-negative integer"
+    return null
+
+  ints = range n+1
+
+  prime = []
+  for i in ints:
+    prime = append prime, true
+
+  prime[0] = false
+  prime[1] = false
+
+  for s in ints:
+    if s >= sqrt n:
+      break
+    if prime[s]:
+      for i in range 2*s, n+1, s:
+        if i != s:
+          prime[i] = false
+
+  primes = []
+  for i in ints:
+    if prime[i]:
+      primes = append primes, i
+
+  return primes
+
+fn is_int n:
+  _type(n) == "number" and (n % 1 == 0)
+
+obj PrimeFactorization:
+  fn _init n:
+    if not is_int n:
+      print "prime_factorization: only defined for integers"
+      return null
+
+    self.factors = []
+    potential_factors = sieve_of_eratosthenes n
+
+    for factor in potential_factors:
+      while n % factor == 0:
+        self.add_factor factor
+        n = n / factor
+
+
+  fn add_factor n:
+    found = false
+    for factor in self.factors:
+      if factor.p == n:
+        found = true
+        factor.inc
+    if not found:
+      self.factors = append self.factors, Factor n
+
+  fn _str:
+    use str
+    s = ""
+
+    for factor in self.factors:
+      s = s + _str factor
+      s = s + "×"
+
+    return str.substr(s, 0, s.len - 1)
+
+
+obj Factor:
+  fn _init p:
+    self.p = p
+    self.exp = 1
+
+  fn inc:
+    self.exp = self.exp + 1
+
+  fn _str:
+    exps = ["⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"]
+    s = _str self.p
+
+    exp_str = ""
+    oom = 0
+    exp = self.exp
+
+    while exp > 0:
+      digit = exp % 10**(oom+1) / 10**(oom)
+      exp = exp - digit * 10**(oom)
+      exp_str = exps[digit] + exp_str
+      oom = oom + 1
+
+    s = s + exp_str
+    return s
+
+print PrimeFactorization 288 # 2^5 * 3^2
