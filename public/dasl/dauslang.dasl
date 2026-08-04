@@ -1,6 +1,6 @@
 title = "dauslang"
 alias = "dasl"
 abstract = "a high-level interpreted programming language with python-like syntax, better keywords, and parentheses free invocation"
-url = "https://dasl.dausbox.dev"
-github = "https://github.com/daus-s/warheads"
+url = null #"https://dasl.dausbox.dev"
+github = "https://github.com/daus-s/dasl-zed"
 readme = null # read "dasl.md"

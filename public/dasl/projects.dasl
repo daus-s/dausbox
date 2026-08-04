@@ -1,3 +1,6 @@
+use math
+use str
+
 use warheads
 use betties
 use dauslang
@@ -14,7 +17,54 @@ obj Project:
     self.alias = alias
 
   fn _str:
-    self.name + "\nurl: " + self.url + "\ngithub: " + self.git + "\n============================\n" + self.abstract + "\n============================"
+    yes = "[x]"
+    no = "[ ]"
+
+    width = math.max(23 + self.alias.len, self.name.len + 2)
+
+    s = ""
+    s = s + " " + "╔" + str.rep("═", width) + "╗ \n"
+    s = s + " ║ " + self.name + str.rep(" ", width - self.name.len - 2) + " ║ \n"
+    s = s + " ╟" + str.rep("─", 13) + "┬" + str.rep("─", width - 14) + "╢ \n"
+    s = s + " ║ Resource    │ Command" + str.rep(" ", width - 22) + "║ \n"
+    s = s + " ╟" + str.rep("─", 13) + "┼" + str.rep("─", width - 14) + "╢ \n"
+
+    s = s + " ║ ReadMe  "
+    if self.readme != null:
+      s = s + yes
+      s = s + " │ "
+      s = s + "readme " + self.alias + " ║ \n"
+    else:
+      s = s + no
+      s = s + " │ "
+      s = s + "       " + str.rep(" ", self.alias.len) + " ║ \n"
+
+    s = s + " ║ Website "
+    if self.url != null:
+      s = s + yes
+      s = s + " │ "
+      s = s + "open " + self.alias + "   ║ \n"
+    else:
+      s = s + no
+      s = s + " │     " + str.rep(" ", self.alias.len + 3) + " ║  \n"
+
+
+    s = s + " ║ Github  "
+    if self.git != null:
+      s = s + yes
+      s = s + " │ "
+      s = s + "github " + self.alias + " ║ \n"
+    else:
+      s = s + no
+      s = s + " │ "
+      s = s + "       " + str.rep(" ", self.alias.len) + " ║ \n"
+
+    s = s + " ╚" + str.rep("═", 13) + "╧" + str.rep("═", width - 14) + "╝ \n"
+
+
+    return s
+
+
 
 
 warheads = Project warheads.title, warheads.abstract, warheads.url, warheads.readme, warheads.github, warheads.alias

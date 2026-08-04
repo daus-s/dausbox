@@ -203,5 +203,3 @@ obj Factor:
 
     s = s + exp_str
     return s
-
-print PrimeFactorization 288 # 2^5 * 3^2
