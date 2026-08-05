@@ -1,0 +1,5 @@
+Welcome to DausBox! A retro terminal experience in the browser built with Dauslang--my custom scripting language.
+
+Type `ls` to see a list of my projects or `man` for help.
+
+To permanently hide this message, enter the command `okigetit`.

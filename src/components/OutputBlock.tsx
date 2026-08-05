@@ -5,6 +5,11 @@ export default function OutputBlock({ output, entryIdx }: { output: string; entr
     <>
       {output.split("\n").map((line, lineIdx) => {
         const key = `out-${entryIdx}-${lineIdx}`;
+
+        if (line.trim() === "") {
+          return  (<p key={key}>&nbsp;</p>)
+        }
+
         return (
           <p key={key} className="output-line">
             {parseInline(line, key)}

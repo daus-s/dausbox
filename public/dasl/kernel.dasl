@@ -163,3 +163,24 @@ fn whoami:
 
 fn readme project:
   print project.readme
+
+fn welcome:
+  welcome = read "welcome.txt"
+  msgs = str.split welcome, "\n"
+
+  new_lines = []
+  for msg in msgs:
+    if msg.len == 0:
+      new_lines = append new_lines, ""
+    else:
+      sublines = str.wrap_lines msg, _width // 2
+      for sl in sublines:
+        new_lines = append new_lines, sl
+
+  centered_lines = []
+  for line in new_lines:
+    centered_lines = append centered_lines, (str.rep (" ", _width // 4) + line)
+
+  welcome = centered_lines
+  welcome=str.join welcome, "\n"
+  print welcome

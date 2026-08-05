@@ -14,6 +14,7 @@ class DausBox {
   private interpreter: Interpreter;
 
   private quiet: boolean = true;
+  private hideInput: boolean = false;
   private msgs: number = 0;
 
   history: History;
@@ -72,7 +73,7 @@ class DausBox {
       box.moduleCache.set(mod, ast);
     }
 
-    const files = ["warheads.md", "bio.txt"];
+    const files = ["warheads.md", "bio.txt", "welcome.txt"];
 
     for (const file of files) {
       const res = await fetch(`/${file}`);
@@ -93,8 +94,14 @@ class DausBox {
     return box;
   }
 
+  welcome(): void {
+    this.hideInput = true;
+    this.execute("welcome");
+    this.hideInput = false;
+  }
+
   execute(input: string): void {
-    if (!this.quiet) this.history.record({ input });
+    if (!this.quiet && !this.hideInput) this.history.record({ input });
     let err: string | null = "lex";
     try {
       const tokens = this.lexer.tokenize(input);
@@ -110,6 +117,7 @@ class DausBox {
       if (this.quiet) return;
 
       for (const msg of newMsgs) {
+        if (msg === "") console.log("empty output");
         this.history.record({ output: msg });
       }
 
