@@ -110,7 +110,12 @@ fn lcm a, b:
   return a * b / gcf a, b
 
 fn factor x:
-  print PrimeFactorization x
+  factorization = PrimeFactorization x
+  if not factorization._valid:
+    print "WARN! math.factor: could not compute factorization"
+    return null
+
+  print factorization
 
 fn sieve_of_eratosthenes n:
   if n <= 0:
@@ -146,8 +151,10 @@ fn is_int n:
 
 obj PrimeFactorization:
   fn _init n:
+    self._valid = true
     if not is_int n:
       print "prime_factorization: only defined for integers"
+      self._valid = false
       return null
 
     self.factors = []
