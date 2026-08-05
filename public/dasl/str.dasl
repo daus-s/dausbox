@@ -75,3 +75,10 @@ fn rep str, n:
   for i in range n:
     s = s + str
   s
+
+
+fn replace target, old, new:
+  for i in range(target.len - old.len + 1):
+    if substr(target, i, i + old.len) == old:
+      return substr(target, 0, i) + new + substr(target, i + old.len, target.len)
+  return target

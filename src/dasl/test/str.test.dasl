@@ -174,6 +174,82 @@ else:
   tr.succeed "wrap_lines long word test"
 
 # ============================================================================
+# REPLACE TESTS
+# ============================================================================
+
+res = str.replace "hello world", "world", "there"
+if res != "hello there":
+  tr.fail "replace basic test"
+else:
+  tr.succeed "replace basic test"
+
+res = str.replace "abcabc", "abc", "x"
+if res != "xabc":
+  tr.fail "replace first occurrence only test"
+else:
+  tr.succeed "replace first occurrence only test"
+
+res = str.replace "abc", "z", "x"
+if res != "abc":
+  tr.fail "replace no match test"
+else:
+  tr.succeed "replace no match test"
+
+res = str.replace "abc", "a", "xyz"
+if res != "xyzbc":
+  tr.fail "replace at start test"
+else:
+  tr.succeed "replace at start test"
+
+res = str.replace "abc", "c", "xyz"
+if res != "abxyz":
+  tr.fail "replace at end test"
+else:
+  tr.succeed "replace at end test"
+
+res = str.replace "abc", "abc", "xyz"
+if res != "xyz":
+  tr.fail "replace entire string test"
+else:
+  tr.succeed "replace entire string test"
+
+res = str.replace "abc", "abc", ""
+if res != "":
+  tr.fail "replace with empty new test"
+else:
+  tr.succeed "replace with empty new test"
+
+res = str.replace "abc", "abcd", "x"
+if res != "abc":
+  tr.fail "replace old longer than target test"
+else:
+  tr.succeed "replace old longer than target test"
+
+res = str.replace "", "a", "x"
+if res != "":
+  tr.fail "replace empty target test"
+else:
+  tr.succeed "replace empty target test"
+
+res = str.replace "abcdef", "g", "h"
+if res  != "abcdef":
+  tr.fail "replace not found target test"
+else:
+  tr.succeed "replace not found target test"
+
+res = str.replace "hello", "l", "L"
+if res != "heLlo":
+  tr.fail "replace single char test"
+else:
+  tr.succeed "replace single char test"
+
+res = str.replace "aaa", "a", "bb"
+if res != "bbaa":
+  tr.fail "replace short old with longer new test"
+else:
+  tr.succeed "replace short old with longer new test"
+
+# ============================================================================
 # INTEGRATION TESTS
 # ============================================================================
 
