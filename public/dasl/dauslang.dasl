@@ -1,5 +1,6 @@
 title = "dauslang"
 alias = "dasl"
+topics = ["Recursive Descent", "Programming Language", "Interpreter", "Experimental"]
 abstract = "a high-level interpreted programming language with python-like syntax, better keywords, and parentheses free invocation"
 url = null #"https://dasl.dausbox.dev"
 github = "https://github.com/daus-s/dasl-zed"

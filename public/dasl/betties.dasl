@@ -1,5 +1,6 @@
 title = "betties.app"
 alias = "betties"
+topics = ["Web Dev", "Supabase", "React", "Social Betting"]
 abstract = "betties: supabase-powered social betting, built for secure bets with friends"
 url = "https://betties.app"
 github = "https://github.com/daus-s/the-green-book"

@@ -12,20 +12,39 @@ projects = projects.projects
 
 fn ls:
   obj Contents:
-    fn _init title, alias, url, lines:
+    fn _init title, alias, topics, url, lines:
       self.title = title
       self.alias = alias
       self.url = url
       self.lines = lines
+      topic_strs = []
+      char_order = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+      for i in range topics.len:
+        if not topics[i].len + 2 > col_width:
+          topic_strs = append topic_strs, str.rep(char_order[i], topics[i].len + 2)
+      topic_placeholder = str.join topic_strs, " "
+      topic_placeholder = str.wrap_lines topic_placeholder, col_width
+
+      topic_lines = []
+      for line in topic_placeholder:
+        for i in range(topics.len):
+          line = str.replace(line, str.rep(char_order[i], topics[i].len + 2), ("$$invert:{\"content\":\" " + topics[i] + " \"}$$"))
+        topic_lines = append(topic_lines, line)
+      self.topic_lines = topic_lines
+
   col_width = (_width - 18) // 3
   num_rows =  math.ceil projects.len / 3
+
   contents = []
 
   row_height = 0
+  topic_height = 0
 
   for project in projects:
-    data = Contents project.name, project.alias, project.url, str.wrap_lines(project.abstract, col_width)
+    data = Contents project.name, project.alias, project.topics, project.url, str.wrap_lines(project.abstract, col_width)
+
     row_height = math.max row_height, data.lines.len
+    topic_height = math.max topic_height, data.topic_lines.len
 
     contents = append contents, data
 
@@ -71,9 +90,15 @@ fn ls:
       if idx >= contents.len:
         msg = msg + str.rep(" ", col_width + 6)
       else:
-        padded_alias = "@" + contents[idx].alias + ""
-        if padded_alias.len > col_width:
-          padded_alias = str.substr(padded_alias, 0, col_width-3)+ "..."
+        if contents[idx].alias.len + 7 <= col_width:
+          padded_alias = "alias: " + contents[idx].alias
+        elif contents[idx].alias.len + 7 > col_width and contents[idx].alias.len + 1 <= col_width:
+          padded_alias = "@" + contents[idx].alias
+        elif contents[idx].alias.len <= col_width:
+          padded_alias = contents[idx].alias
+        elif contents[idx].alias.len > col_width:
+          padded_alias = str.substr(contents[idx].alias, 0, col_width-3)+ "..."
+
         padding = ""
         while padding.len + padded_alias.len < col_width:
           padding = padding + " "
@@ -88,8 +113,21 @@ fn ls:
         msg = msg + str.rep(" ", col_width + 6)
       else:
         msg = msg + " ╠═" + str.rep("═", col_width) + "═╣ "
-
     msg = msg + "\n"
+
+    for l in range topic_height:
+      for j in range 3:
+        idx = 3 * i + j
+        if idx < contents.len:
+          if l < contents[idx].topic_lines.len:
+            line = contents[idx].topic_lines[l]
+          else:
+            line = str.rep(" ", col_width)
+          msg = msg + " ║ " + line + " ║ "
+        else:
+          msg = msg + str.rep(" ", col_width + 6)
+      msg = msg + "\n"
+
 
     for r in range row_height:
       for j in range 3:
@@ -114,11 +152,10 @@ fn ls:
 
     msg = msg + "\n"
 
-  info_msg = "use `open`, `github` or `readme` followed by a project named to learn more."
+  info_msg = "use `open`, `github` or `readme` followed by the project alias to learn more."
   padding = math.ceil((_width - info_msg.len) / 2)
   info_msg = str.rep(" ", padding) + info_msg + str.rep(" ", padding)
   msg = msg + "\n" + info_msg
-  # msg = msg + str.wrap_lines("to learn more about these projects, use open to view the webpage, github to view the repo, or readme to view the projects readme", _width)
   print msg
 
 fn whoami:

@@ -8,13 +8,14 @@ use desmos
 use optics
 
 obj Project:
-  fn _init name, abstract, url, readme, github, alias:
+  fn _init name, abstract, url, readme, github, alias, topics:
     self.name = name
     self.abstract = abstract
     self.url = url
     self.readme = readme
     self.git = github
     self.alias = alias
+    self.topics = topics
 
   fn _str:
     yes = "[x]"
@@ -67,10 +68,10 @@ obj Project:
 
 
 
-warheads = Project warheads.title, warheads.abstract, warheads.url, warheads.readme, warheads.github, warheads.alias
-betties = Project betties.title, betties.abstract, betties.url, betties.readme, betties.github, betties.alias
-dasl = Project dauslang.title, dauslang.abstract, dauslang.url, dauslang.readme, dauslang.github, dauslang.alias
-desmos = Project desmos.title, desmos.abstract, desmos.url, desmos.readme, desmos.github, desmos.alias
-optics = Project optics.title, optics.abstract, optics.url, optics.readme, optics.github, optics.alias
+warheads = Project warheads.title, warheads.abstract, warheads.url, warheads.readme, warheads.github, warheads.alias, warheads.topics
+betties = Project betties.title, betties.abstract, betties.url, betties.readme, betties.github, betties.alias, betties.topics
+dasl = Project dauslang.title, dauslang.abstract, dauslang.url, dauslang.readme, dauslang.github, dauslang.alias, dauslang.topics
+desmos = Project desmos.title, desmos.abstract, desmos.url, desmos.readme, desmos.github, desmos.alias, desmos.topics
+optics = Project optics.title, optics.abstract, optics.url, optics.readme, optics.github, optics.alias, optics.topics
 
 projects = [warheads, betties, dasl, desmos, optics]

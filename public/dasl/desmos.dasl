@@ -1,5 +1,6 @@
 title = "Desmos Algebra System"
 alias = "desmos"
+topics = ["Computer algebra", "Desmos", "AST", "Haskell", "Parsing"]
 abstract = "Computer algebra system that parses expressions from desmos syntax into ASTs and recursively applying algebraic transformations"
 url = "/desmos-algebra.pdf"
 readme = null
