@@ -165,6 +165,12 @@ fn readme project:
   print project.readme
 
 fn welcome:
+
+  logo = read "logo.txt"
+  prepadding = str.rep " ", (_width - 90 - 5) // 2 # 5 for a slight adjustment to match the right padding of wrap_lines
+  for line in str.split logo, "\n":
+    print prepadding + line
+
   welcome = read "welcome.txt"
   msgs = str.split welcome, "\n"
 

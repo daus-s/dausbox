@@ -2,6 +2,6 @@
     DAUS CARMICHAEL                         $$image:{"src":"/githublogo.png","alt":"Github Logo"}$$ $$link:{"display": "Github", "link": "https://github.com/daus-s"}$$
     data engineer @ warheads                $$image:{"src":"/linkedinlogo.png","alt":"LinkedIn Logo"}$$ $$link:{"display": "LinkedIn", "link": "https://linkedin.com/in/daus-carmichael"}$$
                                             $$image:{"src":"/twitterlogo.png","alt":"Twitter Logo"}$$ $$link:{"display": "Twitter", "link": "https://twitter.com/CarmichaelDaus"}$$
-    Chapman University
+    Chapman University                      $$image:{"src":"/twitchlogo.png","alt":"Twitch Logo"}$$ $$link:{"display": "Twitch", "link": "https://www.twitch.tv/originaldaus"}$$
     B.S. Physics - 2022
     B.S. Computer Science - 2022
