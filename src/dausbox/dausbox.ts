@@ -73,7 +73,7 @@ class DausBox {
       box.moduleCache.set(mod, ast);
     }
 
-    const files = ["warheads.md", "bio.txt", "welcome.txt", "logo.txt"];
+    const files = ["warheads.md", "bio.txt", "welcome.txt", "logo.txt", "man.txt"];
 
     for (const file of files) {
       const res = await fetch(`/${file}`);

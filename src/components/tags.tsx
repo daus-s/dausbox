@@ -18,6 +18,11 @@ interface InvertData {
   content: string
 }
 
+interface UnderlineData {
+  content: string
+}
+
+
 const TAG_REGISTRY: Record<string, TagRenderer> = {
   link: (json, key) => {
     if (typeof json !== "object" || json === null) throw new Error("Invalid JSON");
@@ -37,6 +42,12 @@ const TAG_REGISTRY: Record<string, TagRenderer> = {
     if (!("content" in json)) throw new Error("Missing content");
     const { content } = json as InvertData;
     return <span className="invert" key={key}>{content}</span>;
+  },
+  underline: (json, key) => {
+    if (typeof json !== "object" || json === null) throw new Error("Invalid JSON");
+    if (!("content" in json)) throw new Error("Missing content");
+    const { content } = json as UnderlineData;
+    return <span key={key} style={{ textDecoration: "underline" }}>{content}</span>;
   },
 };
 

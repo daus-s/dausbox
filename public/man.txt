@@ -1,0 +1,22 @@
+
+  $$underline:{"content": "DAUSBOX"}$$
+
+  A terminal-in-the-browser powered by dauslang—my custom scripting language.
+
+  $$underline:{"content": "Commands"}$$
+
+  ls - list of projects I have created (try resizing the window to see how it handles changing screen width!)
+  whoami - prints a brief bio of Daus (me!), the author of this page
+  man - prints this manual
+
+
+  $$underline:{"content": "Built-in Modules"}$$
+  dauslang provides a set of built-in modules for common tasks including a math library and string manipulation.
+
+  math ┬ a math library with standard functions and constants and some extra functions including ln, isprime, and factor
+       ├ to view the members of this module enter `math`
+       └ for usage of the library use man math
+
+  str  ┬ a string manipulation library
+       ├ to view the members of this module enter `str`
+       └ for usage of the library use man str

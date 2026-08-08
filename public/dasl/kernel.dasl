@@ -190,3 +190,7 @@ fn welcome:
   welcome = centered_lines
   welcome=str.join welcome, "\n"
   print welcome
+
+
+fn man:
+  print read "man.txt"
