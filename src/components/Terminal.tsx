@@ -13,7 +13,8 @@ export default function Terminal() {
     DausBox.create().then((box) => {
       box.setWidth(Math.floor(innerWidth / 12));
       setDausBox(box);
-      box.welcome();
+      if (localStorage.getItem("doWelcome") !== "no")
+        box.welcome();
     });
   }, []);
   useEffect(() => {

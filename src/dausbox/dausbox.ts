@@ -235,6 +235,36 @@ class DausBox {
 
       return null;
     });
+
+    this.interpreter.register("okigetit", [], (args: Value[]) => {
+      if (args.length !== 0)
+        throw new Error("okigetit: takes 0 arguments, recived" + args.length);
+
+      localStorage.setItem("doWelcome", "no");
+
+      this.hideInput = true;
+      this.execute(
+        'print "welcome message will no longer be displayed.\nif you would like to see the welcome message enter command `greetme`"',
+      );
+      this.hideInput = false;
+
+      return null;
+    });
+
+    this.interpreter.register("greetme", [], (args: Value[]) => {
+      if (args.length !== 0)
+        throw new Error("greetme: takes 0 arguments, recived" + args.length);
+
+      localStorage.removeItem("doWelcome");
+
+      this.hideInput = true;
+      this.execute(
+        'print "welcome message will be displayed next time you visit dausbox.dev.\nif you would like to hide the welcome message enter command `okigetit`"',
+      );
+      this.hideInput = false;
+
+      return null;
+    });
   }
 
   setWidth(width: number) {
