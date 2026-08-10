@@ -73,7 +73,13 @@ class DausBox {
       box.moduleCache.set(mod, ast);
     }
 
-    const files = ["warheads.md", "bio.txt", "welcome.txt", "logo.txt", "man.txt"];
+    const files = [
+      "warheads.md",
+      "bio.txt",
+      "welcome.txt",
+      "logo.txt",
+      "man.txt",
+    ];
 
     for (const file of files) {
       const res = await fetch(`/${file}`);
@@ -117,11 +123,10 @@ class DausBox {
       if (this.quiet) return;
 
       for (const msg of newMsgs) {
-        if (msg === "") console.log("empty output");
         this.history.record({ output: msg });
       }
 
-      if (res != null)
+      if (res !== null)
         this.history.record({ output: this.interpreter._str(res) });
     } catch (e) {
       if (err === "lex") {
