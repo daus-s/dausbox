@@ -8,6 +8,8 @@
   ls - list of projects I have created (try resizing the window to see how it handles changing screen width!)
   whoami - prints a brief bio of Daus (me!), the author of this page
   man - prints this manual
+  kofi - buy me a coffee on kofi!
+  twitch - opens my twitch channel in a new window
 
 
   $$underline:{"content": "Built-in Modules"}$$

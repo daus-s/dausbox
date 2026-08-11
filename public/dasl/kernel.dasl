@@ -194,3 +194,10 @@ fn welcome:
 
 fn man:
   print read "man.txt"
+
+
+fn kofi:
+  print "$$kofi:{}$$"
+
+fn twitch:
+  open "https://www.twitch.tv/originaldaus"

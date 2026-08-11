@@ -198,23 +198,22 @@ class DausBox {
     this.interpreter.register("open", ["proj"], (args: Value[]): Value => {
       if (args.length !== 1)
         throw new Error(`open: requires 1 argument, got ${args.length}`);
-      if (this.interpreter._type(args[0]) !== "Project")
-        throw new Error(
-          `open: requires a Project, got ${this.interpreter._type(args[0])}`,
-        );
 
-      const proj = args[0] as Obj;
+      const type = this.interpreter._type(args[0]);
+      if (type !== "Project" && type !== "string")
+        throw new Error(`open: requires a Project or url, got ${type}`);
 
-      if (proj.access("url") === null)
-        throw new Error(`open: project must have a valid url`);
-
-      const url = proj.access("url") as string;
-
-      const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-      if (newWindow) {
-        newWindow.focus();
+      let url: string;
+      if (type === "Project") {
+        const access = (args[0] as Obj).access("url");
+        if (access === null)
+          throw new Error(`open: project must have a valid url`);
+        url = access as string;
+      } else {
+        url = args[0] as string;
       }
 
+      window.open(url, "_blank", "noopener,noreferrer")?.focus();
       return null;
     });
 
