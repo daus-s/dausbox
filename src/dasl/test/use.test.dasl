@@ -1,4 +1,4 @@
-use mod
+use super.super.src.dasl.test.mod
 
 res = mod.foo()
 
