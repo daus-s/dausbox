@@ -15,10 +15,5 @@
   $$underline:{"content": "Built-in Modules"}$$
   dauslang provides a set of built-in modules for common tasks including a math library and string manipulation.
 
-  math ┬ a math library with standard functions and constants and some extra functions including ln, isprime, and factor
-       ├ to view the members of this module enter `math`
-       └ for usage of the library use man math
-
-  str  ┬ a string manipulation library
-       ├ to view the members of this module enter `str`
-       └ for usage of the library use man str
+  $$underline:{"content": "math"}$$ - to learn more use `man math`
+  $$underline:{"content": "str"}$$ - to learn more use `man str`

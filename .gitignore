@@ -25,3 +25,6 @@ test.sh
 *.sln
 *.sw?
 notes
+
+#dasl notebooks
+notebooks/

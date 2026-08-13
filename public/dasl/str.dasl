@@ -35,6 +35,11 @@ fn wrap_lines s, width:
   tkns = split s, " "
   line = ""
   for tkn in tkns:
+    if tkn.len > width and line.len != 0:
+      while line.len < width:
+        line = line + " "
+      final = append final, line
+      line = ""
     while tkn.len > width:
       final = append final, ((substr tkn, 0, width-1) + "-")
       tkn = substr tkn, width-1, tkn.len
@@ -82,3 +87,10 @@ fn replace target, old, new:
     if substr(target, i, i + old.len) == old:
       return substr(target, 0, i) + new + substr(target, i + old.len, target.len)
   return target
+
+
+fn find target, pattern:
+  for i in range(target.len - pattern.len + 1):
+    if substr(target, i, i + pattern.len) == pattern:
+      return i
+  return null

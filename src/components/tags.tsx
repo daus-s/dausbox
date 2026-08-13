@@ -86,6 +86,7 @@ const TAG_REGISTRY: Record<string, TagRenderer> = {
       />
     </a>
   ),
+  nbsp: (_, __) => <>&nbsp;</>,
 };
 
 export function getTagRenderer(tagName: string): TagRenderer | undefined {

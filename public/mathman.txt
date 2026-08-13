@@ -1,0 +1,47 @@
+$$underline:{"content": "Math Module"}$$
+
+I currently work as a math tutor and have always had a deep appriceation for mathematics and its ability to describe what seems to be infiniltely complex systems with simple, sometimes single line, equations. I have recreated most of the mathematical functions and objects from scratch, including prime factorization, sieve of Eratosthenes and more from first principles.
+
+$$underline:{"content": "Constants"}$$
+
+$$underline:{"content":"e"}$$ - Euler's number, the limit of (1 + 1/n)^n as n approaches infinity. represented as 2.718281828459045
+$$underline:{"content":"pi"}$$ - the ratio of a circle's circumference to its diameter. represented as 3.141592653589793
+$$underline:{"content":"phi"}$$ - the golden ratio, defined as (1 + sqrt(5)) / 2. represented as 1.618033988749895
+
+$$underline:{"content": "Functions"}$$
+
+$$underline:{"content": "sqrt(x)"}$$ - returns the square root of x, defined for any non-negative number.
+$$underline:{"content": "ln(x)"}$$ - natural logarithm of x, defined for any non-negative number.
+$$underline:{"content": "fact(x)"}$$ - factorial of x, defined for any non-negative number. for non-integral inputs, each factor includes the fractional part of the input.
+$$underline:{"content": "floor(x)"}$$ - floor of x, defined for any number. returns the largest integer less than or equal to x.
+$$underline:{"content": "ceil(x)"}$$ - ceil of x, defined for any number. returns the smallest integer greater than or equal to x.
+$$underline:{"content": "round(x)"}$$ - round of x, defined for any number. returns the nearest integer to x.
+$$underline:{"content": "abs(x)"}$$ - absolute value of x, defined for any number. returns the non-negative value of x.
+$$underline:{"content": "isprime(x)"}$$ - returns true if x is a prime number, false otherwise. defined for any non-negative integer. checks factors up to sqrt n, where n is the absolute value of x.
+$$underline:{"content": "min(a, b)"}$$ - returns the smaller of a and b, defined for any two numbers.
+$$underline:{"content": "max(a, b)"}$$ - returns the larger of a and b, defined for any two numbers.
+$$underline:{"content": "gcf(a, b)"}$$ - greatest common factor of a and b, defined for any two numbers.
+$$underline:{"content": "lcm(a, b)"}$$ - least common multiple of a and b, defined for any two numbers.
+$$underline:{"content": "factor(x)"}$$ - returns the prime factorization of x, defined for any not factorization._valid:
+$$underline:{"content": "sieve_of_eratosthenes(n)"}$$ - returns a list of all prime numbers less than or equal to n, defined for any non-negative integer n.
+$$underline:{"content": "is_int(n)"}$$ - returns true if n is an integer, false otherwise. defined for any number.
+
+$$underline:{"content": "Objects"}$$
+
+$$underline:{"content": "PrimeFactorization"}$$ - object representing the prime factorization of a number.
+$$nbsp:{}$$$$nbsp:{}$$$$underline:{"content": "methods"}$$
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$fn _init(n) - initializes the prime factorization of n.
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$fn add_factor(factor) - adds a factor to the prime factorization.
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$fn _str() - returns a string representation of the prime factorization.
+$$nbsp:{}$$$$nbsp:{}$$$$underline:{"content": "fields"}$$
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$factors - list of prime factors of the number.
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$_valid - internal flag indicating if the prime factorization construction was succcessful.
+
+$$underline:{"content": "Factor"}$$ - object representing a prime factor of a number comprised of the base (p) and exponent (exp).
+$$nbsp:{}$$$$nbsp:{}$$$$underline:{"content": "methods"}$$
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$fn _init(p) - initializes the factor with the given base (p) and exponent (exp = 1).
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$fn inc() - increments the exponent by 1.
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$fn _str() - returns a string representation of the factor.
+$$nbsp:{}$$$$nbsp:{}$$$$underline:{"content": "fields"}$$
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$p - the base of the factor.
+$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$$$nbsp:{}$$exp - the exponent of the factor.

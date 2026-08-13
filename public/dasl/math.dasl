@@ -1,3 +1,9 @@
+#constants
+e = 2.718281828459045
+pi = 3.141592653589793
+phi = 1.618033988749895
+
+# functions
 fn sqrt x:
   if x < 0:
     return null
@@ -42,6 +48,16 @@ fn ceil x:
       return x - r
     return x - r + 1
   return x
+
+fn round x:
+  if _type(x) != "number":
+    print "WARN! math.round requires a number. got " + _type(x)
+    return null
+  f = floor x
+  c = ceil x
+  if abs(f - x) < abs(c - x):
+    return f
+  return c
 
 
 fn abs x:

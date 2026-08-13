@@ -173,6 +173,42 @@ if res != ["ver-", "ylo-","ngw-", "ord "]:
 else:
   tr.succeed "wrap_lines long word test"
 
+res = str.wrap_lines "hello world", 3
+if res != ["he-", "llo", "wo-", "rld"]:
+  tr.fail "wrap_lines test multiple words longer than line"
+else:
+  tr.succeed "wrap_lines test multiple words longer than line"
+
+res = str.wrap_lines "abc", 3
+if res != ["abc"]:
+  tr.fail "wrap_lines exact width no wrap"
+else:
+  tr.succeed "wrap_lines exact width no wrap"
+
+res = str.wrap_lines "hi verylong", 3
+if res != ["hi ", "ve-", "ry-", "lo-", "ng "]:
+  tr.fail "wrap_lines short then long word test"
+else:
+  tr.succeed "wrap_lines short then long word test"
+
+res = str.wrap_lines "toolong alsolong", 4
+if res != ["too-", "long", "als-", "olo-", "ng  "]:
+  tr.fail "wrap_lines consecutive long words test"
+else:
+  tr.succeed "wrap_lines consecutive long words test"
+
+res = str.wrap_lines "ab c", 4
+if res != ["ab c"]:
+  tr.fail "wrap_lines exact combine boundary test"
+else:
+  tr.succeed "wrap_lines exact combine boundary test"
+
+res = str.wrap_lines "abcdef", 3
+if res != ["ab-", "cd-", "ef "]:
+  tr.fail "wrap_lines evenly divisible long word test"
+else:
+  tr.succeed "wrap_lines evenly divisible long word test"
+
 # ============================================================================
 # REPLACE TESTS
 # ============================================================================

@@ -191,13 +191,68 @@ fn welcome:
   welcome=str.join welcome, "\n"
   print welcome
 
-
-fn man:
-  print read "man.txt"
-
-
 fn kofi:
   print "$$kofi:{}$$"
 
 fn twitch:
   open "https://www.twitch.tv/originaldaus"
+
+fn print_man module:
+  contents = read module
+  new_lines = []
+  example = false
+  for line in str.split contents, "\n":
+    #indicate start of section
+    new_section = false
+    if str.substr(line, 0, 11) == "$$underline":
+      new_section = true
+      padding_count = str.find(line, "-")
+      if padding_count == null:
+        padding_count = 4
+      else:
+        padding_count = padding_count - 25
+
+    # start example with "ex:" prefix
+    if str.substr(line, 0, 2) == "ex":
+      example = true
+
+    # end example with empty line
+    if line.len == 0:
+      example = false
+
+    white_spaces = 2
+    if new_section:
+      white_spaces = 2 + padding_count
+
+    title = null
+    desc = null
+    if str.find(line, " - ") == null:
+      wrapped_lines = str.wrap_lines line, _width - white_spaces
+    else:
+      i = str.find(line, " - ")
+      title = str.substr(line, 0, i)
+      desc = str.substr(line, i + 3, line.len)
+      wrapped_lines = str.wrap_lines desc, _width - white_spaces
+
+    if wrapped_lines.len == 0:
+      new_lines = append new_lines, ""
+
+    first_line = true
+    for wrapped_line in wrapped_lines:
+
+      if example:
+        padding = "    "
+      elif new_section and not first_line:
+        padding = str.rep(" ", padding_count)
+      else:
+        padding = "  "
+
+      if first_line and title != null:
+        new_lines = append(new_lines, padding + title + " - " + wrapped_line)
+      elif first_line:
+        new_lines = append(new_lines, padding + wrapped_line)
+      else:
+        new_lines = append(new_lines, padding + wrapped_line)
+      first_line = false
+
+  print str.join new_lines, "\n"

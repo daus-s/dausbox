@@ -79,6 +79,8 @@ class DausBox {
       "welcome.txt",
       "logo.txt",
       "man.txt",
+      "strman.txt",
+      "mathman.txt",
     ];
 
     for (const file of files) {
@@ -267,6 +269,38 @@ class DausBox {
       );
       this.hideInput = false;
 
+      return null;
+    });
+
+    this.interpreter.register("man", ["module"], (args: Value[]) => {
+      if (args.length === 0) {
+        this.hideInput = true;
+        this.execute('print_man "man.txt"');
+        this.hideInput = false;
+      } else if (args.length === 1) {
+        console.log(args[0]);
+        const modules: Record<string, string> = {
+          str: "strman.txt",
+          math: "mathman.txt",
+        };
+        const moduleName = (() => {
+          if (this.interpreter._type(args[0]) === "module") {
+            const module = args[0] as Obj;
+            return module.access("_name") as string;
+          }
+          return null;
+        })();
+
+        if (moduleName && moduleName in modules) {
+          this.hideInput = true;
+          this.execute(`print_man "${modules[moduleName]}"`);
+          this.hideInput = false;
+        } else {
+          throw new Error(`man: no associated man page for "${moduleName}"`);
+        }
+      } else {
+        throw new Error(`man: takes 1 argument, received ${args.length}`);
+      }
       return null;
     });
   }
