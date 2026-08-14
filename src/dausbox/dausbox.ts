@@ -175,13 +175,6 @@ class DausBox {
   }
 
   private async registerBrowserBuiltins() {
-    this.interpreter.register("view", ["project"], (args: Value[]): Value => {
-      if (args.length !== 1 || !(args[0] instanceof String))
-        throw new Error("view requires a single project name to render");
-
-      return null;
-    });
-
     this.interpreter.register("read", ["src"], (args: Value[]): Value => {
       if (args.length !== 1 || !(typeof args[0] === "string"))
         throw new Error("read requires a single source file path to read");
