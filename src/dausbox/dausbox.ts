@@ -118,15 +118,8 @@ class DausBox {
       err = "int";
       const res = this.interpreter.eval(ast);
       err = null;
-      const newMsgs = this.interpreter.output().slice(this.msgs);
 
-      this.msgs += newMsgs.length;
-
-      if (this.quiet) return;
-
-      for (const msg of newMsgs) {
-        this.history.record({ output: msg });
-      }
+      this.recordNewMessages();
 
       if (res !== null)
         this.history.record({ output: this.interpreter._str(res) });
@@ -136,6 +129,8 @@ class DausBox {
       } else if (err === "par") {
         this.history.record({ error: "parser:" + (e as Error).message });
       } else if (err === "int") {
+        this.recordNewMessages();
+
         this.history.record({
           error: "interpreter: " + (e as Error).message,
         });
@@ -319,6 +314,18 @@ class DausBox {
         },
       ],
     });
+  }
+
+  recordNewMessages() {
+    const newMsgs = this.interpreter.output().slice(this.msgs);
+
+    this.msgs += newMsgs.length;
+
+    if (this.quiet) return;
+
+    for (const msg of newMsgs) {
+      this.history.record({ output: msg });
+    }
   }
 }
 
