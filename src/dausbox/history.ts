@@ -21,6 +21,7 @@ export type Input = {
 };
 export type Output = {
   output: string;
+  markdown?: boolean;
 };
 export type Error = {
   error: string;

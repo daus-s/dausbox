@@ -292,6 +292,20 @@ class DausBox {
       }
       return null;
     });
+
+    this.interpreter.register("markdown", ["content"], (args: Value[]) => {
+      if (args.length !== 1)
+        throw new Error(`markdown: requires 1 argument, got ${args.length}`);
+      const _type = this.interpreter._type(args[0]);
+      if (_type !== "string")
+        throw new Error(
+          `markdown: can only render a string as markdown, got ${_type}`,
+        );
+
+      this.history.record({ markdown: true, output: args[0] as string });
+
+      return null;
+    });
   }
 
   setWidth(width: number) {

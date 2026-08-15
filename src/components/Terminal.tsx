@@ -5,6 +5,7 @@ import { History } from "../dausbox/history";
 import InputBuffer from "./InputBuffer";
 import OutputBlock from "./OutputBlock";
 import { contPrompt, depthOf, PROMPT } from "./promptFormat";
+import MarkdownBlock from "./MarkdownBlock";
 
 export default function Terminal() {
   const [dausbox, setDausBox] = useState<DausBox | null>(null);
@@ -13,26 +14,22 @@ export default function Terminal() {
     DausBox.create().then((box) => {
       box.setWidth(Math.floor(innerWidth / 12));
       setDausBox(box);
-      if (localStorage.getItem("doWelcome") !== "no")
-        box.welcome();
+      if (localStorage.getItem("doWelcome") !== "no") box.welcome();
     });
   }, []);
   useEffect(() => {
     let timeoutId: number;
     const handleResize = () => {
-      if (!dausbox)
-        return;
+      if (!dausbox) return;
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        dausbox.setWidth(
-          Math.floor(innerWidth / 12)
-          )
+        dausbox.setWidth(Math.floor(innerWidth / 12));
       }, 150); // adjust delay to taste
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [dausbox]);
   const scrollToBottom = () => {
@@ -55,7 +52,9 @@ export default function Terminal() {
             <Fragment key={i}>
               {entry.input.split("\n").map((line, j) => (
                 <p key={j} className="history-input">
-                  <span className="prompt">{j === 0 ? PROMPT : contPrompt(depthOf(line))}</span>
+                  <span className="prompt">
+                    {j === 0 ? PROMPT : contPrompt(depthOf(line))}
+                  </span>
                   {line.trimStart()}
                 </p>
               ))}
@@ -63,7 +62,13 @@ export default function Terminal() {
           );
         }
         if ("output" in entry) {
-          return <OutputBlock key={i} output={entry.output} entryIdx={i} />;
+          if (entry.markdown) {
+            return (
+              <MarkdownBlock key={i} markdown={entry.output} entryIdx={i} />
+            );
+          } else {
+            return <OutputBlock key={i} output={entry.output} entryIdx={i} />;
+          }
         }
         return (
           <span key={i} className="error">

@@ -1,0 +1,122 @@
+.markdown {
+    color: #eae4dc;
+    background-color: #151b23;
+
+    border: #eae4dc double 1px;
+    border-radius: 4px;
+
+    font-family: "Arial", sans-serif;
+    font-size: auto;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+
+    padding: 0px 12px;
+
+    h1, h2, h3, h4, h5, h6 {
+        margin: 4px 0px 8px 0px;
+    }
+
+    a {
+        color: #5B8AB3;
+    }
+
+    a:visited {
+        color: #D57ED5;
+    }
+
+    p {
+        line-height: 1.5;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        margin: 8px 0px;
+        font-size: 16px;
+    }
+
+
+
+    pre {
+           background-color: #303646;
+           border: 1px solid #3d4453;
+           border-radius: 4px;
+           padding: 12px;
+           overflow-x: auto;
+           margin: 8px 0;
+           font-size: 16px;
+           font-family: "JetBrains Mono", monospace;
+
+
+           code {
+               background-color: transparent;
+               padding: 0;
+               margin: 0;
+               white-space: pre;
+               display: block;
+           }
+       }
+
+    li {
+        font-size: 16px;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: calc(100%-32px);
+        margin: 16px;
+        font-size: 16px;
+
+    }
+
+    th {
+        background-color: #303646;
+        color: #eae4dc;
+        font-weight: 600;
+        text-align: left;
+        padding: 6px 10px;
+        border: 1px solid #3d4453;
+    }
+
+    td {
+        padding: 6px 10px;
+        border: 1px solid #3d4453;
+    }
+
+    tr:nth-child(even) td {
+        background-color: #1c232d;
+    }
+
+    tr:nth-child(odd) td {
+        background-color: #151b23;
+    }
+
+    tr:hover td {
+        background-color: #262e3a;
+    }
+}
+
+
+.markdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.markdown-caret {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    font-size: 0.8em;
+}
+
+.markdown-caret.open {
+    transform: rotate(90deg);
+}
+
+.markdown-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
