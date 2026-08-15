@@ -10,7 +10,7 @@
   man - prints this manual
   kofi - buy me a coffee on kofi!
   twitch - opens my twitch channel in a new window
-
+  attrs - lists the links to the resources I used from $$link:{"display": "flaticon", "link": "https://www.flaticon.com"}$$.
 
   $$underline:{"content": "Built-in Modules"}$$
   dauslang provides a set of built-in modules for common tasks including a math library and string manipulation.

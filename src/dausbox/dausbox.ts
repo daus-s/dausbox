@@ -81,6 +81,7 @@ class DausBox {
       "man.txt",
       "strman.txt",
       "mathman.txt",
+      "attributions.txt",
     ];
 
     for (const file of files) {

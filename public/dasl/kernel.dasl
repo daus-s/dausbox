@@ -256,3 +256,9 @@ fn print_man module:
       first_line = false
 
   print str.join new_lines, "\n"
+
+fn attrs:
+  as = str.split read("attributions.txt"), "\n"
+  for a in as:
+    if a.len != 0:
+      print a
