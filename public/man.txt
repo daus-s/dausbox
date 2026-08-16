@@ -1,19 +1,20 @@
 
-  $$underline:{"content": "DAUSBOX"}$$
+  $$invert:{"content": " DAUSBOX "}$$
 
   A terminal-in-the-browser powered by dauslang—my custom scripting language.
 
-  $$underline:{"content": "Commands"}$$
+  $$invert:{"content": " Commands "}$$
 
-  ls - list of projects I have created (try resizing the window to see how it handles changing screen width!)
-  whoami - prints a brief bio of Daus (me!), the author of this page
-  man - prints this manual
-  kofi - buy me a coffee on kofi!
-  twitch - opens my twitch channel in a new window
-  attrs - lists the links to the resources I used from $$link:{"display": "flaticon", "link": "https://www.flaticon.com"}$$.
+  $$populate:{"display":"ls", "command":"ls"}$$ - list of projects I have created (try resizing the window to see how it handles changing screen width!)
+  $$populate:{"display":"whoami", "command":"whoami"}$$ - prints a brief bio of Daus (me!), the author of this page
+  $$populate:{"display":"man", "command":"man"}$$ - prints this manual
+  $$populate:{"display":"kofi", "command":"kofi"}$$ - buy me a coffee on kofi!
+  $$populate:{"display":"twitch", "command":"twitch"}$$ - opens my twitch channel in a new window
+  $$populate:{"display":"attrs", "command":"attrs"}$$ - lists the links to the resources I used from $$link:{"display": "flaticon", "link": "https://www.flaticon.com"}$$.
 
-  $$underline:{"content": "Built-in Modules"}$$
+  $$invert:{"content": " Built-in Modules "}$$
+
   dauslang provides a set of built-in modules for common tasks including a math library and string manipulation.
 
-  $$underline:{"content": "math"}$$ - to learn more use `man math`
-  $$underline:{"content": "str"}$$ - to learn more use `man str`
+  $$populate:{"display": "math", "command": "man math"}$$ - to learn more use `man math`
+  $$populate:{"display": "str", "command": "man str"}$$ - to learn more use `man str`

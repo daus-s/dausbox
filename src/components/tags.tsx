@@ -1,3 +1,5 @@
+import type DausBox from "../dausbox/dausbox";
+
 export type Node = string | React.JSX.Element;
 
 type TagRenderer = (json: unknown, key: string) => React.JSX.Element;
@@ -20,6 +22,11 @@ interface InvertData {
 
 interface UnderlineData {
   content: string;
+}
+
+interface PopulateData {
+  command: string;
+  display: string;
 }
 
 const TAG_REGISTRY: Record<string, TagRenderer> = {
@@ -86,6 +93,25 @@ const TAG_REGISTRY: Record<string, TagRenderer> = {
       />
     </a>
   ),
+  populate: (json, key) => {
+    if (typeof json !== "object" || json === null)
+      throw new Error("Invalid JSON");
+    if (!("command" in json && "display" in json))
+      throw new Error("Missing content");
+    const { command, display } = json as PopulateData;
+    return (
+      <span
+        onClick={() => activeDausbox?.requestPopulate(command)}
+        key={key}
+        style={{
+          cursor: "pointer",
+          textDecoration: "underline",
+        }}
+      >
+        {display}
+      </span>
+    );
+  },
   nbsp: (_, __) => <>&nbsp;</>,
 };
 
@@ -106,4 +132,10 @@ export function constructNode(
   if (!renderer) return `$$${tag}:${jsonString}$$`; // unknown tag, render literally
   const json = JSON.parse(jsonString);
   return renderer(json, key);
+}
+
+let activeDausbox: DausBox | null = null;
+
+export function setActiveDausbox(instance: DausBox) {
+  activeDausbox = instance;
 }

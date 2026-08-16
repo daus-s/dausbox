@@ -6,6 +6,7 @@ import InputBuffer from "./InputBuffer";
 import OutputBlock from "./OutputBlock";
 import { contPrompt, depthOf, PROMPT } from "./promptFormat";
 import MarkdownBlock from "./MarkdownBlock";
+import { setActiveDausbox } from "./tags";
 
 export default function Terminal() {
   const [dausbox, setDausBox] = useState<DausBox | null>(null);
@@ -14,6 +15,7 @@ export default function Terminal() {
     DausBox.create().then((box) => {
       box.setWidth(Math.floor(innerWidth / 12));
       setDausBox(box);
+      setActiveDausbox(box);
       if (localStorage.getItem("doWelcome") !== "no") box.welcome();
     });
   }, []);

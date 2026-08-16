@@ -8,6 +8,8 @@ import { type Value } from "../dasl/value";
 
 import { History } from "./history";
 
+type PopulateListener = (cmd: string) => void;
+
 class DausBox {
   private lexer: Lexer;
   private parser: Parser;
@@ -21,6 +23,19 @@ class DausBox {
 
   private fileCache: Map<string, string> = new Map();
   private moduleCache: Map<string, Module> = new Map();
+
+  private populateListeners = new Set<PopulateListener>();
+
+  onPopulate(fn: PopulateListener) {
+    this.populateListeners.add(fn);
+    return () => {
+      this.populateListeners.delete(fn);
+    };
+  }
+
+  requestPopulate(cmd: string) {
+    this.populateListeners.forEach((fn) => fn(cmd));
+  }
 
   constructor() {
     this.lexer = new Lexer();
