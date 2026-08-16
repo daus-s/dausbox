@@ -112,6 +112,7 @@ const TAG_REGISTRY: Record<string, TagRenderer> = {
       </span>
     );
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   nbsp: (_, __) => <>&nbsp;</>,
 };
 

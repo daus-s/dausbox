@@ -20,7 +20,7 @@ export default function Terminal() {
     });
   }, []);
   useEffect(() => {
-    let timeoutId: number;
+    let timeoutId: NodeJS.Timeout;
     const handleResize = () => {
       if (!dausbox) return;
       clearTimeout(timeoutId);

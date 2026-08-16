@@ -1334,7 +1334,7 @@ add 3, 4
 runner.test("expect function without commas in arguments to fail", () => {
   let throws = false;
   try {
-    const ast = parse(`
+    parse(`
 fn add a b:
   return a + b
 add 3, 4
