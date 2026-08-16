@@ -74,8 +74,3 @@
     outline: 2px solid black;
     border-radius: 6px;
 }
-
-.invert:hover {
-    color: white;
-    background-color:  #e95420;
-}
