@@ -63,7 +63,6 @@ class Parser {
   }
   private locationString(): string {
     return `line ${this.peek().line}, col ${this.peek().col} `;
-
   }
 
   private isDone() {
@@ -293,13 +292,11 @@ class Parser {
     const left = this.orExpr();
 
     if (this.match("EQUAL")) {
-      if (
-        !(
-          left.type === "Name" ||
-          left.type === "Attr" ||
-          left.type === "Subscript"
-        )
-      ) {
+      if (!(
+        left.type === "Name" ||
+        left.type === "Attr" ||
+        left.type === "Subscript"
+      )) {
         throw new Error(
           `Invalid assignment target.\n  - expected: Name | Attr | Subscript\n  - received: ${left.type}`,
         );
@@ -515,6 +512,11 @@ class Parser {
         const value = this.expr();
         keys.push(key);
         values.push(value);
+        if (!this.match("RIGHT_BRACE")) {
+          this.consume("COMMA", "Expected ',' or '}' after pair in dictionary");
+        } else {
+          break;
+        }
       }
       return { type: "Dict", keys, values };
     } else if (this.match("LEFT_BRACKET")) {
@@ -528,7 +530,11 @@ class Parser {
       return { type: "List", elts };
     }
 
-    throw new Error(this.locationString() + "Expected primary expression, got " + this.peek().type);
+    throw new Error(
+      this.locationString() +
+        "Expected primary expression, got " +
+        this.peek().type,
+    );
   }
 }
 

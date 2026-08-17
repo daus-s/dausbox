@@ -156,6 +156,52 @@ runner.test("parse dict literal", () => {
   });
 });
 
+runner.test("parse dict with single pair", () => {
+  const ast = parse('{"key":"value"}');
+
+  console.log(JSON.stringify(ast, null, 2));
+
+  runner.assertDeepEqual(ast, {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Dict",
+          keys: [{ type: "Constant", value: "key" }],
+          values: [{ type: "Constant", value: "value" }],
+        },
+      },
+    ],
+  });
+});
+
+runner.test("parse dict with two kvps", () => {
+  const ast = parse('{"key":"value", 1: 2}');
+
+  console.log(JSON.stringify(ast, null, 2));
+
+  runner.assertDeepEqual(ast, {
+    type: "Module",
+    body: [
+      {
+        type: "Expr",
+        value: {
+          type: "Dict",
+          keys: [
+            { type: "Constant", value: "key" },
+            { type: "Constant", value: 1 },
+          ],
+          values: [
+            { type: "Constant", value: "value" },
+            { type: "Constant", value: 2 },
+          ],
+        },
+      },
+    ],
+  });
+});
+
 // ============================================================
 // BINARY OPERATORS
 // ============================================================
