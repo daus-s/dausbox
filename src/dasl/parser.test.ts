@@ -159,8 +159,6 @@ runner.test("parse dict literal", () => {
 runner.test("parse dict with single pair", () => {
   const ast = parse('{"key":"value"}');
 
-  console.log(JSON.stringify(ast, null, 2));
-
   runner.assertDeepEqual(ast, {
     type: "Module",
     body: [
@@ -178,8 +176,6 @@ runner.test("parse dict with single pair", () => {
 
 runner.test("parse dict with two kvps", () => {
   const ast = parse('{"key":"value", 1: 2}');
-
-  console.log(JSON.stringify(ast, null, 2));
 
   runner.assertDeepEqual(ast, {
     type: "Module",
