@@ -138,7 +138,10 @@ class DausBox {
       this.recordNewMessages();
 
       if (res !== null)
-        this.history.record({ output: this.interpreter._str(res) });
+        this.history.record({
+          output: this.interpreter._str(res),
+          result: true,
+        });
     } catch (e) {
       if (err === "lex") {
         this.history.record({ error: "lexer:" + (e as Error).message });
@@ -318,6 +321,17 @@ class DausBox {
         );
 
       this.history.record({ markdown: true, output: args[0] as string });
+
+      return null;
+    });
+
+    this.interpreter.register("rerender", [], (args: Value[]) => {
+      if (args.length !== 0)
+        throw new Error(
+          `rerender: takes no arguments, received ${args.length}`,
+        );
+
+      this.history.revise(this.interpreter.output());
 
       return null;
     });

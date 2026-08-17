@@ -12,15 +12,10 @@ import {
 
 type BufferProps = {
   dausbox: DausBox;
-  onExec: () => void;
   scrollToBottom: () => void;
 };
 
-export default function InputBuffer({
-  dausbox,
-  onExec,
-  scrollToBottom,
-}: BufferProps) {
+export default function InputBuffer({ dausbox, scrollToBottom }: BufferProps) {
   const [caretIdx, setCaretIdx] = useState(0);
   const [cmdIdx, setCmdIdx] = useState(0);
   const [lockedLines, setLockedLines] = useState<string[]>([]);
@@ -49,7 +44,6 @@ export default function InputBuffer({
           const newDepth = Math.max(depth - 1, 0);
           if (newDepth === 0) {
             dausbox.execute(lockedLines.join("\n"));
-            onExec();
             setLockedLines([]);
           }
           setDepth(newDepth);
@@ -71,7 +65,6 @@ export default function InputBuffer({
 
         if (depth === 0) {
           dausbox.execute(buffer);
-          onExec();
         } else {
           setLockedLines((prev) => [...prev, INDENT.repeat(depth) + buffer]);
         }
@@ -85,7 +78,6 @@ export default function InputBuffer({
           const newDepth = Math.max(depth - 1, 0);
           if (newDepth === 0) {
             dausbox.execute(lockedLines.join("\n"));
-            onExec();
             setLockedLines([]);
             setTimeout(scrollToBottom, 0);
           }
@@ -169,7 +161,6 @@ export default function InputBuffer({
     cmdIdx,
     draft,
     dausbox,
-    onExec,
     scrollToBottom,
     depth,
     lockedLines,
