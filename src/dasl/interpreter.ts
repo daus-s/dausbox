@@ -158,6 +158,12 @@ class Interpreter {
         throw new Error("_str: expects one argument, got: " + args.length);
       return this._str(args[0]);
     });
+
+    this.register("_millis", [], (args: Value[]) => {
+      if (args.length !== 0)
+        throw new Error("_millis: expects no arguments, got: " + args.length);
+      return Date.now() as number;
+    });
   }
 
   setResolver(resolver: Resolver) {
