@@ -72,6 +72,7 @@ class DausBox {
       "math",
       "str",
       "time",
+      "rand",
       "warheads",
       "betties" /*"tictactoe", conway*/,
       "dauslang",
