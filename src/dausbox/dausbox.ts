@@ -357,6 +357,28 @@ class DausBox {
     });
   }
 
+  setHeight(height: number) {
+    this.interpreter.eval({
+      type: "Module",
+      body: [
+        {
+          type: "Assign",
+          assign: {
+            type: "Assign",
+            target: { type: "Name", id: "_height" },
+            value: { type: "Constant", value: height },
+          },
+        },
+      ],
+    });
+  }
+
+  setQuiet(quiet: boolean) {
+    this.quiet = quiet;
+  }
+
+  // Record new messages (outputs from the interpreter)
+
   recordNewMessages() {
     const newMsgs = this.interpreter.output().slice(this.msgs);
 
