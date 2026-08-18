@@ -82,9 +82,15 @@ export default function Terminal() {
           }
         }
         return (
-          <span key={i} className="error">
-            {entry.error}
-          </span>
+          <Fragment key={i}>
+            {entry.error.split("\n").map((line, j) => {
+              return (
+                <p key={j} className="error">
+                  {line}
+                </p>
+              );
+            })}
+          </Fragment>
         );
       })}
       <InputBuffer dausbox={dausbox} scrollToBottom={scrollToBottom} />

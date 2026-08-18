@@ -216,7 +216,9 @@ class DausBox {
       if (type === "Project") {
         const access = (args[0] as Obj).access("url");
         if (access === null)
-          throw new Error(`open: project must have a valid url`);
+          throw new Error(
+            `project does not have an associated url to open.\nenter \`${(args[0] as Obj).access("alias")}\` to see what resources are available`,
+          );
         url = access as string;
       } else {
         url = args[0] as string;
