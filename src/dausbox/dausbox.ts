@@ -1,4 +1,5 @@
 import Interpreter from "../dasl/interpreter";
+import type { HostRequest, HostResponse } from "../dasl/interpreter";
 import Lexer from "../dasl/lexer";
 import type { Obj } from "../dasl/object";
 import Parser from "../dasl/parser";
@@ -120,13 +121,13 @@ class DausBox {
     return box;
   }
 
-  welcome(): void {
+  async welcome(): Promise<void> {
     this.hideInput = true;
-    this.execute("welcome");
+    await this.execute("welcome");
     this.hideInput = false;
   }
 
-  execute(input: string): void {
+  async execute(input: string): Promise<void> {
     if (!this.quiet && !this.hideInput) this.history.record({ input });
     let err: string | null = "lex";
     try {
@@ -134,7 +135,7 @@ class DausBox {
       err = "par";
       const ast = this.parser.parse(tokens);
       err = "int";
-      const res = this.interpreter.eval(ast);
+      const res = await this.runGenerator(this.interpreter.eval(ast));
       err = null;
 
       this.recordNewMessages();
@@ -157,6 +158,27 @@ class DausBox {
         });
       }
     }
+  }
+
+  private async runGenerator(
+    gen: Generator<HostRequest, Value, HostResponse>,
+  ): Promise<Value> {
+    let sent: HostResponse = undefined;
+    let r = gen.next(sent);
+    while (!r.done) {
+      const req = r.value;
+      switch (req.type) {
+        case "listen":
+          console.warn("not yet implemented");
+          break;
+        case "rerender":
+          this.recordNewMessages();
+          await new Promise<void>((res) => requestAnimationFrame(() => res()));
+          sent = undefined;
+      }
+      r = gen.next(sent);
+    }
+    return r.value;
   }
 
   get_history(): History {
@@ -289,7 +311,6 @@ class DausBox {
         this.execute('print_man "man.txt"');
         this.hideInput = false;
       } else if (args.length === 1) {
-        console.log(args[0]);
         const modules: Record<string, string> = {
           str: "strman.txt",
           math: "mathman.txt",
@@ -329,48 +350,50 @@ class DausBox {
       return null;
     });
 
-    this.interpreter.register("rerender", [], (args: Value[]) => {
+    this.interpreter.register("rerender", [], function* (args: Value[]) {
       if (args.length !== 0)
         throw new Error(
           `rerender: takes no arguments, received ${args.length}`,
         );
-
-      this.history.revise(this.interpreter.output());
-
+      yield { type: "rerender" };
       return null;
     });
   }
 
   setWidth(width: number) {
-    this.interpreter.eval({
-      type: "Module",
-      body: [
-        {
-          type: "Assign",
-          assign: {
+    this.interpreter.runSync(
+      this.interpreter.eval({
+        type: "Module",
+        body: [
+          {
             type: "Assign",
-            target: { type: "Name", id: "_width" },
-            value: { type: "Constant", value: width },
+            assign: {
+              type: "Assign",
+              target: { type: "Name", id: "_width" },
+              value: { type: "Constant", value: width },
+            },
           },
-        },
-      ],
-    });
+        ],
+      }),
+    );
   }
 
   setHeight(height: number) {
-    this.interpreter.eval({
-      type: "Module",
-      body: [
-        {
-          type: "Assign",
-          assign: {
+    this.interpreter.runSync(
+      this.interpreter.eval({
+        type: "Module",
+        body: [
+          {
             type: "Assign",
-            target: { type: "Name", id: "_height" },
-            value: { type: "Constant", value: height },
+            assign: {
+              type: "Assign",
+              target: { type: "Name", id: "_height" },
+              value: { type: "Constant", value: height },
+            },
           },
-        },
-      ],
-    });
+        ],
+      }),
+    );
   }
 
   setQuiet(quiet: boolean) {

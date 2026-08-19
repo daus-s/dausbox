@@ -32,13 +32,20 @@ import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 
 type Resolver = (src: string[]) => Module;
 
+export type HostRequest =
+  { type: "listen"; timeoutMs?: number } | { type: "rerender" };
+export type HostResponse = string | null | void;
+
 class Interpreter {
   private useResolver: Resolver | null = null;
 
   private global: Environment;
   private local: Environment;
 
-  private _builtins: Record<string, (args: Value[]) => Value> = {};
+  private _builtins: Record<
+    string,
+    (args: Value[]) => Value | Generator<HostRequest, Value, HostResponse>
+  > = {};
 
   constructor() {
     this.global = new Environment();
@@ -47,7 +54,13 @@ class Interpreter {
     this.local = this.global;
   }
 
-  register(name: string, args: string[], func: (args: Value[]) => Value) {
+  register(
+    name: string,
+    args: string[],
+    func: (
+      args: Value[],
+    ) => Value | Generator<HostRequest, Value, HostResponse>,
+  ) {
     //this allows functions with side effects outside of dasl
     this._builtins[name] = func;
     this.global.assign(
@@ -177,39 +190,39 @@ class Interpreter {
     return this.useResolver(src);
   }
 
-  eval(ast: Module): Value {
+  *eval(ast: Module): Generator<HostRequest, Value, HostResponse> {
     let value: Value = null;
     for (const stmt of ast.body) {
-      value = this.evalStmt(stmt);
+      value = yield* this.evalStmt(stmt);
     }
     return value;
   }
 
-  private evalStmt(stmt: Stmt): Value {
+  private *evalStmt(stmt: Stmt): Generator<HostRequest, Value, HostResponse> {
     switch (stmt.type) {
       case "Expr": {
         const expr = stmt as ExprStmt;
-        const val = this.evalExpr(expr.value);
+        const val = yield* this.evalExpr(expr.value);
 
         if (val instanceof Func) {
           const func: Func = val;
 
           if (func.id in this._builtins) {
-            return this._builtins[func.id]([]);
+            return yield* this.callBuiltin(func.id, []);
           }
 
           if (expr.value.type === "Attr") {
-            const inst = this.evalExpr(expr.value.target);
+            const inst = yield* this.evalExpr(expr.value.target);
 
             if (!(inst instanceof Obj))
               throw new Error(
                 "invalid method call, expected Object, got " + this._type(inst),
               );
 
-            return this.callMethod(func, inst, []);
+            return yield* this.callMethod(func, inst, []);
           }
 
-          return this.callFunc(func, []);
+          return yield* this.callFunc(func, []);
         }
 
         return val;
@@ -220,27 +233,27 @@ class Interpreter {
         switch (assign.target.type) {
           case "Name": {
             const name = assign.target.id;
-            const value = this.evalExpr(assign.value);
+            const value = yield* this.evalExpr(assign.value);
             this.local.assign(name, value);
             return value;
           }
           case "Attr": {
-            const obj = this.evalExpr(assign.target.target);
+            const obj = yield* this.evalExpr(assign.target.target);
 
             if (!(obj instanceof Obj)) {
               throw new Error(`Invalid target type: ${assign.target.type}`);
             }
 
             const name = assign.target.attr.id;
-            const value = this.evalExpr(assign.value);
+            const value = yield* this.evalExpr(assign.value);
 
             obj.assign(name, value);
 
             return value;
           }
           case "Subscript": {
-            const collection = this.evalExpr(assign.target.collection);
-            const key = this.evalExpr(assign.target.key);
+            const collection = yield* this.evalExpr(assign.target.collection);
+            const key = yield* this.evalExpr(assign.target.key);
 
             if (this._type(collection) === "array") {
               const arr = collection as Value[];
@@ -257,12 +270,12 @@ class Interpreter {
                   `Index out of bounds: length: ${arr.length}, accepts [0, ${arr.length - 1}], got: ${index}`,
                 );
 
-              arr[index] = this.evalExpr(assign.value);
+              arr[index] = yield* this.evalExpr(assign.value);
               return arr[index];
             } else if (this._type(collection) === "map") {
               const map = collection as Map<Value, Value>;
 
-              map.set(key, this.evalExpr(assign.value));
+              map.set(key, yield* this.evalExpr(assign.value));
 
               return map.get(key) ?? null;
             } else {
@@ -277,26 +290,26 @@ class Interpreter {
       }
       case "If": {
         const ifstmt = stmt as IfStmt;
-        const cond = this.evalExpr(ifstmt.cond);
+        const cond = yield* this.evalExpr(ifstmt.cond);
         let value: Value = null;
         if (cond) {
           for (const stmt of ifstmt.body) {
-            value = this.evalStmt(stmt);
+            value = yield* this.evalStmt(stmt);
           }
         } else {
           for (const stmt of ifstmt.orelse) {
-            value = this.evalStmt(stmt);
+            value = yield* this.evalStmt(stmt);
           }
         }
         return value;
       }
       case "While": {
         const whilestmt = stmt as WhileStmt;
-        let cond = this.evalExpr(whilestmt.cond);
+        let cond = yield* this.evalExpr(whilestmt.cond);
         w: while (cond) {
           for (const stmt of whilestmt.body) {
             try {
-              this.evalStmt(stmt);
+              yield* this.evalStmt(stmt);
             } catch (e) {
               if (e instanceof BreakSignal) break w;
               if (e instanceof ContinueSignal) continue w;
@@ -304,13 +317,13 @@ class Interpreter {
               throw e;
             }
           }
-          cond = this.evalExpr(whilestmt.cond);
+          cond = yield* this.evalExpr(whilestmt.cond);
         }
         return null;
       }
       case "For": {
         const forstmt = stmt as ForStmt;
-        const iter = this.evalExpr(forstmt.iter);
+        const iter = yield* this.evalExpr(forstmt.iter);
         if (!(iter instanceof Array)) {
           throw new Error("For loop iter must be an array");
         }
@@ -318,7 +331,7 @@ class Interpreter {
           this.local.assign(forstmt.target.id, i);
           for (const stmt of forstmt.body) {
             try {
-              this.evalStmt(stmt);
+              yield* this.evalStmt(stmt);
             } catch (e) {
               if (e instanceof BreakSignal) break f;
               else if (e instanceof ContinueSignal) continue f;
@@ -364,7 +377,7 @@ class Interpreter {
             case "Assign":
             case "FuncDef":
             case "ObjDef":
-              this.evalStmt(stmt);
+              yield* this.evalStmt(stmt);
               break;
 
             default:
@@ -418,7 +431,7 @@ class Interpreter {
 
         this.local = mod.env;
 
-        this.eval(ast);
+        yield* this.eval(ast);
 
         this.local = saved;
 
@@ -428,7 +441,7 @@ class Interpreter {
       }
       case "Return": {
         const ret = stmt as ReturnStmt;
-        const value = ret.value ? this.evalExpr(ret.value) : null;
+        const value = ret.value ? yield* this.evalExpr(ret.value) : null;
 
         throw new ReturnSignal(value);
       }
@@ -439,7 +452,7 @@ class Interpreter {
     }
   }
 
-  private evalExpr(expr: Expr): Value {
+  private *evalExpr(expr: Expr): Generator<HostRequest, Value, HostResponse> {
     switch (expr.type) {
       case "Constant":
         return expr.value;
@@ -447,12 +460,12 @@ class Interpreter {
         return this.local.get(expr.id);
 
       case "Assign": {
-        const value = this.evalExpr(expr.value);
+        const value = yield* this.evalExpr(expr.value);
         const target = expr.target;
 
         switch (target.type) {
           case "Attr": {
-            const obj = this.evalExpr(target.target);
+            const obj = yield* this.evalExpr(target.target);
 
             if (!(obj instanceof Obj))
               throw new Error("Invalid attribute target: " + this._type(obj));
@@ -465,8 +478,8 @@ class Interpreter {
             this.local.assign(target.id, value);
             return value;
           case "Subscript": {
-            const collection = this.evalExpr(target.collection);
-            const key = this.evalExpr(target.key);
+            const collection = yield* this.evalExpr(target.collection);
+            const key = yield* this.evalExpr(target.key);
 
             if (this._type(collection) === "array") {
               const arr = collection as Value[];
@@ -503,7 +516,7 @@ class Interpreter {
         }
       }
       case "Attr": {
-        const target = this.evalExpr(expr.target);
+        const target = yield* this.evalExpr(expr.target);
 
         if (expr.attr.id === "len") {
           if (this._type(target) === "string") {
@@ -527,36 +540,46 @@ class Interpreter {
         return value;
       }
       case "BinOp":
-        return this.evalBinOpExpr(expr);
+        return yield* this.evalBinOpExpr(expr);
       case "UnaryOp":
-        return this.evalUnaryOpExpr(expr);
+        return yield* this.evalUnaryOpExpr(expr);
       case "Compare":
-        return this.evalCompareExpr(expr);
+        return yield* this.evalCompareExpr(expr);
       case "BoolOp":
-        return this.evalBoolOpExpr(expr);
+        return yield* this.evalBoolOpExpr(expr);
       case "Call":
-        return this.evalCallExpr(expr);
+        return yield* this.evalCallExpr(expr);
       case "Subscript":
-        return this.evalSubscriptExpr(expr);
+        return yield* this.evalSubscriptExpr(expr);
       case "List": {
         const list = expr as ListLiteral;
-        return list.elts.map((elt) => this.evalExpr(elt));
+        const elts: Value[] = [];
+        for (const elt of list.elts) {
+          elts.push(yield* this.evalExpr(elt));
+        }
+        return elts;
       }
       case "Dict": {
         const dict = expr as DictLiteral;
-        return new Map(
-          dict.keys.map((key, i) => [
-            this.evalExpr(key),
-            this.evalExpr(dict.values[i]),
-          ]),
-        );
+
+        const keys: Value[] = [];
+        for (const key of dict.keys) {
+          keys.push(yield* this.evalExpr(key));
+        }
+        const vals: Value[] = [];
+        for (const val of dict.values) {
+          vals.push(yield* this.evalExpr(val));
+        }
+        return new Map(keys.map((key, i) => [key, vals[i]] as [Value, Value]));
       }
     }
   }
 
-  private evalBinOpExpr(expr: BinOp): Value {
-    const left = this.evalExpr(expr.left);
-    const right = this.evalExpr(expr.right);
+  private *evalBinOpExpr(
+    expr: BinOp,
+  ): Generator<HostRequest, Value, HostResponse> {
+    const left = yield* this.evalExpr(expr.left);
+    const right = yield* this.evalExpr(expr.right);
 
     if (expr.op === "+") {
       if (typeof left === "string" && typeof right === "string") {
@@ -594,8 +617,10 @@ class Interpreter {
     }
   }
 
-  private evalUnaryOpExpr(expr: UnaryOp): Value {
-    const operand = this.evalExpr(expr.operand);
+  private *evalUnaryOpExpr(
+    expr: UnaryOp,
+  ): Generator<HostRequest, Value, HostResponse> {
+    const operand = yield* this.evalExpr(expr.operand);
 
     switch (expr.op) {
       case "-":
@@ -618,8 +643,10 @@ class Interpreter {
     }
   }
 
-  private evalCompareExpr(expr: Compare): Value {
-    let left = this.evalExpr(expr.left);
+  private *evalCompareExpr(
+    expr: Compare,
+  ): Generator<HostRequest, Value, HostResponse> {
+    let left = yield* this.evalExpr(expr.left);
     if (expr.ops.length !== expr.comparators.length) {
       throw new Error("Compare: ops and comparators must have the same length");
     }
@@ -627,7 +654,7 @@ class Interpreter {
     for (const [op, comp] of expr.ops.map(
       (op, i) => [op, expr.comparators[i]] as [string, Expr],
     )) {
-      const right = this.evalExpr(comp);
+      const right = yield* this.evalExpr(comp);
       if (!this.compare(left, op, right)) return false;
 
       left = right;
@@ -684,13 +711,15 @@ class Interpreter {
     }
   }
 
-  private evalBoolOpExpr(expr: BoolOp): Value {
+  private *evalBoolOpExpr(
+    expr: BoolOp,
+  ): Generator<HostRequest, Value, HostResponse> {
     if (!(expr.op === "and" || expr.op === "or")) {
       throw new Error(`Unknown BoolOp: ${expr.op}`);
     }
 
     for (const value of expr.values) {
-      const val = this.evalExpr(value);
+      const val = yield* this.evalExpr(value);
       if (typeof val !== "boolean")
         throw new Error("BoolOp: values must be booleans");
 
@@ -711,8 +740,10 @@ class Interpreter {
     }
   }
 
-  private evalCallExpr(expr: Call): Value {
-    const callee = this.evalExpr(expr.func);
+  private *evalCallExpr(
+    expr: Call,
+  ): Generator<HostRequest, Value, HostResponse> {
+    const callee = yield* this.evalExpr(expr.func);
 
     if (!(callee instanceof Func) && !(callee instanceof ObjDef)) {
       throw new Error(
@@ -720,40 +751,47 @@ class Interpreter {
       );
     }
 
-    const args = expr.args.map((arg) => this.evalExpr(arg));
+    const args: Value[] = [];
+    for (const argExpr of expr.args) {
+      const val = yield* this.evalExpr(argExpr);
+      args.push(val);
+    }
 
     if (callee instanceof Func) {
       const func = callee as Func;
 
       if (func.id in this._builtins) {
-        return this._builtins[func.id](args);
+        return yield* this.callBuiltin(func.id, args);
       }
 
       if (expr.func.type === "Attr") {
-        const inst = this.evalExpr(expr.func.target);
+        const inst = yield* this.evalExpr(expr.func.target);
 
         if (!(inst instanceof Obj))
           throw new Error("Invalid attribute target.");
 
-        return this.callMethod(func, inst, args);
+        return yield* this.callMethod(func, inst, args);
       } else {
-        return this.callFunc(func, args);
+        return yield* this.callFunc(func, args);
       }
     } else if (callee instanceof ObjDef) {
-      return this.callConstructor(callee, args);
+      return yield* this.callConstructor(callee, args);
     }
 
     throw new Error("can only call objects of type Func or constructors");
   }
 
-  private callFunc(func: Func, args: Value[]): Value {
+  private *callFunc(
+    func: Func,
+    args: Value[],
+  ): Generator<HostRequest, Value, HostResponse> {
     const prevLocal = this.local;
     this.local = new Environment(func.closure);
 
     func.apply(this.local, args);
 
     try {
-      return this.eval(func.body);
+      return yield* this.eval(func.body);
     } catch (e) {
       if (e instanceof ReturnSignal) return e.value;
       else throw e;
@@ -762,7 +800,11 @@ class Interpreter {
     }
   }
 
-  private callMethod(func: Func, inst: Obj, args: Value[]): Value {
+  private *callMethod(
+    func: Func,
+    inst: Obj,
+    args: Value[],
+  ): Generator<HostRequest, Value, HostResponse> {
     const prevLocal = this.local;
     const callEnv = new Environment(func.closure);
 
@@ -772,7 +814,7 @@ class Interpreter {
     func.apply(callEnv, args);
 
     try {
-      return this.eval(func.body);
+      return yield* this.eval(func.body);
     } catch (sig) {
       if (sig instanceof ReturnSignal) return sig.value;
       else throw sig;
@@ -781,7 +823,24 @@ class Interpreter {
     }
   }
 
-  private callConstructor(def: ObjDef, args: Value[]): Value {
+  private *callBuiltin(
+    id: string,
+    args: Value[],
+  ): Generator<HostRequest, Value, HostResponse> {
+    const res = this._builtins[id](args);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (res != null && typeof (res as any).next === "function") {
+      const gen = res as Generator<HostRequest, Value, HostResponse>;
+
+      return yield* gen;
+    }
+    return res as Value;
+  }
+
+  private *callConstructor(
+    def: ObjDef,
+    args: Value[],
+  ): Generator<HostRequest, Value, HostResponse> {
     const obj = new Obj(def);
     const initFunc = def.init();
 
@@ -789,13 +848,15 @@ class Interpreter {
       throw new Error("ObjDef: _init must be a Func");
     }
 
-    this.callMethod(initFunc, obj, args);
+    yield* this.callMethod(initFunc, obj, args);
     return obj;
   }
 
-  private evalSubscriptExpr(expr: Subscript): Value {
-    const val = this.evalExpr(expr.collection);
-    const index = this.evalExpr(expr.key);
+  private *evalSubscriptExpr(
+    expr: Subscript,
+  ): Generator<HostRequest, Value, HostResponse> {
+    const val = yield* this.evalExpr(expr.collection);
+    const index = yield* this.evalExpr(expr.key);
 
     if (val instanceof Map) {
       return val.get(index) || null;
@@ -815,6 +876,15 @@ class Interpreter {
       }
     }
     throw new Error(`Subscript: ${this._type(val)} is not subscriptable`);
+  }
+
+  runSync<T>(gen: Generator<HostRequest, T, HostResponse>): T {
+    const r = gen.next();
+    if (!r.done)
+      throw new Error(
+        "unexpected suspension in synchronous statement evaluation",
+      );
+    return r.value;
   }
 
   // END LOGIC ==================================================================================
@@ -856,7 +926,7 @@ class Interpreter {
         if (value.attrs.includes("_str")) {
           const f = value.access("_str");
           if (f instanceof Func && f.args.length === 0) {
-            const res = this.callMethod(f, value, []);
+            const res = this.runSync(this.callMethod(f, value, []));
             return typeof res === "string" ? res : "null";
           }
         } else {

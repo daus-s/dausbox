@@ -17,7 +17,11 @@ function run(code: string) {
 
   const tokens: Token[] = lexer.tokenize(code);
   const ast = parser.parse(tokens);
-  interpreter.eval(ast);
+  const gen = interpreter.eval(ast);
+  const r = gen.next();
+  if (!r.done) {
+    throw new Error(`tests do not expect any yields`);
+  }
   return interpreter.output();
 }
 

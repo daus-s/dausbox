@@ -15,7 +15,14 @@ const exec = (code: string) => {
   const tokens = lexer.tokenize(code);
   const ast = parser.parse(tokens);
 
-  interpreter.eval(ast);
+  const gen = interpreter.eval(ast);
+  const r = gen.next();
+  while (!r.done) {
+    // CLI has no browser to answer "listen"/"paint" requests
+    throw new Error(
+      `listen()/rerender() aren't supported in CLI mode (got host request: ${r.value.type})`,
+    );
+  }
 
   interpreter.output().forEach((line) => console.log(line));
 };
