@@ -184,6 +184,7 @@ class DausBox {
       } else if (err === "int") {
         this.recordNewMessages();
         if (e instanceof HaltSignal) {
+          this.history.revise(this.interpreter.output());
           this.history.record({ error: "^C" });
         } else {
           this.history.record({
@@ -207,7 +208,6 @@ class DausBox {
           console.warn("not yet implemented");
           break;
         case "rerender":
-          this.recordNewMessages();
           this.history.revise(this.interpreter.output());
           await new Promise<void>((res) => requestAnimationFrame(() => res()));
           sent = undefined;
