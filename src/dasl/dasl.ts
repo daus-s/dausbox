@@ -16,12 +16,13 @@ const exec = (code: string) => {
   const ast = parser.parse(tokens);
 
   const gen = interpreter.eval(ast);
-  const r = gen.next();
+  let r = gen.next();
   while (!r.done) {
-    // CLI has no browser to answer "listen"/"paint" requests
-    throw new Error(
-      `listen()/rerender() aren't supported in CLI mode (got host request: ${r.value.type})`,
-    );
+    if (r.value.type !== "tick")
+      throw new Error(
+        `dasl-cli can only handle tick suspensions, got ${r.value.type}`,
+      );
+    r = gen.next();
   }
 
   interpreter.output().forEach((line) => console.log(line));

@@ -22,11 +22,18 @@ export default function InputBuffer({ dausbox, scrollToBottom }: BufferProps) {
   const [buffer, setBuffer] = useState("");
   const [draft, setDraft] = useState<string | null>(null);
   const [depth, setDepth] = useState(0);
+  const [running, setRunning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      console.log(event);
+      if (dausbox.isExecuting()) {
+        if (event.ctrlKey && event.key === "c") {
+          dausbox.requestHalt();
+          event.preventDefault();
+        }
+        return;
+      }
       if (event.ctrlKey || event.metaKey || event.altKey) return;
       const active = document.activeElement;
       if (
@@ -178,9 +185,16 @@ export default function InputBuffer({ dausbox, scrollToBottom }: BufferProps) {
     });
   }, [dausbox, scrollToBottom]);
 
+  useEffect(() => {
+    dausbox.listenForExecutionChange(setRunning);
+  }, [dausbox]);
+
   const before = buffer.slice(0, caretIdx);
   const after = buffer.slice(caretIdx + 1);
 
+  if (running) {
+    return <></>;
+  }
   return (
     <>
       {lockedLines.map((line, i) => (

@@ -18,9 +18,13 @@ function run(code: string) {
   const tokens: Token[] = lexer.tokenize(code);
   const ast = parser.parse(tokens);
   const gen = interpreter.eval(ast);
-  const r = gen.next();
-  if (!r.done) {
-    throw new Error(`tests do not expect any yields`);
+  let r = gen.next();
+  while (!r.done) {
+    if (r.value.type !== "tick")
+      throw new Error(
+        `dasl interpreter test suite: can only handle tick suspensions, got ${r.value.type}`,
+      );
+    r = gen.next();
   }
   return interpreter.output();
 }

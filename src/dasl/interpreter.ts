@@ -33,7 +33,9 @@ import { BreakSignal, ContinueSignal, ReturnSignal } from "./signal.ts";
 type Resolver = (src: string[]) => Module;
 
 export type HostRequest =
-  { type: "listen"; timeoutMs?: number } | { type: "rerender" };
+  | { type: "listen"; timeoutMs?: number }
+  | { type: "rerender" }
+  | { type: "tick" };
 export type HostResponse = string | null | void;
 
 class Interpreter {
@@ -307,6 +309,7 @@ class Interpreter {
         const whilestmt = stmt as WhileStmt;
         let cond = yield* this.evalExpr(whilestmt.cond);
         w: while (cond) {
+          yield { type: "tick" };
           for (const stmt of whilestmt.body) {
             try {
               yield* this.evalStmt(stmt);
@@ -328,6 +331,7 @@ class Interpreter {
           throw new Error("For loop iter must be an array");
         }
         f: for (const i of iter) {
+          yield { type: "tick" };
           this.local.assign(forstmt.target.id, i);
           for (const stmt of forstmt.body) {
             try {
@@ -785,6 +789,7 @@ class Interpreter {
     func: Func,
     args: Value[],
   ): Generator<HostRequest, Value, HostResponse> {
+    yield { type: "tick" };
     const prevLocal = this.local;
     this.local = new Environment(func.closure);
 
@@ -805,6 +810,7 @@ class Interpreter {
     inst: Obj,
     args: Value[],
   ): Generator<HostRequest, Value, HostResponse> {
+    yield { type: "tick" };
     const prevLocal = this.local;
     const callEnv = new Environment(func.closure);
 

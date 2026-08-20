@@ -10,6 +10,8 @@ import { type Value } from "../dasl/value";
 import { History } from "./history";
 
 type PopulateListener = (cmd: string) => void;
+type ExecutionListener = (running: boolean) => void;
+class HaltSignal extends Error {}
 
 class DausBox {
   private lexer: Lexer;
@@ -19,6 +21,8 @@ class DausBox {
   private quiet: boolean = true;
   private hideInput: boolean = false;
   private msgs: number = 0;
+  private halt: boolean = false;
+  private executing: boolean = false;
 
   history: History;
 
@@ -36,6 +40,24 @@ class DausBox {
 
   requestPopulate(cmd: string) {
     this.populateListeners.forEach((fn) => fn(cmd));
+  }
+
+  private executionListeners = new Set<ExecutionListener>();
+
+  listenForExecutionChange(fn: ExecutionListener) {
+    this.executionListeners.add(fn);
+    return () => {
+      this.executionListeners.delete(fn);
+    };
+  }
+
+  notifyExecutionChange(executing: boolean) {
+    this.executionListeners.forEach((fn) => fn(executing));
+  }
+
+  private setExecuting(executing: boolean) {
+    this.executing = executing;
+    this.notifyExecutionChange(executing);
   }
 
   constructor() {
@@ -127,10 +149,19 @@ class DausBox {
     this.hideInput = false;
   }
 
+  isExecuting(): boolean {
+    return this.executing;
+  }
+
+  requestHalt() {
+    this.halt = true;
+  }
+
   async execute(input: string): Promise<void> {
     if (!this.quiet && !this.hideInput) this.history.record({ input });
     let err: string | null = "lex";
     try {
+      this.setExecuting(true);
       const tokens = this.lexer.tokenize(input);
       err = "par";
       const ast = this.parser.parse(tokens);
@@ -152,12 +183,16 @@ class DausBox {
         this.history.record({ error: "parser:" + (e as Error).message });
       } else if (err === "int") {
         this.recordNewMessages();
-
-        this.history.record({
-          error: "interpreter: " + (e as Error).message,
-        });
+        if (e instanceof HaltSignal) {
+          this.history.record({ error: "^C" });
+        } else {
+          this.history.record({
+            error: "interpreter: " + (e as Error).message,
+          });
+        }
       }
     }
+    this.setExecuting(false);
   }
 
   private async runGenerator(
@@ -175,6 +210,14 @@ class DausBox {
           this.recordNewMessages();
           await new Promise<void>((res) => requestAnimationFrame(() => res()));
           sent = undefined;
+          break;
+        case "tick":
+          if (this.halt) {
+            this.halt = false;
+            gen.throw(new HaltSignal());
+          }
+          await new Promise<void>((res) => setTimeout(res, 0));
+          break;
       }
       r = gen.next(sent);
     }
