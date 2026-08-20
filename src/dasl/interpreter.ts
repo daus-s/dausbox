@@ -76,7 +76,7 @@ class Interpreter {
         throw new Error(`flush: takes no arguments, ${args.length} provided. `);
 
       const out = this.global.get("_out") as string[];
-      const last = out[out.length - 1];
+      const last = out[out.length - 1] ?? null;
 
       this.global.assign("_out", out.slice(0, -1));
 
@@ -88,13 +88,13 @@ class Interpreter {
       if (args.length < 1 || args.length > 3)
         throw new Error(
           "range requires at least 1 and at most 3 arguments, got " +
-          args.length,
+            args.length,
         );
       if (args.length === 1 && typeof args[0] === "number") {
         if (!Number.isInteger(args[0]))
           throw new Error(
             "range: argument must be an integer. expected: number, received: " +
-            args[0],
+              args[0],
           );
         return Array.from({ length: args[0] as number }, (_, index) => index);
       } else if (args.length === 2 || args.length === 3) {
@@ -108,7 +108,7 @@ class Interpreter {
         )
           throw new Error(
             "range: all arguments must be numbers, " +
-            args.map((arg) => typeof arg).join(", "),
+              args.map((arg) => typeof arg).join(", "),
           );
         if (step === 0) throw new Error("range: step must not be zero");
         return Array.from(
