@@ -208,6 +208,7 @@ class DausBox {
           break;
         case "rerender":
           this.recordNewMessages();
+          this.history.revise(this.interpreter.output());
           await new Promise<void>((res) => requestAnimationFrame(() => res()));
           sent = undefined;
           break;
@@ -449,7 +450,6 @@ class DausBox {
     const newMsgs = this.interpreter.output().slice(this.msgs);
 
     this.msgs += newMsgs.length;
-
     if (this.quiet) return;
 
     for (const msg of newMsgs) {
