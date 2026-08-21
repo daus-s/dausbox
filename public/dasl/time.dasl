@@ -1,0 +1,2 @@
+fn now:
+  _millis

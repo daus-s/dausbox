@@ -16,6 +16,7 @@ export default function Terminal() {
   useEffect(() => {
     DausBox.create().then((box) => {
       box.setWidth(Math.floor(innerWidth / 12));
+      box.setHeight(Math.floor(innerHeight / 24));
       setDausBox(box);
       setActiveDausbox(box);
       if (localStorage.getItem("doWelcome") !== "no") box.welcome();
@@ -29,6 +30,7 @@ export default function Terminal() {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         dausbox.setWidth(Math.floor(innerWidth / 12));
+        dausbox.setHeight(Math.floor(innerHeight / 24));
       }, 150); // adjust delay to taste
     };
     window.addEventListener("resize", handleResize);
@@ -44,8 +46,12 @@ export default function Terminal() {
   }, [dausbox]);
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [history]);
 
   if (!dausbox) {
     return (

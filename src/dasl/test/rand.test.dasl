@@ -1,0 +1,44 @@
+use test
+use math
+use rand
+
+fs = [0,0,0,0,0,0,0,0,0,0]
+for i in range 10000:
+  x = rand.next()
+  if x < 0.1:
+    fs[0] = fs[0] + 1
+  elif x < 0.2:
+    fs[1] = fs[1] + 1
+  elif x < 0.3:
+    fs[2] = fs[2] + 1
+  elif x < 0.4:
+    fs[3] = fs[3] + 1
+  elif x < 0.5:
+    fs[4] = fs[4] + 1
+  elif x < 0.6:
+    fs[5] = fs[5] + 1
+  elif x < 0.7:
+    fs[6] = fs[6] + 1
+  elif x < 0.8:
+    fs[7] = fs[7] + 1
+  elif x < 0.9:
+    fs[8] = fs[8] + 1
+  else:
+    fs[9] = fs[9] + 1
+
+lo = fs[0] / 10000
+hi = fs[0] / 10000
+
+for i in range fs.len:
+  lo = math.min fs[i] / 10000, lo
+  hi = math.max fs[i] / 10000, hi
+  fs[i] = fs[i] / 10000
+
+print fs
+
+tr = test.TestRunner()
+
+if hi - lo < 0.05:
+  tr.succeed "uniform distribution over buckets of size 0.1"
+else:
+  tr.fail "non uniform distribution over buckets of size 0.1: min=" + _str(lo) + " max=" + _str(hi)

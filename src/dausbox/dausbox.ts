@@ -1,4 +1,5 @@
 import Interpreter from "../dasl/interpreter";
+import type { HostRequest, HostResponse } from "../dasl/interpreter";
 import Lexer from "../dasl/lexer";
 import type { Obj } from "../dasl/object";
 import Parser from "../dasl/parser";
@@ -9,6 +10,8 @@ import { type Value } from "../dasl/value";
 import { History } from "./history";
 
 type PopulateListener = (cmd: string) => void;
+type ExecutionListener = (running: boolean) => void;
+class HaltSignal extends Error {}
 
 class DausBox {
   private lexer: Lexer;
@@ -18,6 +21,8 @@ class DausBox {
   private quiet: boolean = true;
   private hideInput: boolean = false;
   private msgs: number = 0;
+  private halt: boolean = false;
+  private executing: boolean = false;
 
   history: History;
 
@@ -35,6 +40,24 @@ class DausBox {
 
   requestPopulate(cmd: string) {
     this.populateListeners.forEach((fn) => fn(cmd));
+  }
+
+  private executionListeners = new Set<ExecutionListener>();
+
+  listenForExecutionChange(fn: ExecutionListener) {
+    this.executionListeners.add(fn);
+    return () => {
+      this.executionListeners.delete(fn);
+    };
+  }
+
+  notifyExecutionChange(executing: boolean) {
+    this.executionListeners.forEach((fn) => fn(executing));
+  }
+
+  private setExecuting(executing: boolean) {
+    this.executing = executing;
+    this.notifyExecutionChange(executing);
   }
 
   constructor() {
@@ -71,22 +94,25 @@ class DausBox {
       "projects",
       "math",
       "str",
+      "time",
+      "rand",
       "warheads",
-      "betties" /*"tictactoe", conway*/,
+      "betties",
       "dauslang",
       "desmos",
       "optics",
-    ]; //todo: add io, time,
+      "conway",
+    ];
 
-    for (const mod of mods) {
-      const res = await fetch(`/dasl/${mod}.dasl`);
-      if (!res.ok) throw new Error(`Failed to fetch ${mod}: ${res.status}`);
-      const text = await res.text();
-
-      const ast = new Parser().parse(new Lexer().tokenize(text));
-
-      box.moduleCache.set(mod, ast);
-    }
+    await Promise.all(
+      mods.map(async (mod) => {
+        const res = await fetch(`/dasl/${mod}.dasl`);
+        if (!res.ok) throw new Error(`Failed to fetch ${mod}: ${res.status}`);
+        const text = await res.text();
+        const ast = new Parser().parse(new Lexer().tokenize(text));
+        box.moduleCache.set(mod, ast);
+      }),
+    );
 
     const files = [
       "warheads.md",
@@ -99,40 +125,50 @@ class DausBox {
       "attributions.txt",
     ];
 
-    for (const file of files) {
-      const res = await fetch(`/${file}`);
-      if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
-      const text = await res.text();
-
-      box.fileCache.set(file, text);
-    }
+    await Promise.all(
+      files.map(async (file) => {
+        const res = await fetch(`/${file}`);
+        if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
+        const text = await res.text();
+        box.fileCache.set(file, text);
+      }),
+    );
 
     //load dausbox kernel
     const kernelFile = await fetch("/dasl/kernel.dasl");
     if (!kernelFile.ok)
       throw new Error(`Failed to fetch kernel.dasl: ${kernelFile.status}`);
     const kernel = await kernelFile.text();
-    box.execute(kernel);
+    await box.execute(kernel);
 
     box.quiet = false;
     return box;
   }
 
-  welcome(): void {
+  async welcome(): Promise<void> {
     this.hideInput = true;
-    this.execute("welcome");
+    await this.execute("welcome");
     this.hideInput = false;
   }
 
-  execute(input: string): void {
+  isExecuting(): boolean {
+    return this.executing;
+  }
+
+  requestHalt() {
+    this.halt = true;
+  }
+
+  async execute(input: string): Promise<void> {
     if (!this.quiet && !this.hideInput) this.history.record({ input });
     let err: string | null = "lex";
     try {
+      this.setExecuting(true);
       const tokens = this.lexer.tokenize(input);
       err = "par";
       const ast = this.parser.parse(tokens);
       err = "int";
-      const res = this.interpreter.eval(ast);
+      const res = await this.runGenerator(this.interpreter.eval(ast));
       err = null;
 
       this.recordNewMessages();
@@ -149,12 +185,47 @@ class DausBox {
         this.history.record({ error: "parser:" + (e as Error).message });
       } else if (err === "int") {
         this.recordNewMessages();
-
-        this.history.record({
-          error: "interpreter: " + (e as Error).message,
-        });
+        if (e instanceof HaltSignal) {
+          this.history.revise(this.interpreter.output());
+          this.history.record({ error: "^C" });
+        } else {
+          this.history.record({
+            error: "interpreter: " + (e as Error).message,
+          });
+        }
       }
+    } finally {
+      this.setExecuting(false);
     }
+  }
+
+  private async runGenerator(
+    gen: Generator<HostRequest, Value, HostResponse>,
+  ): Promise<Value> {
+    let sent: HostResponse = undefined;
+    let r = gen.next(sent);
+    while (!r.done) {
+      const req = r.value;
+      switch (req.type) {
+        case "listen":
+          sent = await this.waitForKey(req.timeoutMs);
+          break;
+        case "rerender":
+          this.history.revise(this.interpreter.output());
+          await new Promise<void>((res) => requestAnimationFrame(() => res()));
+          sent = undefined;
+          break;
+        case "tick":
+          if (this.halt) {
+            this.halt = false;
+            gen.throw(new HaltSignal());
+          }
+          await new Promise<void>((res) => setTimeout(res, 0));
+          break;
+      }
+      r = gen.next(sent);
+    }
+    return r.value;
   }
 
   get_history(): History {
@@ -287,7 +358,6 @@ class DausBox {
         this.execute('print_man "man.txt"');
         this.hideInput = false;
       } else if (args.length === 1) {
-        console.log(args[0]);
         const modules: Record<string, string> = {
           str: "strman.txt",
           math: "mathman.txt",
@@ -327,39 +397,91 @@ class DausBox {
       return null;
     });
 
-    this.interpreter.register("rerender", [], (args: Value[]) => {
+    this.interpreter.register("rerender", [], function* (args: Value[]) {
       if (args.length !== 0)
         throw new Error(
           `rerender: takes no arguments, received ${args.length}`,
         );
-
-      this.history.revise(this.interpreter.output());
-
+      yield { type: "rerender" };
       return null;
+    });
+
+    this.interpreter.register("listen", ["timeout"], function* (args: Value[]) {
+      const key = yield {
+        type: "listen",
+        timeoutMs: args[0] as number | undefined,
+      };
+      return key as Value;
     });
   }
 
   setWidth(width: number) {
-    this.interpreter.eval({
-      type: "Module",
-      body: [
-        {
-          type: "Assign",
-          assign: {
+    this.interpreter.runSync(
+      this.interpreter.eval({
+        type: "Module",
+        body: [
+          {
             type: "Assign",
-            target: { type: "Name", id: "_width" },
-            value: { type: "Constant", value: width },
+            assign: {
+              type: "Assign",
+              target: { type: "Name", id: "_width" },
+              value: { type: "Constant", value: width },
+            },
           },
-        },
-      ],
+        ],
+      }),
+    );
+  }
+
+  setHeight(height: number) {
+    this.interpreter.runSync(
+      this.interpreter.eval({
+        type: "Module",
+        body: [
+          {
+            type: "Assign",
+            assign: {
+              type: "Assign",
+              target: { type: "Name", id: "_height" },
+              value: { type: "Constant", value: height },
+            },
+          },
+        ],
+      }),
+    );
+  }
+
+  waitForKey(timeoutMs?: number): Promise<string | null> {
+    return new Promise((resolve) => {
+      const onKey = (e: KeyboardEvent) => {
+        cleanup();
+        resolve(e.key);
+      };
+      const cleanup = () => {
+        window.removeEventListener("keydown", onKey);
+        if (timer) clearTimeout(timer);
+      };
+      window.addEventListener("keydown", onKey, { once: true });
+      const timer =
+        timeoutMs !== undefined
+          ? setTimeout(() => {
+              cleanup();
+              resolve(null);
+            }, timeoutMs)
+          : undefined;
     });
   }
+
+  setQuiet(quiet: boolean) {
+    this.quiet = quiet;
+  }
+
+  // Record new messages (outputs from the interpreter)
 
   recordNewMessages() {
     const newMsgs = this.interpreter.output().slice(this.msgs);
 
     this.msgs += newMsgs.length;
-
     if (this.quiet) return;
 
     for (const msg of newMsgs) {

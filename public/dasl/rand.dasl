@@ -1,0 +1,16 @@
+use time
+
+obj LinearCongruentGenerator:
+  fn _init:
+    self.M = 2**31-1
+    self.g = 7**5
+    self.e = time.now() % self.M
+
+  fn gen:
+    self.e = (self.g * self.e) % self.M
+    return self.e / self.M
+
+lcg = LinearCongruentGenerator()
+
+fn next:
+  lcg.gen

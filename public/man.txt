@@ -13,6 +13,7 @@
   $$populate:{"display":"attrs", "command":"attrs"}$$ - lists the links to the resources I used from $$link:{"display": "flaticon", "link": "https://www.flaticon.com"}$$.
   $$populate:{"display": "okigetit", "command": "okigetit"}$$ - disables the welcome message
   $$populate:{"display": "greetme", "command": "greetme"}$$ - enables the welcome message
+  $$populate:{"display": "conway", "command": "conway"}$$ - plays conways game of life with a randomized initial board
 
   $$invert:{"content": " Built-in Modules "}$$
 
@@ -20,3 +21,9 @@
 
   $$populate:{"display": "math", "command": "man math"}$$ - to learn more use `man math`
   $$populate:{"display": "str", "command": "man str"}$$ - to learn more use `man str`
+
+  $$invert:{"content": " Controls "}$$
+
+  Any program can be halted by using the conventional Ctrl-C keyboard shortcut.
+  When no program is executing Ctrl-C will default to the copy shortcut.
+  Some programs also will listen for user input to exit (ex. Conway's Game of Life).
