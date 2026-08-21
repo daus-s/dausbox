@@ -205,7 +205,7 @@ class DausBox {
       const req = r.value;
       switch (req.type) {
         case "listen":
-          console.warn("not yet implemented");
+          sent = await this.waitForKey(req.timeoutMs);
           break;
         case "rerender":
           this.history.revise(this.interpreter.output());
@@ -402,6 +402,14 @@ class DausBox {
       yield { type: "rerender" };
       return null;
     });
+
+    this.interpreter.register("listen", ["timeout"], function* (args: Value[]) {
+      const key = yield {
+        type: "listen",
+        timeoutMs: args[0] as number | undefined,
+      };
+      return key as Value;
+    });
   }
 
   setWidth(width: number) {
@@ -438,6 +446,27 @@ class DausBox {
         ],
       }),
     );
+  }
+
+  waitForKey(timeoutMs?: number): Promise<string | null> {
+    return new Promise((resolve) => {
+      const onKey = (e: KeyboardEvent) => {
+        cleanup();
+        resolve(e.key);
+      };
+      const cleanup = () => {
+        window.removeEventListener("keydown", onKey);
+        if (timer) clearTimeout(timer);
+      };
+      window.addEventListener("keydown", onKey, { once: true });
+      const timer =
+        timeoutMs !== undefined
+          ? setTimeout(() => {
+              cleanup();
+              resolve(null);
+            }, timeoutMs)
+          : undefined;
+    });
   }
 
   setQuiet(quiet: boolean) {
