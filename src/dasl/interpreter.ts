@@ -49,6 +49,9 @@ class Interpreter {
     (args: Value[]) => Value | Generator<HostRequest, Value, HostResponse>
   > = {};
 
+  private tickCounter: number = 0;
+  private tickFrequency: number = 24;
+
   constructor() {
     this.global = new Environment();
     this.global.assign("_out", [] as Value[]);
@@ -309,7 +312,8 @@ class Interpreter {
         const whilestmt = stmt as WhileStmt;
         let cond = yield* this.evalExpr(whilestmt.cond);
         w: while (cond) {
-          yield { type: "tick" };
+          if (this.tickCounter++ % this.tickFrequency === 0)
+            yield { type: "tick" };
           for (const stmt of whilestmt.body) {
             try {
               yield* this.evalStmt(stmt);
@@ -331,7 +335,8 @@ class Interpreter {
           throw new Error("For loop iter must be an array");
         }
         f: for (const i of iter) {
-          yield { type: "tick" };
+          if (this.tickCounter++ % this.tickFrequency === 0)
+            yield { type: "tick" };
           this.local.assign(forstmt.target.id, i);
           for (const stmt of forstmt.body) {
             try {
@@ -789,7 +794,7 @@ class Interpreter {
     func: Func,
     args: Value[],
   ): Generator<HostRequest, Value, HostResponse> {
-    yield { type: "tick" };
+    if (this.tickCounter++ % this.tickFrequency === 0) yield { type: "tick" };
     const prevLocal = this.local;
     this.local = new Environment(func.closure);
 
@@ -810,7 +815,7 @@ class Interpreter {
     inst: Obj,
     args: Value[],
   ): Generator<HostRequest, Value, HostResponse> {
-    yield { type: "tick" };
+    if (this.tickCounter++ % this.tickFrequency === 0) yield { type: "tick" };
     const prevLocal = this.local;
     const callEnv = new Environment(func.closure);
 

@@ -97,21 +97,21 @@ class DausBox {
       "time",
       "rand",
       "warheads",
-      "betties" /*"tictactoe", conway*/,
+      "betties",
       "dauslang",
       "desmos",
       "optics",
     ]; //todo: add io, time,
 
-    for (const mod of mods) {
-      const res = await fetch(`/dasl/${mod}.dasl`);
-      if (!res.ok) throw new Error(`Failed to fetch ${mod}: ${res.status}`);
-      const text = await res.text();
-
-      const ast = new Parser().parse(new Lexer().tokenize(text));
-
-      box.moduleCache.set(mod, ast);
-    }
+    await Promise.all(
+      mods.map(async (mod) => {
+        const res = await fetch(`/dasl/${mod}.dasl`);
+        if (!res.ok) throw new Error(`Failed to fetch ${mod}: ${res.status}`);
+        const text = await res.text();
+        const ast = new Parser().parse(new Lexer().tokenize(text));
+        box.moduleCache.set(mod, ast);
+      }),
+    );
 
     const files = [
       "warheads.md",
@@ -124,29 +124,35 @@ class DausBox {
       "attributions.txt",
     ];
 
-    for (const file of files) {
-      const res = await fetch(`/${file}`);
-      if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
-      const text = await res.text();
-
-      box.fileCache.set(file, text);
-    }
+    await Promise.all(
+      files.map(async (file) => {
+        const res = await fetch(`/${file}`);
+        if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
+        const text = await res.text();
+        box.fileCache.set(file, text);
+      }),
+    );
 
     //load dausbox kernel
     const kernelFile = await fetch("/dasl/kernel.dasl");
     if (!kernelFile.ok)
       throw new Error(`Failed to fetch kernel.dasl: ${kernelFile.status}`);
     const kernel = await kernelFile.text();
-    box.execute(kernel);
+    await box.execute(kernel);
 
     box.quiet = false;
     return box;
   }
 
   async welcome(): Promise<void> {
+    const s = Date.now();
+    console.log("starting welcome " + s);
     this.hideInput = true;
     await this.execute("welcome");
     this.hideInput = false;
+    const e = Date.now();
+    console.log("finished welcome " + e);
+    console.log("welcome took " + (e - s) + "ms");
   }
 
   isExecuting(): boolean {
@@ -192,8 +198,9 @@ class DausBox {
           });
         }
       }
+    } finally {
+      this.setExecuting(false);
     }
-    this.setExecuting(false);
   }
 
   private async runGenerator(
