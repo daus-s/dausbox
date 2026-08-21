@@ -46,8 +46,12 @@ export default function Terminal() {
   }, [dausbox]);
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [history]);
 
   if (!dausbox) {
     return (
