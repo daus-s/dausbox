@@ -101,7 +101,8 @@ class DausBox {
       "dauslang",
       "desmos",
       "optics",
-    ]; //todo: add io, time,
+      "conway",
+    ];
 
     await Promise.all(
       mods.map(async (mod) => {
@@ -145,14 +146,9 @@ class DausBox {
   }
 
   async welcome(): Promise<void> {
-    const s = Date.now();
-    console.log("starting welcome " + s);
     this.hideInput = true;
     await this.execute("welcome");
     this.hideInput = false;
-    const e = Date.now();
-    console.log("finished welcome " + e);
-    console.log("welcome took " + (e - s) + "ms");
   }
 
   isExecuting(): boolean {

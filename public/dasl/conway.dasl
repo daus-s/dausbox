@@ -1,0 +1,108 @@
+use rand
+
+obj Cell:
+  fn _init alive:
+    self.alive = alive
+
+obj GameOfLife:
+  fn _init:
+    self.h = _height - 1
+    self.w = _width - 1
+    grid = []
+    for y in range self.h:
+      row = []
+      for x in range self.w:
+        status = rand.next() < 0.375
+        row = append row, Cell status
+      grid = append grid, row
+    self.grid = grid
+
+  fn _str:
+    s = ""
+    for y in range self.h:
+      for x in range self.w:
+        if self.grid[y][x].alive:
+          s = s + "▒"
+        else:
+          s = s + " "
+      s = s + "\n"
+    s = s + "press 'q' to quit."
+    s
+
+  fn cell row, col:
+    if row < 0 or row >= self.h or col < 0 or col >= self.w:
+      return null
+    else:
+      self.grid[row][col]
+
+  fn count_neighbors row, col:
+    count = 0
+    # NW
+    nw = self.cell(row-1, col-1)
+    if nw != null and nw.alive:
+      count = count + 1
+    # N
+    n = self.cell(row-1, col)
+    if n != null and n.alive:
+      count = count + 1
+    # NE
+    ne = self.cell(row-1, col+1)
+    if ne != null and ne.alive:
+      count = count + 1
+    # E
+    e = self.cell(row, col+1)
+    if e != null and e.alive:
+      count = count + 1
+    # SE
+    se = self.cell(row+1, col+1)
+    if se != null and se.alive:
+      count = count + 1
+    # S
+    s = self.cell(row+1, col)
+    if s != null and s.alive:
+      count = count + 1
+    # SW
+    sw = self.cell(row+1, col-1)
+    if sw != null and sw.alive:
+      count = count + 1
+    # W
+    w = self.cell(row, col-1)
+    if w != null and w.alive:
+      count = count + 1
+
+    return count
+
+  fn iter:
+    next = []
+    for y in range self.h:
+      row = []
+      for x in range self.w:
+        cell = self.grid[y][x]
+        n = self.count_neighbors y, x
+        if cell.alive:
+          if n < 2 or n > 3:
+            row = append row, Cell false
+          else:
+            row = append row, Cell true
+        else:
+          if n == 3:
+            row = append row, Cell true
+          else:
+            row = append row, Cell false
+      next = append next, row
+
+    self.grid = next
+
+
+fn run:
+  game = GameOfLife()
+  key = null
+  while true:
+    print game
+    rerender
+    flush
+    key = listen 500
+    if key == 'q':
+      break
+    game.iter
+  rerender

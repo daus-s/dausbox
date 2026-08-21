@@ -904,11 +904,17 @@ class Interpreter {
   }
 
   runSync<T>(gen: Generator<HostRequest, T, HostResponse>): T {
-    const r = gen.next();
-    if (!r.done)
-      throw new Error(
-        "unexpected suspension in synchronous statement evaluation",
-      );
+    let r = gen.next();
+    while (!r.done) {
+      //allow tick only
+      if (r.value.type === "tick") {
+        r = gen.next();
+      } else {
+        throw new Error(
+          "unexpected suspension in synchronous statement evaluation",
+        );
+      }
+    }
     return r.value;
   }
 
