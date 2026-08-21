@@ -49,8 +49,8 @@ class Interpreter {
     (args: Value[]) => Value | Generator<HostRequest, Value, HostResponse>
   > = {};
 
-  private tickCounter: number = 0;
-  private tickFrequency: number = 24;
+  private prevTick: number = 0;
+  private BETWEEN_TICKS: number = 50;
 
   constructor() {
     this.global = new Environment();
@@ -312,8 +312,11 @@ class Interpreter {
         const whilestmt = stmt as WhileStmt;
         let cond = yield* this.evalExpr(whilestmt.cond);
         w: while (cond) {
-          if (this.tickCounter++ % this.tickFrequency === 0)
+          const t = Date.now();
+          if (t > this.prevTick + this.BETWEEN_TICKS) {
+            this.prevTick = t;
             yield { type: "tick" };
+          }
           for (const stmt of whilestmt.body) {
             try {
               yield* this.evalStmt(stmt);
@@ -335,8 +338,11 @@ class Interpreter {
           throw new Error("For loop iter must be an array");
         }
         f: for (const i of iter) {
-          if (this.tickCounter++ % this.tickFrequency === 0)
+          const t = Date.now();
+          if (t > this.prevTick + this.BETWEEN_TICKS) {
+            this.prevTick = t;
             yield { type: "tick" };
+          }
           this.local.assign(forstmt.target.id, i);
           for (const stmt of forstmt.body) {
             try {
@@ -794,7 +800,11 @@ class Interpreter {
     func: Func,
     args: Value[],
   ): Generator<HostRequest, Value, HostResponse> {
-    if (this.tickCounter++ % this.tickFrequency === 0) yield { type: "tick" };
+    const t = Date.now();
+    if (t > this.prevTick + this.BETWEEN_TICKS) {
+      this.prevTick = t;
+      yield { type: "tick" };
+    }
     const prevLocal = this.local;
     this.local = new Environment(func.closure);
 
@@ -815,7 +825,11 @@ class Interpreter {
     inst: Obj,
     args: Value[],
   ): Generator<HostRequest, Value, HostResponse> {
-    if (this.tickCounter++ % this.tickFrequency === 0) yield { type: "tick" };
+    const t = Date.now();
+    if (t > this.prevTick + this.BETWEEN_TICKS) {
+      this.prevTick = t;
+      yield { type: "tick" };
+    }
     const prevLocal = this.local;
     const callEnv = new Environment(func.closure);
 
