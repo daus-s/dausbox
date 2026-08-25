@@ -53,7 +53,8 @@ export class History {
       }
     }
     for (let i = idx; i < out.length; i++) {
-      this.history.push({ output: out[i] });
+      changed = true;
+      revised.push({ output: out[i] });
     }
 
     if (changed) {
