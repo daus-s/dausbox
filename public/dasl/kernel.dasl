@@ -3,6 +3,7 @@ use str
 use math
 use time
 use conway
+use tictactoe
 
 warheads = projects.warheads
 betties = projects.betties
@@ -13,6 +14,7 @@ optics = projects.optics
 projects = projects.projects
 
 conway = conway.run
+tictactoe = tictactoe.play
 
 fn ls:
   obj Contents:

@@ -1,0 +1,166 @@
+fn ttt_str x:
+  if x == null:
+    return " "
+  elif _type(x) != "string":
+    return "?"
+  elif x.len != 1:
+    return "!"
+  else:
+    return x
+
+
+obj Board:
+  fn _init:
+    self.board = [[null, null, null],[null, null, null],[null, null, null]]
+
+  fn cell row, col:
+    if row < 0 or row > 2 or col < 0 or col > 2:
+      return null
+    else:
+      return self.board[row][col]
+
+  fn turn:
+    x = 0
+    o = 0
+    for i in range 3:
+      for j in range 3:
+        if self.board[i][j] == "X":
+          x = x + 1
+        elif self.board[i][j] == "O":
+          o = o + 1
+    if x == o:
+      return "X"
+    if o < x:
+      return "O"
+
+  fn play n:
+    if n != "1" and n != "2" and n != "3" and n != "4" and n != "5" and n != "6" and n != "7" and n != "8" and n != "9":
+      print "invalid move"
+      return null
+
+    map = { "1": [0,0], "2": [0,1], "3": [0,2], "4": [1,0], "5": [1,1], "6": [1,2], "7": [2,0], "8": [2,1], "9": [2,2] }
+    coord = map[n]
+    cell = self.cell coord[0], coord[1]
+
+    if cell != null:
+      print "cell is already populated"
+      return null
+
+    self.board[coord[0]][coord[1]] = self.turn()
+    return n
+
+  fn _str:
+    str = ""
+    nw = ttt_str self.board[0][0]
+    n = ttt_str self.board[0][1]
+    ne = ttt_str self.board[0][2]
+    w = ttt_str self.board[1][0]
+    c = ttt_str self.board[1][1]
+    e = ttt_str self.board[1][2]
+    sw = ttt_str self.board[2][0]
+    s = ttt_str self.board[2][1]
+    se = ttt_str self.board[2][2]
+
+
+    str = str  + " " + nw + " ║ " + n + " ║ " + ne + " \n"
+    str = str  + "═══╬═══╬═══\n"
+    str = str  + " " + w + " ║ " + c + " ║ " + e + " \n"
+    str = str  + "═══╬═══╬═══\n"
+    str = str + " " + sw + " ║ " + s + " ║ " + se + " "
+
+    str
+
+obj TicTacToe:
+  fn _init:
+    self.board = Board()
+
+  fn game_over:
+    nw = self.board.board[0][0]
+    n = self.board.board[0][1]
+    ne = self.board.board[0][2]
+    w = self.board.board[1][0]
+    c = self.board.board[1][1]
+    e = self.board.board[1][2]
+    sw = self.board.board[2][0]
+    s = self.board.board[2][1]
+    se = self.board.board[2][2]
+    # a win condition is met
+    if nw == w == sw and nw != null:
+      return true
+    if ne == e == se and ne != null:
+      return true
+    if n == c == s and n != null:
+      return true
+    if w == c == e and w != null:
+      return true
+    if nw == n == ne and nw != null:
+      return true
+    if sw == s == se and sw != null:
+      return true
+    if nw == c == se and nw != null:
+      return true
+    if ne == c == sw and ne != null:
+      return true
+    # all squares filled
+    any_null = false
+    for i in range 3:
+      for j in range 3:
+        any_null = any_null or self.board.board[i][j] == null
+    return not any_null
+
+  fn result:
+    nw = self.board.board[0][0]
+    n = self.board.board[0][1]
+    ne = self.board.board[0][2]
+    w = self.board.board[1][0]
+    c = self.board.board[1][1]
+    e = self.board.board[1][2]
+    sw = self.board.board[2][0]
+    s = self.board.board[2][1]
+    se = self.board.board[2][2]
+
+    if nw == w == sw and nw != null:
+      return nw
+    if ne == e == se and ne != null:
+      return ne
+    if n == c == s and n != null:
+      return n
+    if w == c == e and w != null:
+      return w
+    if nw == n == ne and nw != null:
+      return nw
+    if sw == s == se and sw != null:
+      return sw
+    if nw == c == se and nw != null:
+      return nw
+    if ne == c == sw and ne != null:
+      return ne
+    return null
+
+
+  fn play:
+    print self.board
+    rerender
+    while not self.game_over():
+      pos = listen()
+      while self.board.play(pos) == null:
+        pos = listen()
+      flush
+      print self.board
+      rerender
+    flush
+    if self.result() == "X":
+      print "X's win!"
+    if self.result() == "O":
+      print "O's win!"
+    if self.result() == null:
+      print "It's a draw."
+
+
+fn play:
+  game = TicTacToe()
+  game.play
+
+
+fn bot grid:
+  pass

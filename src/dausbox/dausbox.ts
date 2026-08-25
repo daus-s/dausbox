@@ -102,6 +102,7 @@ class DausBox {
       "desmos",
       "optics",
       "conway",
+      "tictactoe",
     ];
 
     await Promise.all(
