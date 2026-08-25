@@ -1,4 +1,5 @@
 use rand
+use time
 
 obj Cell:
   fn _init alive:
@@ -29,74 +30,55 @@ obj GameOfLife:
     s = s + "press 'q' to quit."
     s
 
+  fn neighbor_map:
+    fn neighbors r, c:
+      fn in_bounds r, c:
+        r >= 0 and r < self.h and c >= 0 and c < self.w
+
+      coords = [[r-1,c-1],[r-1,c],[r-1,c+1],[r,c-1],[r,c+1],[r+1,c-1],[r+1,c],[r+1,c+1]]
+      valid_coords = []
+      for coord in coords:
+        if in_bounds(coord[0], coord[1]):
+          valid_coords = append valid_coords, coord
+
+      return valid_coords
+
+    neighbor_map = []
+    # initialize
+    for y in range self.h:
+      row = []
+      for x in range self.w:
+        row = append row, 0
+      neighbor_map = append neighbor_map, row
+
+    for y in range self.h:
+      for x in range self.w:
+        if self.grid[y][x].alive:
+          for coord in neighbors(y,x):
+            r = coord[0]
+            c = coord[1]
+            neighbor_map[r][c] = neighbor_map[r][c] + 1
+    return neighbor_map
+
+
+  fn iter:
+    next = []
+    neighbors = self.neighbor_map()
+    for y in range self.h:
+      row = []
+      for x in range self.w:
+        row = append row, Cell(neighbors[y][x] == 3 or self.grid[y][x].alive and neighbors[y][x] == 2)
+      next = append next, row
+    self.grid = next
+
   fn cell row, col:
     if row < 0 or row >= self.h or col < 0 or col >= self.w:
       return null
     else:
       self.grid[row][col]
 
-  fn count_neighbors row, col:
-    count = 0
-    # NW
-    nw = self.cell(row-1, col-1)
-    if nw != null and nw.alive:
-      count = count + 1
-    # N
-    n = self.cell(row-1, col)
-    if n != null and n.alive:
-      count = count + 1
-    # NE
-    ne = self.cell(row-1, col+1)
-    if ne != null and ne.alive:
-      count = count + 1
-    # E
-    e = self.cell(row, col+1)
-    if e != null and e.alive:
-      count = count + 1
-    # SE
-    se = self.cell(row+1, col+1)
-    if se != null and se.alive:
-      count = count + 1
-    # S
-    s = self.cell(row+1, col)
-    if s != null and s.alive:
-      count = count + 1
-    # SW
-    sw = self.cell(row+1, col-1)
-    if sw != null and sw.alive:
-      count = count + 1
-    # W
-    w = self.cell(row, col-1)
-    if w != null and w.alive:
-      count = count + 1
-
-    return count
-
-  fn iter:
-    next = []
-    for y in range self.h:
-      row = []
-      for x in range self.w:
-        cell = self.grid[y][x]
-        n = self.count_neighbors y, x
-        if cell.alive:
-          if n < 2 or n > 3:
-            row = append row, Cell false
-          else:
-            row = append row, Cell true
-        else:
-          if n == 3:
-            row = append row, Cell true
-          else:
-            row = append row, Cell false
-      next = append next, row
-
-    self.grid = next
-
-
 fn run:
   game = GameOfLife()
-  key = null
   while true:
     print game
     rerender
