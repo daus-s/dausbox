@@ -1011,7 +1011,7 @@ class Interpreter {
       case "string":
         return "string";
       case "boolean":
-        return "boolean";
+        return "bool";
       case "object":
         if (value === null) return "null";
         if (Array.isArray(value)) return "array";

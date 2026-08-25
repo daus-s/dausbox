@@ -402,7 +402,7 @@ runner.test("append: two bad arguments throws error", () => {
   } catch (e) {
     runner.assertEqual(
       (e as Error).message,
-      "append: expected args:\n - string, any\n - array, any\n received:\n - boolean, string",
+      "append: expected args:\n - string, any\n - array, any\n received:\n - bool , string",
     );
     throws = true;
   }
@@ -888,7 +888,7 @@ runner.test("_type: string", () => {
 
 runner.test("_type: boolean", () => {
   const output = run("print _type true");
-  runner.assertEqual(output[0], "boolean");
+  runner.assertEqual(output[0], "bool");
 });
 
 runner.test("_type: null", () => {
