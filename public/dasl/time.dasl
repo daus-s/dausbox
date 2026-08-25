@@ -1,2 +1,27 @@
 fn now:
   _millis
+
+
+obj Bench:
+  fn _init:
+    self.t0 = null
+    self.t1 = null
+    self.label = null
+
+  fn label s:
+    if _type(s) != "string":
+      return null
+    self.label = s
+
+  fn start:
+    self.t0 = now()
+
+  fn end:
+    self.t1 = now()
+
+  fn report:
+    elapsed = self.t1 - self.t0
+    if self.label != null:
+      print self.label + ": " + _str(elapsed) + "ms elapsed"
+    else:
+      print _str(elapsed) + "ms elapsed"
