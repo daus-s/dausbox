@@ -1,9 +1,0 @@
-obj Inner:
-  state="inner"
-obj Outer:
-  fn _init inner:
-    self.space = true
-    self.inner = inner
-i = Inner("i")
-o = Outer i
-print o

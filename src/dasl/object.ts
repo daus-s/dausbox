@@ -32,7 +32,8 @@ class ObjDef {
     this.env = env;
     this.attrs = env
       .entries()
-      .map(([k, _v]) => (k));
+      //eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .map(([k, _v]) => k);
   }
 
   has(name: string): boolean {

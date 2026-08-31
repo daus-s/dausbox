@@ -402,7 +402,7 @@ runner.test("append: two bad arguments throws error", () => {
   } catch (e) {
     runner.assertEqual(
       (e as Error).message,
-      "append: expected args:\n - string, any\n - array, any\n received:\n - bool , string",
+      "append: expected args:\n - string, any\n - array, any\n received:\n - bool, string",
     );
     throws = true;
   }

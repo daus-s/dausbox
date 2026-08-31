@@ -1,5 +1,6 @@
 use test
 use math
+use str
 use rand
 
 fs = [0,0,0,0,0,0,0,0,0,0]
@@ -34,7 +35,9 @@ for i in range fs.len:
   hi = math.max fs[i] / 10000, hi
   fs[i] = fs[i] / 10000
 
-print fs
+for i in range fs.len:
+  num = math.round(fs[i] / 0.005)
+  print "0." + _str(i) + "|" + str.rep("░", num)
 
 tr = test.TestRunner()
 
@@ -42,3 +45,5 @@ if hi - lo < 0.05:
   tr.succeed "uniform distribution over buckets of size 0.1"
 else:
   tr.fail "non uniform distribution over buckets of size 0.1: min=" + _str(lo) + " max=" + _str(hi)
+
+tr.report

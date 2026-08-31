@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 class TestRunner {
   private passed = 0;
   private failed = 0;

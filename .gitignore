@@ -28,3 +28,6 @@ notes
 
 #dasl notebooks
 notebooks/
+
+# ignore documentation dasl files
+src/dasl/test/
