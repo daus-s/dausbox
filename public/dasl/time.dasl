@@ -1,6 +1,84 @@
 fn now:
   _millis
 
+fn clock:
+  fn is_leap_year year:
+    year % 4 == 0 and not year % 100 == 0 or year % 400 == 0
+
+  dotw = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+  months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+  prev = 0
+  while true:
+    t = now() // 1000 # convert back to seconds
+    if prev == null or t == prev:
+      continue
+    prev = t
+    days_since = 0
+    spd = 86400
+    year = 1970
+    seconds_this_year = 365 * spd
+    while t > seconds_this_year:
+      seconds_this_year = 365 * spd
+      days_since = days_since + 365
+      if is_leap_year year:
+        seconds_this_year = seconds_this_year + 86400
+        days_since = days_since + 1
+      year = year + 1
+      t = t - seconds_this_year
+
+    month = 1
+    seconds_this_month = 31*spd
+    while t > seconds_this_month:
+      if month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12:
+        seconds_this_month = 31*spd
+      elif month == 4 or month == 6 or month == 9 or month == 11:
+        seconds_this_month = 30*spd
+      else:
+        if is_leap_year year:
+          seconds_this_month = 29*spd
+        else:
+          seconds_this_month = 28*spd
+
+      t = t - seconds_this_month
+      month = month + 1
+
+    day_of_month = t // 86400
+    t = t % 86400
+    hours = t // 3600
+    t = t % 3600
+    minutes = t // 60
+    seconds = t % 60
+
+    s = dotw[(days_since + 1) % 7] + " " + months[(month - 1)] + " " + _str(day_of_month+1) + ", " + _str(year)
+
+    if hours < 10:
+      s = s + " 0" + _str(hours)
+    else:
+      s = s + " " + _str(hours)
+
+    if minutes < 10:
+      s = s + ":0" + _str(minutes)
+    else:
+      s = s + ":" + _str(minutes)
+
+    if seconds < 10:
+      s = s + ":0" + _str(seconds)
+    else:
+      s = s + ":" + _str(seconds)
+
+    print s
+    rerender
+    flush
+
+
+
+
+
+
+
+
+
 
 obj Bench:
   fn _init:
