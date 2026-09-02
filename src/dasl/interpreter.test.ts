@@ -1,7 +1,3 @@
-import fs from "fs";
-import { fileURLToPath } from "url";
-import path from "path";
-
 import Interpreter from "./interpreter.ts";
 import Lexer from "./lexer.ts";
 import Parser from "./parser.ts";
@@ -27,13 +23,6 @@ function run(code: string) {
     r = gen.next();
   }
   return interpreter.output();
-}
-
-function read(filename: string): string {
-  const location =
-    path.dirname(fileURLToPath(import.meta.url)) + `/test/${filename}`; //change to location of the file istself as opposed to its invocation
-
-  return fs.readFileSync(location, "utf-8").toString();
 }
 
 runner.test("test print", () => {
@@ -867,7 +856,15 @@ print o1.field
 });
 
 runner.test("_str: implicit nested object", () => {
-  const code = read("nested_obj_fields.dasl");
+  const code = `obj Inner:
+  state="inner"
+obj Outer:
+  fn _init inner:
+    self.space = true
+    self.inner = inner
+i = Inner("i")
+o = Outer i
+print o`;
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(
