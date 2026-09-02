@@ -413,6 +413,15 @@ class DausBox {
       };
       return key as Value;
     });
+
+    this.interpreter.register("timezone", [], (args: Value[]) => {
+      if (args.length !== 0)
+        throw new Error(
+          `timezone: takes no arguments, received ${args.length}`,
+        );
+
+      return new Date().getTimezoneOffset();
+    });
   }
 
   setWidth(width: number) {

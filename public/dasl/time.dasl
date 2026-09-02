@@ -11,6 +11,7 @@ fn clock:
   prev = 0
   while true:
     t = now() // 1000 # convert back to seconds
+    t = t - offset*60
     if prev == null or t == prev:
       continue
     prev = t
@@ -52,10 +53,12 @@ fn clock:
 
     s = dotw[(days_since + 1) % 7] + " " + months[(month - 1)] + " " + _str(day_of_month+1) + ", " + _str(year)
 
-    if hours < 10:
-      s = s + " 0" + _str(hours)
-    else:
-      s = s + " " + _str(hours)
+    pm = false
+    if hours > 12:
+      hours = hours - 12
+      pm = true
+
+    s = s + " " + _str(hours)
 
     if minutes < 10:
       s = s + ":0" + _str(minutes)
@@ -67,18 +70,16 @@ fn clock:
     else:
       s = s + ":" + _str(seconds)
 
+    if pm:
+      s = s + " PM"
+    else:
+      s = s + " AM"
+
     print s
     rerender
     flush
 
-
-
-
-
-
-
-
-
+offset = timezone()
 
 obj Bench:
   fn _init:

@@ -14,6 +14,8 @@ projects = projects.projects
 
 conway = conway.run
 
+clock = time.clock
+
 fn ls:
   obj Contents:
     fn _init title, alias, topics, url, lines:
