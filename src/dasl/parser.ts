@@ -97,7 +97,12 @@ class Parser {
     if (this.match("CONTINUE")) return { type: "Continue" };
 
     if (this.match("INDENT")) {
-      throw new Error("Unexpected indent: ident at unexpected position");
+      throw new Error(
+        "Unexpected indent: ident at unexpected position. line: " +
+          this.peek().line +
+          " col: " +
+          this.peek().col,
+      );
     } else if (this.match("DEDENT")) {
       throw new Error(
         "Unexpected dedent: found dedeny without corresponding indent",
