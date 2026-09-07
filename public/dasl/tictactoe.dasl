@@ -49,41 +49,45 @@ obj Board:
     self.board[coord[0]][coord[1]] = self.turn()
     return n
 
-  fn _str:
-    str = ""
-    nw = ttt_str self.board[0][0]
-    n = ttt_str self.board[0][1]
-    ne = ttt_str self.board[0][2]
-    w = ttt_str self.board[1][0]
-    c = ttt_str self.board[1][1]
-    e = ttt_str self.board[1][2]
-    sw = ttt_str self.board[2][0]
-    s = ttt_str self.board[2][1]
-    se = ttt_str self.board[2][2]
+  fn result:
+    nw = self.board[0][0]
+    n = self.board[0][1]
+    ne = self.board[0][2]
+    w = self.board[1][0]
+    c = self.board[1][1]
+    e = self.board[1][2]
+    sw = self.board[2][0]
+    s = self.board[2][1]
+    se = self.board[2][2]
 
-
-    str = str  + " " + nw + " ║ " + n + " ║ " + ne + " \n"
-    str = str  + "═══╬═══╬═══\n"
-    str = str  + " " + w + " ║ " + c + " ║ " + e + " \n"
-    str = str  + "═══╬═══╬═══\n"
-    str = str + " " + sw + " ║ " + s + " ║ " + se + " "
-
-    str
-
-obj TicTacToe:
-  fn _init:
-    self.board = Board()
+    if nw == w == sw and nw != null:
+      return nw
+    if ne == e == se and ne != null:
+      return ne
+    if n == c == s and n != null:
+      return n
+    if w == c == e and w != null:
+      return w
+    if nw == n == ne and nw != null:
+      return nw
+    if sw == s == se and sw != null:
+      return sw
+    if nw == c == se and nw != null:
+      return nw
+    if ne == c == sw and ne != null:
+      return ne
+    return null
 
   fn game_over:
-    nw = self.board.board[0][0]
-    n = self.board.board[0][1]
-    ne = self.board.board[0][2]
-    w = self.board.board[1][0]
-    c = self.board.board[1][1]
-    e = self.board.board[1][2]
-    sw = self.board.board[2][0]
-    s = self.board.board[2][1]
-    se = self.board.board[2][2]
+    nw = self.board[0][0]
+    n = self.board[0][1]
+    ne = self.board[0][2]
+    w = self.board[1][0]
+    c = self.board[1][1]
+    e = self.board[1][2]
+    sw = self.board[2][0]
+    s = self.board[2][1]
+    se = self.board[2][2]
     # a win condition is met
     if nw == w == sw and nw != null:
       return true
@@ -105,38 +109,87 @@ obj TicTacToe:
     any_null = false
     for i in range 3:
       for j in range 3:
-        any_null = any_null or self.board.board[i][j] == null
+        any_null = any_null or self.board[i][j] == null
     return not any_null
 
+  fn _str:
+    str = ""
+    nw = ttt_str self.board[0][0]
+    n = ttt_str self.board[0][1]
+    ne = ttt_str self.board[0][2]
+    w = ttt_str self.board[1][0]
+    c = ttt_str self.board[1][1]
+    e = ttt_str self.board[1][2]
+    sw = ttt_str self.board[2][0]
+    s = ttt_str self.board[2][1]
+    se = ttt_str self.board[2][2]
+
+
+    str = str  + "\n   " + nw + " ║ " + n + " ║ " + ne + " \n  "
+    str = str  + "═══╬═══╬═══ "
+    if self.board[0][0] == null and not self.game_over():
+      str = str + "1"
+    else:
+      str = str + " "
+
+    if self.board[0][1] == null and not self.game_over():
+      str = str + "2"
+    else:
+      str = str + " "
+
+    if self.board[0][2] == null and not self.game_over():
+      str = str + "3"
+    else:
+      str = str + " "
+
+    str = str + "\n  "
+    str = str  + " " + w + " ║ " + c + " ║ " + e + "  "
+    if self.board[1][0] == null and not self.game_over():
+      str = str + "4"
+    else:
+      str = str + " "
+
+    if self.board[1][1] == null and not self.game_over():
+      str = str + "5"
+    else:
+      str = str + " "
+
+    if self.board[1][2] == null and not self.game_over():
+      str = str + "6"
+    else:
+      str = str + " "
+
+    str = str + "\n  "
+    str = str  + "═══╬═══╬═══ "
+    if self.board[2][0] == null and not self.game_over():
+      str = str + "7"
+    else:
+      str = str + " "
+
+    if self.board[2][1] == null and not self.game_over():
+      str = str + "8"
+    else:
+      str = str + " "
+
+    if self.board[2][2] == null and not self.game_over():
+      str = str + "9"
+    else:
+      str = str + " "
+    str = str + "\n  "
+    str = str + " " + sw + " ║ " + s + " ║ " + se
+    if not self.game_over():
+      str = str + " \n  Type in the number of the square to play.\n"
+    str
+
+obj TicTacToe:
+  fn _init:
+    self.board = Board()
+
+  fn game_over:
+    self.board.game_over
+
   fn result:
-    nw = self.board.board[0][0]
-    n = self.board.board[0][1]
-    ne = self.board.board[0][2]
-    w = self.board.board[1][0]
-    c = self.board.board[1][1]
-    e = self.board.board[1][2]
-    sw = self.board.board[2][0]
-    s = self.board.board[2][1]
-    se = self.board.board[2][2]
-
-    if nw == w == sw and nw != null:
-      return nw
-    if ne == e == se and ne != null:
-      return ne
-    if n == c == s and n != null:
-      return n
-    if w == c == e and w != null:
-      return w
-    if nw == n == ne and nw != null:
-      return nw
-    if sw == s == se and sw != null:
-      return sw
-    if nw == c == se and nw != null:
-      return nw
-    if ne == c == sw and ne != null:
-      return ne
-    return null
-
+    self.board.result
 
   fn play:
     print self.board
@@ -150,11 +203,11 @@ obj TicTacToe:
       rerender
     flush
     if self.result() == "X":
-      print "X's win!"
+      print "  X's win!\n"
     if self.result() == "O":
-      print "O's win!"
+      print "  O's win!\n"
     if self.result() == null:
-      print "It's a draw."
+      print "  It's a draw.\n"
 
 
 fn play:
