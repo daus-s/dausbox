@@ -213,6 +213,7 @@ class DausBox {
           break;
         case "rerender":
           this.history.revise(this.interpreter.output());
+          this.msgs = this.interpreter.output().length;
           await new Promise<void>((res) => requestAnimationFrame(() => res()));
           sent = undefined;
           break;
