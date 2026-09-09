@@ -1,3 +1,8 @@
+use rand
+use math
+
+computerFirstPlayer = false
+
 fn ttt_str x:
   if x == null:
     return " "
@@ -18,36 +23,6 @@ obj Board:
       return null
     else:
       return self.board[row][col]
-
-  fn turn:
-    x = 0
-    o = 0
-    for i in range 3:
-      for j in range 3:
-        if self.board[i][j] == "X":
-          x = x + 1
-        elif self.board[i][j] == "O":
-          o = o + 1
-    if x == o:
-      return "X"
-    if o < x:
-      return "O"
-
-  fn play n:
-    if n != "1" and n != "2" and n != "3" and n != "4" and n != "5" and n != "6" and n != "7" and n != "8" and n != "9":
-      print "invalid move"
-      return null
-
-    map = { "1": [0,0], "2": [0,1], "3": [0,2], "4": [1,0], "5": [1,1], "6": [1,2], "7": [2,0], "8": [2,1], "9": [2,2] }
-    coord = map[n]
-    cell = self.cell coord[0], coord[1]
-
-    if cell != null:
-      print "cell is already populated"
-      return null
-
-    self.board[coord[0]][coord[1]] = self.turn()
-    return n
 
   fn result:
     nw = self.board[0][0]
@@ -184,6 +159,7 @@ obj Board:
 obj TicTacToe:
   fn _init:
     self.board = Board()
+    self.err = false
 
   fn game_over:
     self.board.game_over
@@ -191,23 +167,72 @@ obj TicTacToe:
   fn result:
     self.board.result
 
+  fn turn:
+    x = 0
+    o = 0
+    for i in range 3:
+      for j in range 3:
+        if self.board.board[i][j] == "X":
+          x = x + 1
+        elif self.board.board[i][j] == "O":
+          o = o + 1
+    if x == o:
+      return "X"
+    if o < x:
+      return "O"
+
+  fn place n:
+    if n != "1" and n != "2" and n != "3" and n != "4" and n != "5" and n != "6" and n != "7" and n != "8" and n != "9":
+      if self.err:
+        flush
+      self.err = true
+      print "  Invalid move."
+      return null
+
+    map = { "1": [0,0], "2": [0,1], "3": [0,2], "4": [1,0], "5": [1,1], "6": [1,2], "7": [2,0], "8": [2,1], "9": [2,2] }
+    coord = map[n]
+    cell = self.board.cell coord[0], coord[1]
+
+    if cell != null:
+      if self.err:
+        flush
+      self.err = true
+      print "  Cell is already populated."
+      return null
+
+    self.board.board[coord[0]][coord[1]] = self.turn()
+    return n
+
+  fn get_move:
+    if computerFirstPlayer and self.turn() == "X" or not computerFirstPlayer and self.turn() == "O":
+      pos = bot self.board
+    elif computerFirstPlayer and self.turn() ==  "O" or not computerFirstPlayer and self.turn() == "X":
+      pos = listen()
+    else:
+      pos = null
+    return pos
+
   fn play:
     print self.board
     rerender
     while not self.game_over():
-      pos = listen()
-      while self.board.play(pos) == null:
-        pos = listen()
+      pos = self.get_move()
+      while self.place(pos) == null:
+        rerender
+        pos = self.get_move()
+      if self.err:
+        flush
+        self.err = false
       flush
       print self.board
       rerender
-    flush
     if self.result() == "X":
-      print "  X's win!\n"
+      print "  $$invert:{\"content\":\"X's win!\"}$$\n"
     if self.result() == "O":
-      print "  O's win!\n"
+      print "  $$invert:{\"content\":\"O's win!\"}$$\n"
     if self.result() == null:
-      print "  It's a draw.\n"
+      print "  $$invert:{\"content\":\"It's a draw.\"}$$\n"
+
 
 
 fn play:
@@ -215,5 +240,21 @@ fn play:
   game.play
 
 
-fn bot grid:
-  pass
+fn bot board:
+  if computerFirstPlayer:
+    side = "X"
+  else:
+    side = "O"
+  # calc winconditions
+  nw = board.cell 0, 0
+  n  = board.cell 0, 1
+  ne = board.cell 0, 2
+  w  = board.cell 1, 0
+  c  = board.cell 1, 1
+  e  = board.cell 1, 2
+  sw = board.cell 2, 0
+  s  = board.cell 2, 1
+  se = board.cell 2, 2
+  winconditions = [[nw, n, ne], [w, c, e], [sw, s, se], [nw, c, se], [nw, w, sw], [n, c, s], [ne, e, se], [sw, c, ne]]
+  # 1. insta win
+  return math.floor(rand.next() * 10)
