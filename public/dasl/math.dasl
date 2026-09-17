@@ -8,7 +8,7 @@ fn sqrt x:
   if x < 0:
     return null
   else:
-    return x ** 0.5
+    return x ^ 0.5
 
 
 fn ln x:
@@ -17,12 +17,12 @@ fn ln x:
   elif 0 < x < 2:
     r = 0
     for n in range 1, 1001:
-      r = r + ((1 - x) ** n / n)
+      r = r + ((1 - x) ^ n / n)
     return -r
   else:
     r = 0
     for n in range 1, 101:
-      r = r - (-1) ** (n - 1) / n * (1 / x - 1) ** n
+      r = r - (-1) ^ (n - 1) / n * (1 / x - 1) ^ n
     return r
 
 fn fact x:
@@ -219,8 +219,8 @@ obj Factor:
     exp = self.exp
 
     while exp > 0:
-      digit = exp % 10**(oom+1) / 10**(oom)
-      exp = exp - digit * 10**(oom)
+      digit = exp % 10^(oom+1) / 10^(oom)
+      exp = exp - digit * 10^(oom)
       exp_str = exps[digit] + exp_str
       oom = oom + 1
 

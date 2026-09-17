@@ -79,7 +79,12 @@ class Lexer {
   }
 
   private pushToken(value: string = "", type: TokenType): void {
-    this.tokens.push({ type, value, line: this.line, col: this.col - value.length });
+    this.tokens.push({
+      type,
+      value,
+      line: this.line,
+      col: this.col - value.length,
+    });
   }
 
   private atEnd(): boolean {
@@ -254,11 +259,6 @@ class Lexer {
       this.step();
       this.pushToken(">=", "GREATER_EQUAL");
       return;
-    } else if (char1 == "*" && char2 == "*") {
-      this.step();
-      this.step();
-      this.pushToken("**", "POWER");
-      return;
     } else if (char1 == "/" && char2 == "/") {
       this.step();
       this.step();
@@ -276,6 +276,7 @@ class Lexer {
       "-": "MINUS",
       "*": "STAR",
       "/": "SLASH",
+      "^": "POWER",
       "%": "PERCENT",
       "=": "EQUAL",
       "<": "LESS",

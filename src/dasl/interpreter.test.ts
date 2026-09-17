@@ -50,7 +50,7 @@ runner.test("test empty print", () => {
 });
 
 runner.test("test assignment returns and binary operation", () => {
-  const code = "x = 4\nprint(x ** 2)";
+  const code = "x = 4\nprint(x ^ 2)";
 
   const output = run(code);
   runner.assertEqual(output.length, 1);
@@ -703,7 +703,7 @@ runner.test("list index assignment: with variable index", () => {
 });
 
 runner.test("list index assignment: with expression value", () => {
-  const code = "xs = [0, 0, 0]\nxs[0] = 2 ** 3\nprint xs";
+  const code = "xs = [0, 0, 0]\nxs[0] = 2 ^ 3\nprint xs";
   const output = run(code);
   runner.assertEqual(output.length, 1);
   runner.assertEqual(output[0], "[8, 0, 0]");

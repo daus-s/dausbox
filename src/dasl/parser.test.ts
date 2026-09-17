@@ -317,7 +317,7 @@ runner.test("parse modulo", () => {
 });
 
 runner.test("parse power (basic)", () => {
-  const ast = parse("2 ** 3");
+  const ast = parse("2 ^ 3");
 
   runner.assertDeepEqual(ast, {
     type: "Module",
@@ -326,7 +326,7 @@ runner.test("parse power (basic)", () => {
         type: "Expr",
         value: {
           type: "BinOp",
-          op: "**",
+          op: "^",
           left: { type: "Constant", value: 2 },
           right: { type: "Constant", value: 3 },
         },
@@ -336,9 +336,8 @@ runner.test("parse power (basic)", () => {
 });
 
 runner.test("parse power (right-associative)", () => {
-  // 2 ** 3 ** 4 should parse as 2 ** (3 ** 4)
-  const ast = parse("2 ** 3 ** 4");
-
+  // 2 ^ 3 ^ 4 should parse as 2 ^ (3 ^ 4)
+  const ast = parse("2 ^ 3 ^ 4");
   runner.assertDeepEqual(ast, {
     type: "Module",
     body: [
@@ -346,11 +345,11 @@ runner.test("parse power (right-associative)", () => {
         type: "Expr",
         value: {
           type: "BinOp",
-          op: "**",
+          op: "^",
           left: { type: "Constant", value: 2 },
           right: {
             type: "BinOp",
-            op: "**",
+            op: "^",
             left: { type: "Constant", value: 3 },
             right: { type: "Constant", value: 4 },
           },
@@ -414,8 +413,8 @@ runner.test("precedence: multiplication before addition", () => {
 });
 
 runner.test("precedence: power before multiplication", () => {
-  // 2 * 3 ** 2 should be 2 * (3 ** 2) = 2 * 9
-  const ast = parse("2 * 3 ** 2");
+  // 2 * 3 ^ 2 should be 2 * (3 ^ 2) = 2 * 9
+  const ast = parse("2 * 3 ^ 2");
 
   runner.assertDeepEqual(ast, {
     type: "Module",
@@ -428,7 +427,7 @@ runner.test("precedence: power before multiplication", () => {
           left: { type: "Constant", value: 2 },
           right: {
             type: "BinOp",
-            op: "**",
+            op: "^",
             left: { type: "Constant", value: 3 },
             right: { type: "Constant", value: 2 },
           },
@@ -842,7 +841,7 @@ runner.test("parse function call with multiple args", () => {
 });
 
 runner.test("parse function def with arg", () => {
-  const ast = parse("fn square(a):\n    return a ** 2");
+  const ast = parse("fn square(a):\n    return a ^ 2");
 
   runner.assertDeepEqual(ast, {
     type: "Module",
@@ -856,7 +855,7 @@ runner.test("parse function def with arg", () => {
             type: "Return",
             value: {
               type: "BinOp",
-              op: "**",
+              op: "^",
               left: { type: "Name", id: "a" },
               right: { type: "Constant", value: 2 },
             },
@@ -869,7 +868,7 @@ runner.test("parse function def with arg", () => {
 
 runner.test("parse math.sqrt function", () => {
   const ast = parse(
-    "fn sqrt x:\n  if x < 0:\n    return null\n  else:\n    return x ** 0.5",
+    "fn sqrt x:\n  if x < 0:\n    return null\n  else:\n    return x ^ 0.5",
   );
 
   runner.assertDeepEqual(ast, {
@@ -899,7 +898,7 @@ runner.test("parse math.sqrt function", () => {
                 type: "Return",
                 value: {
                   type: "BinOp",
-                  op: "**",
+                  op: "^",
                   left: { type: "Name", id: "x" },
                   right: { type: "Constant", value: 0.5 },
                 },
@@ -913,7 +912,7 @@ runner.test("parse math.sqrt function", () => {
 });
 
 runner.test("parse function def with arg (no parens)", () => {
-  const ast = parse("fn square a:\n    return a ** 2");
+  const ast = parse("fn square a:\n    return a ^ 2");
 
   runner.assertDeepEqual(ast, {
     type: "Module",
@@ -927,7 +926,7 @@ runner.test("parse function def with arg (no parens)", () => {
             type: "Return",
             value: {
               type: "BinOp",
-              op: "**",
+              op: "^",
               left: { type: "Name", id: "a" },
               right: { type: "Constant", value: 2 },
             },
@@ -1165,7 +1164,7 @@ runner.test("parse for loop statment", () => {
 });
 
 runner.test("parse multi-line program", () => {
-  const ast = parse("x = 4\nx ** 2");
+  const ast = parse("x = 4\nx ^ 2");
 
   runner.assertDeepEqual(ast, {
     type: "Module",
@@ -1182,7 +1181,7 @@ runner.test("parse multi-line program", () => {
         type: "Expr",
         value: {
           type: "BinOp",
-          op: "**",
+          op: "^",
           left: { type: "Name", id: "x" },
           right: { type: "Constant", value: 2 },
         },

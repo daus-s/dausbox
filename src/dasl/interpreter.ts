@@ -634,7 +634,7 @@ class Interpreter {
         return left % right;
       case "//":
         return Math.floor(left / right);
-      case "**":
+      case "^":
         return Math.pow(left, right);
       default:
         throw new Error(`Unknown BinOp operator: ${expr.op}`);

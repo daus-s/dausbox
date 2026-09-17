@@ -414,7 +414,7 @@ class Parser {
 
     if (this.match("POWER")) {
       const right = this.powExpr();
-      return { type: "BinOp", op: "**", left, right };
+      return { type: "BinOp", op: "^", left, right };
     }
 
     return left;

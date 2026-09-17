@@ -238,10 +238,10 @@ runner.test("tokenize not-equal operator", () => {
 
 runner.test("tokenize power operator", () => {
   const lexer = new Lexer();
-  const tokens = lexer.tokenize("**");
+  const tokens = lexer.tokenize("^");
   runner.assertEqual(tokens.length - 1, 1);
   runner.assertEqual(tokens[0].type, "POWER");
-  runner.assertEqual(tokens[0].value, "**");
+  runner.assertEqual(tokens[0].value, "^");
 });
 
 runner.test("tokenize floor divide operator", () => {
@@ -417,7 +417,7 @@ runner.test("comparison chain", () => {
 // === BUG 16: COMPLEX EXPRESSIONS ===
 runner.test("complex math expression", () => {
   const lexer = new Lexer();
-  const tokens = lexer.tokenize("x = (a + b) * c ** 2");
+  const tokens = lexer.tokenize("x = (a + b) * c ^ 2");
   runner.assertEqual(
     tokens.some((t) => t.type === "EQUAL"),
     true,
