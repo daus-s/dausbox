@@ -1,3 +1,6 @@
+import { fileURLToPath } from "url";
+import path from "path";
+
 import fs from "fs";
 import Lexer from "./lexer.ts";
 import Parser from "./parser.ts";
@@ -31,16 +34,18 @@ const exec = (code: string) => {
 if (process.argv.length === 3) {
   const filename = process.argv[2];
 
-  const path: string = process.cwd() + "/" + filename;
+  const file: string = process.cwd() + "/" + filename;
 
-  let content = fs.readFileSync(path, "utf-8");
+  let content = fs.readFileSync(file, "utf-8");
   content = content.toString();
 
   const resolver = (src: string[]): Module => {
-    const pathArr = path.split("/").slice(0, -1);
-    pathArr.push("..");
-    pathArr.push("..");
-    pathArr.push("..");
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const pathArr = __dirname.split("/");
+
+    pathArr.pop();
+    pathArr.pop();
     pathArr.push("public");
     pathArr.push("dasl");
 
