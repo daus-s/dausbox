@@ -182,6 +182,15 @@ class Interpreter {
         throw new Error("_millis: expects no arguments, got: " + args.length);
       return Date.now() as number;
     });
+
+    this.register("timezone", [], (args: Value[]) => {
+      if (args.length !== 0)
+        throw new Error(
+          `timezone: takes no arguments, received ${args.length}`,
+        );
+
+      return new Date().getTimezoneOffset();
+    });
   }
 
   setResolver(resolver: Resolver) {
