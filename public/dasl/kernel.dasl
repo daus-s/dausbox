@@ -268,3 +268,6 @@ fn attrs:
   for a in as:
     if a.len != 0:
       print a
+
+fn resume:
+  open "/resume.html"

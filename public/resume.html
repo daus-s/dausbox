@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Daus — Resume</title>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap");
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            :root {
+                --bg: #f7f5f0;
+                --ink: #111111;
+                --accent: #1a1aff;
+                --muted: #666;
+                --rule: #dadada;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--ink);
+                font-family: "Syne", sans-serif;
+                line-height: 1.4;
+                max-width: 780px;
+                margin: 0 auto;
+                padding: 18px 48px;
+            }
+
+            /* HEADER */
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                border-bottom: 2.5px solid var(--ink);
+                padding-bottom: 12px;
+                margin-bottom: 20px;
+            }
+            .name {
+                font-size: 30pt;
+                font-weight: 700;
+                letter-spacing: -1px;
+                line-height: 1;
+            }
+            .contact {
+                font-family: "DM Mono", monospace;
+                font-size: 7.5pt;
+                color: var(--muted);
+                text-align: right;
+                line-height: 1.75;
+            }
+            .contact a {
+                color: var(--accent);
+                text-decoration: none;
+            }
+
+            /* SECTIONS */
+            section {
+                margin-bottom: 18px;
+            }
+
+            .section-label {
+                font-family: "DM Mono", monospace;
+                font-size: 7pt;
+                font-weight: 500;
+                letter-spacing: 0.15em;
+                text-transform: uppercase;
+                color: var(--accent);
+                margin-bottom: 10px;
+                border-bottom: 1px solid var(--rule);
+                padding-bottom: 4px;
+            }
+
+            /* ENTRIES */
+            .entry {
+                margin-bottom: 12px;
+            }
+            .entry:last-child {
+                margin-bottom: 0;
+            }
+
+            .entry-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                margin-bottom: 1px;
+            }
+            .entry-title {
+                font-size: 10.5pt;
+                font-weight: 700;
+                letter-spacing: -0.2px;
+            }
+            .entry-stack {
+                font-family: "DM Mono", monospace;
+                font-size: 7pt;
+                color: var(--muted);
+                background: #ebebeb;
+                padding: 1px 7px;
+                border-radius: 3px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .entry-meta {
+                font-family: "DM Mono", monospace;
+                font-size: 7.5pt;
+                color: var(--muted);
+            }
+            .entry-subtitle {
+                font-weight: 600;
+                font-size: 8.5pt;
+                color: #444;
+                margin-bottom: 4px;
+            }
+
+            ul {
+                list-style: none;
+                padding: 0;
+            }
+            li {
+                font-family: "Montserrat", sans-serif;
+                padding-left: 14px;
+                position: relative;
+                margin-bottom: 2px;
+                color: #222;
+                font-size: 8.5pt;
+                line-height: 1.45;
+            }
+            li::before {
+                content: "—";
+                position: absolute;
+                left: 0;
+                color: var(--accent);
+                font-weight: 700;
+            }
+
+            /* SKILLS */
+            .skills-grid {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .skill-group-label {
+                font-family: "DM Mono", monospace;
+                font-size: 6.5pt;
+                color: var(--ink);
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+            .skill-tags {
+                display: flex;
+                flex-wrap: wrap;
+                width: fit-content;
+                gap: 4px;
+            }
+            .tag {
+                font-family: "DM Mono", monospace;
+                font-size: 7pt;
+                background: var(--rule);
+                color: var(--ink);
+                padding: 2px 7px;
+                border-radius: 2px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* EDUCATION */
+            .edu-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                margin-bottom: 2px;
+            }
+            .edu-school {
+                font-weight: 700;
+                font-size: 10pt;
+            }
+            .edu-degree {
+                color: #333;
+                font-size: 8.5pt;
+                margin-bottom: 4px;
+            }
+            .edu-coursework {
+                font-size: 7.5pt;
+                color: var(--muted);
+                line-height: 1.5;
+            }
+            .edu-coursework strong {
+                color: #444;
+                font-weight: 600;
+            }
+
+            @media print {
+                body {
+                    padding: 28px 40px;
+                    background: white;
+                }
+                .tag,
+                .entry-stack {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                    color-adjust: exact !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="name">Daus Carmichael</div>
+            <div class="contact">
+                <a href="mailto:dauscarmichael@gmail.com" class="__cf_email__"
+                    >dauscarmichael@gmail.com</a
+                ><br />
+                <a href="https://github.com/daus-s">github.com/daus-s</a><span style="color: var(--muted)">&nbsp;&middot;&nbsp;</span><a href="https://dausbox.dev">dausbox.dev</a><br />
+                <a href="https://www.linkedin.com/in/daus-carmichael"
+                    >linkedin.com/in/daus-carmichael</a
+                ><br />
+                Los Angeles, CA
+            </div>
+        </header>
+
+        <!-- PROJECTS -->
+        <section>
+            <div class="section-label">Projects</div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">WARHeads API</span>
+                    <span class="entry-stack">Rust · Python · SQL</span>
+                </div>
+                <div class="entry-subtitle">
+                    NBA Sports Analytics &amp; Prediction Engine
+                </div>
+                <ul>
+                    <li>
+                        Built a custom Elo rating model achieving
+                        <strong>79% game prediction accuracy</strong> and a <strong>logisitic
+                        loss score of 0.42.</strong>
+                    </li>
+                    <li>
+                        Engineered a live data ingestion pipeline that polls
+                        NBA API and caches results, eliminating redundant
+                        network requests
+                    </li>
+                    <li>
+                        Implemented high-performance file I/O in Rust for fast
+                        serialization and deserialization of large datasets
+                    </li>
+                    <li>
+                        Designed a data correction framework to apply validated
+                        statistics to incomplete historical records
+                    </li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">betties.app</span>
+                    <span class="entry-stack"
+                        >Next.js · React · PostgreSQL · Selenium</span
+                    >
+                </div>
+                <div class="entry-subtitle">Social Betting Platform</div>
+                <ul>
+                    <li>
+                        Built a responsive social web app (desktop and mobile)
+                        supporting creating, placing and settling bets between
+                        friends
+                    </li>
+                    <li>
+                        Managed a Supabase PostgreSQL database storing betting
+                        history, transactions, user profiles, and private groups
+                    </li>
+                    <li>
+                        Implemented social features including friend networks
+                        and private group creation for organizing bets within
+                        trusted circles
+                    </li>
+                    <li>
+                        Developed Selenium web scrapers to pull live sports
+                        data, enabling automatic resolution of bets against
+                        real-time results
+                    </li>
+                </ul>
+            </div>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title"
+                        >Dauslang</span
+                    >
+                    <span class="entry-stack"
+                        >TypeScript · Interpreted Language · Recursive Descent </span
+                    >
+                </div>
+                <div class="entry-subtitle">Custom Computer Algebra System</div>
+                <ul>
+                    <li>
+                        Designed formal grammar (BNFC) to parse mathematical
+                        expressions into abstract syntax trees
+                    </li>
+                    <li>
+                        Built computer algebra system for symbolic evaluation
+                        and manipulation of algebraic expressions
+                    </li>
+                    <li>
+                        Built a recursive solver that isolates and rearranges
+                        for any target variable, applying formal algebraic
+                        transformation rules
+                    </li>
+                    <li>
+                        Containerized the full toolchain with Docker for
+                        seamless cross-platform deployment with zero
+                        configuration overhead
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- WORK EXPERIENCE -->
+        <section>
+            <div class="section-label">Work Experience</div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Assistant Center Director</span>
+                    <span class="entry-meta">Aug 2024 – Present</span>
+                </div>
+                <div class="entry-subtitle">Mathnasium of Marina del Rey</div>
+                <ul>
+                    <li>
+                        Oversee center operations, deliver personalized K–12
+                        math instruction, and coordinate a team of tutors
+                    </li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Math Tutor</span>
+                    <span class="entry-meta">Aug 2024 – Present</span>
+                </div>
+                <div class="entry-subtitle">Study Smart Tutors</div>
+                <ul>
+                    <li>
+                        Provide targeted one-on-one math support, adapting
+                        instruction to individual student needs and learning
+                        styles
+                    </li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Supplemental Instructor</span>
+                    <span class="entry-meta">Aug – Dec 2022</span>
+                </div>
+                <div class="entry-subtitle">
+                    Chapman University Tutoring and Learning Center
+                </div>
+                <ul>
+                    <li>
+                        Facilitated weekly study sessions for undergraduate
+                        Physics courses, reinforcing lecture content and
+                        problem-solving strategies
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- SKILLS -->
+        <section>
+            <div class="section-label">Skills</div>
+            <div class="skills-grid">
+                <div class="skill-group">
+                    <div class="skill-group-label">Concepts</div>
+                    <div class="skill-tags">
+                        <span class="tag">Statistical Modeling</span>
+                        <span class="tag">Data Pipelines</span>
+                        <span class="tag">Web Scraping</span>
+                        <span class="tag">Full-Stack Development</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <div class="skill-group-label">Languages</div>
+                    <div class="skill-tags">
+                        <span class="tag">Rust</span>
+                        <span class="tag">Python</span>
+                        <span class="tag">Haskell</span>
+                        <span class="tag">SQL</span>
+                        <span class="tag">TypeScript</span>
+                        <span class="tag">Java</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <div class="skill-group-label">Tools &amp; Frameworks</div>
+                    <div class="skill-tags">
+                        <span class="tag">Next.js</span>
+                        <span class="tag">React</span>
+                        <span class="tag">Docker</span>
+                        <span class="tag">Supabase</span>g
+                        <span class="tag">Git</span>
+                        <span class="tag">Selenium</span>
+                        <span class="tag">BNFC</span>
+                        <span class="tag">REST APIs</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EDUCATION -->
+        <section>
+            <div class="section-label">Education</div>
+            <div class="edu-row">
+                <span class="edu-school">Chapman University</span>
+                <span class="entry-meta">Aug 2018 – Dec 2022 · Orange, CA</span>
+            </div>
+            <div class="edu-degree">
+                B.S. Physics &nbsp;·&nbsp; B.S. Computer Science
+            </div>
+            <div class="edu-coursework">
+                <strong>Relevant Coursework:</strong>
+                Database Design, Algorithm Analysis, Data Structures &amp;
+                Algorithms, Scient
+            </div>
+        </section>
+    </body>
+</html>
