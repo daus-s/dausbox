@@ -6,7 +6,23 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Daus — Resume</title>
         <style>
-            @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap");
+            @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap");
+
+            @font-face {
+                font-family: "Syne";
+                src: url("fonts/Syne-Regular.ttf");
+                font-weight: 400;
+            }
+            @font-face {
+                font-family: "Syne";
+                src: url("fonts/Syne-SemiBold.ttf");
+                font-weight: 600;
+            }
+            @font-face {
+                font-family: "Syne";
+                src: url("fonts/Syne-Bold.ttf");
+                font-weight: 700;
+            }
 
             *,
             *::before,
@@ -31,7 +47,8 @@
                 line-height: 1.4;
                 max-width: 780px;
                 margin: 0 auto;
-                padding: 18px 48px;
+                padding: 16px 48px 8px 48px;
+                font-variant-ligatures: none;
             }
 
             /* HEADER */
@@ -124,7 +141,7 @@
                 padding: 0;
             }
             li {
-                font-family: "Montserrat", sans-serif;
+                font-family: sans-serif;
                 padding-left: 14px;
                 position: relative;
                 margin-bottom: 2px;
@@ -218,7 +235,9 @@
                 <a href="mailto:dauscarmichael@gmail.com" class="__cf_email__"
                     >dauscarmichael@gmail.com</a
                 ><br />
-                <a href="https://github.com/daus-s">github.com/daus-s</a><span style="color: var(--muted)">&nbsp;&middot;&nbsp;</span><a href="https://dausbox.dev">dausbox.dev</a><br />
+                <a href="https://github.com/daus-s">github.com/daus-s</a
+                ><span style="color: var(--muted)">&nbsp;&middot;&nbsp;</span
+                ><a href="https://dausbox.dev">dausbox.dev</a><br />
                 <a href="https://www.linkedin.com/in/daus-carmichael"
                     >linkedin.com/in/daus-carmichael</a
                 ><br />
@@ -235,19 +254,27 @@
                     <span class="entry-title">WARHeads API</span>
                     <span class="entry-stack">Rust · Python · SQL</span>
                 </div>
-                <div class="entry-subtitle">
-                    NBA Sports Analytics &amp; Prediction Engine
+                <div class="entry-header">
+                    <div class="entry-subtitle">
+                        NBA Sports Analytics &amp; Prediction Engine
+                    </div>
+                    <span class="entry-meta">Jan 2025 – Present</span>
                 </div>
                 <ul>
                     <li>
-                        Built a custom Elo rating model achieving
-                        <strong>79% game prediction accuracy</strong> and a <strong>logisitic
-                        loss score of 0.42.</strong>
+                        Built a custom Elo rating model that uses logistic
+                        regression to calculate each player's responsibility for
+                        results
                     </li>
                     <li>
-                        Engineered a live data ingestion pipeline that polls
-                        NBA API and caches results, eliminating redundant
-                        network requests
+                        Achieved <strong>80.6% accuracy</strong> and a
+                        <strong>log loss of 0.42</strong> over games publicly
+                        predicted ahead of tip-off during the 2025-26 season
+                    </li>
+                    <li>
+                        Engineered a live data ingestion pipeline that polls NBA
+                        API and caches results, eliminating redundant network
+                        requests
                     </li>
                     <li>
                         Implemented high-performance file I/O in Rust for fast
@@ -262,17 +289,53 @@
 
             <div class="entry">
                 <div class="entry-header">
-                    <span class="entry-title">betties.app</span>
+                    <span class="entry-title">Dauslang</span>
+                    <span class="entry-stack"
+                        >TypeScript · Interpreted Language · Recursive
+                        Descent</span
+                    >
+                </div>
+                <div class="entry-header">
+                    <div class="entry-subtitle">
+                        Interpreted Programming Language
+                    </div>
+                    <span class="entry-meta">Apr 2026 – Present</span>
+                </div>
+                <ul>
+                    <li>
+                        Implemented a lexer-parser-interpreter stack to evaluate
+                        and execute Dauslang programs
+                    </li>
+                    <li>
+                        Architected an event-based runtime, enabling real-time
+                        programming and dynamic screen rendering
+                    </li>
+                    <li>
+                        Built language constructs in TypeScript, allowing the
+                        Dauslang interpreter to be easily run in the browser
+                    </li>
+                    <li>
+                        Designed a simplified syntax to improve readability and
+                        accessibility
+                    </li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Betties</span>
                     <span class="entry-stack"
                         >Next.js · React · PostgreSQL · Selenium</span
                     >
                 </div>
-                <div class="entry-subtitle">Social Betting Platform</div>
+                <div class="entry-header">
+                    <div class="entry-subtitle">Social Betting Platform</div>
+                    <div class="entry-meta">Dec 2023 – Jun 2024</div>
+                </div>
                 <ul>
                     <li>
                         Built a responsive social web app (desktop and mobile)
-                        supporting creating, placing and settling bets between
-                        friends
+                        where users create, place, and settle bets with friends
                     </li>
                     <li>
                         Managed a Supabase PostgreSQL database storing betting
@@ -290,39 +353,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="entry">
-                <div class="entry-header">
-                    <span class="entry-title"
-                        >Dauslang</span
-                    >
-                    <span class="entry-stack"
-                        >TypeScript · Interpreted Language · Recursive Descent </span
-                    >
-                </div>
-                <div class="entry-subtitle">Custom Computer Algebra System</div>
-                <ul>
-                    <li>
-                        Designed formal grammar (BNFC) to parse mathematical
-                        expressions into abstract syntax trees
-                    </li>
-                    <li>
-                        Built computer algebra system for symbolic evaluation
-                        and manipulation of algebraic expressions
-                    </li>
-                    <li>
-                        Built a recursive solver that isolates and rearranges
-                        for any target variable, applying formal algebraic
-                        transformation rules
-                    </li>
-                    <li>
-                        Containerized the full toolchain with Docker for
-                        seamless cross-platform deployment with zero
-                        configuration overhead
-                    </li>
-                </ul>
-            </div>
         </section>
-
         <!-- WORK EXPERIENCE -->
         <section>
             <div class="section-label">Work Experience</div>
@@ -337,6 +368,12 @@
                     <li>
                         Oversee center operations, deliver personalized K–12
                         math instruction, and coordinate a team of tutors
+                    </li>
+                    <li>
+                        Created a Python utility that exports student progress
+                        data from Radius, cleans and aggregates it, and
+                        generates reports for Center Directors, now adopted by
+                        all 5 centers in the franchise
                     </li>
                 </ul>
             </div>
@@ -404,11 +441,10 @@
                         <span class="tag">Next.js</span>
                         <span class="tag">React</span>
                         <span class="tag">Docker</span>
-                        <span class="tag">Supabase</span>g
+                        <span class="tag">Supabase</span>
+                        <span class="tag">PostgreSQL</span>
                         <span class="tag">Git</span>
                         <span class="tag">Selenium</span>
-                        <span class="tag">BNFC</span>
-                        <span class="tag">REST APIs</span>
                     </div>
                 </div>
             </div>
@@ -427,7 +463,7 @@
             <div class="edu-coursework">
                 <strong>Relevant Coursework:</strong>
                 Database Design, Algorithm Analysis, Data Structures &amp;
-                Algorithms, Scient
+                Algorithms, Scientific Computing
             </div>
         </section>
     </body>
